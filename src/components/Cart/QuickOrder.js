@@ -15,10 +15,17 @@ import {
   faBarcode,
   faBox
 } from '@fortawesome/free-solid-svg-icons';
+import { catalog, categories, productImage } from '../Products/catalog';
 import './QuickOrder.css';
 
-const QuickOrder = () => {
-  const [productCode, setProductCode] = useState('');
+const productsDatabase = catalog.map(product => ({
+  ...product,
+  category: categories[product.category].name,
+  image: productImage(product) ?? `https://placehold.co/100x100/2e7d32/white?text=${product.code}`,
+}));
+
+const QuickOrder = ({ initialCode = '' }) => {
+  const [productCode, setProductCode] = useState(initialCode);
   const [cartItems, setCartItems] = useState([]);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -31,20 +38,6 @@ const QuickOrder = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
-
-  // دیتای محصولات (شبیه‌سازی دیتابیس)
-  const productsDatabase = [
-    { id: 1, code: '1001', name: 'بیو بوست پلاس', price: 250000, unit: 'لیتر', stock: 50, category: 'بیواستی مولانت', image: 'https://placehold.co/100x100/2e7d32/white?text=BioBoost' },
-    { id: 2, code: '1002', name: 'روت مکس', price: 320000, unit: 'کیلوگرم', stock: 35, category: 'بیواستی مولانت', image: 'https://placehold.co/100x100/4caf50/white?text=RootMax' },
-    { id: 3, code: '1003', name: 'فرایت پرو', price: 280000, unit: 'لیتر', stock: 28, category: 'بیواستی مولانت', image: 'https://placehold.co/100x100/66bb6a/white?text=FruitPro' },
-    { id: 4, code: '1004', name: 'سویل لایف', price: 350000, unit: 'کیلوگرم', stock: 42, category: 'بیوفرتیلایزر', image: 'https://placehold.co/100x100/388e3c/white?text=SoilLife' },
-    { id: 5, code: '1005', name: 'نیتروفیکس', price: 290000, unit: 'لیتر', stock: 15, category: 'بیوفرتیلایزر', image: 'https://placehold.co/100x100/43a047/white?text=NitroFix' },
-    { id: 6, code: '1006', name: 'آمینو گرو', price: 380000, unit: 'لیتر', stock: 22, category: 'محصولات ویژه', image: 'https://placehold.co/100x100/2e7d32/white?text=AminoGro' },
-    { id: 7, code: '1007', name: 'هیومیک اسید', price: 180000, unit: 'کیلوگرم', stock: 60, category: 'بهبوددهنده خاک', image: 'https://placehold.co/100x100/4caf50/white?text=HumicAcid' },
-    { id: 8, code: '1008', name: 'سی ویند', price: 420000, unit: 'لیتر', stock: 18, category: 'محصولات ویژه', image: 'https://placehold.co/100x100/66bb6a/white?text=SeaWeed' },
-    { id: 9, code: '1009', name: 'پتاسیم بالا', price: 220000, unit: 'لیتر', stock: 30, category: 'بیواستی مولانت', image: 'https://placehold.co/100x100/2e7d32/white?text=Potash' },
-    { id: 10, code: '1010', name: 'کلسیم بور', price: 195000, unit: 'لیتر', stock: 45, category: 'بیواستی مولانت', image: 'https://placehold.co/100x100/4caf50/white?text=Calcium' }
-  ];
 
   // فوکوس خودکار روی ورودی
   useEffect(() => {
@@ -92,6 +85,11 @@ const QuickOrder = () => {
 
   // افزودن به سبد خرید با محصول
   const addToCartByProduct = (product) => {
+    if (product.stock === 0) {
+      alert('این محصول ناموجود است');
+      return;
+    }
+
     const existingItem = cartItems.find(item => item.code === product.code);
     
     if (existingItem) {
@@ -183,7 +181,7 @@ const QuickOrder = () => {
       return;
     }
     
-    alert(`سفارش با موفقیت ثبت شد!\nمبلغ کل: ${formatPrice(calculateTotal())}`);
+    alert(`سفارش آزمایشی ثبت شد.\nمبلغ کل: ${formatPrice(calculateTotal())}`);
   };
 
   // هندل کردن کلیدهای صفحه کلید برای نتایج جستجو
