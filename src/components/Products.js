@@ -1,15 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { catalog, productHref, productImage } from './Products/catalog';
 import './Products.css';
 
-const products = [
-  { id: 1, name: 'BioBoost', description: 'Liquid seaweed extract for enhanced growth', image: 'https://placehold.co/400x300' },
-  { id: 2, name: 'RootMax', description: 'Microbial inoculant for root development', image: 'https://placehold.co/400x300' },
-  { id: 3, name: 'FruitPro', description: 'Flowering & fruiting enhancer', image: 'https://placehold.co/400x300' },
-  { id: 4, name: 'VitaGreen', description: 'Foliar spray for chlorophyll boost', image: 'https://placehold.co/400x300' },
-  { id: 5, name: 'SoilLife', description: 'Soil microbiome activator', image: 'https://placehold.co/400x300' }
-];
+const products = catalog.filter(product => product.stock > 0).slice(0, 5);
 
 const Products = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -109,10 +106,12 @@ const Products = () => {
         <div className="products-slider">
           {visibleProducts.map((product) => (
             <div className="product-item" key={product.id}>
-              <img src={product.image} alt={product.name} />
-              <h3>{product.name}</h3>
-              <p>{product.description}</p>
-              <button className="product-btn">Learn More</button>
+              <Link href={productHref(product)}>
+                <Image src={productImage(product)} alt={product.name} width={320} height={320} unoptimized />
+              </Link>
+              <h3><Link href={productHref(product)}>{product.name}</Link></h3>
+              <p>{product.detail}</p>
+              <Link href={productHref(product)} className="product-btn">جزئیات محصول</Link>
             </div>
           ))}
         </div>

@@ -58,3 +58,7 @@ export function productPackages(product) {
     price: product.price * packaging[id].amount,
   }));
 }
+
+export function productHref(product) {
+  return `/products/${product.code}`;
+}
