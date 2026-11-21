@@ -44,7 +44,9 @@ export default function ProductMegaMenu() {
   return (
     <li className="nav-item nav-products" ref={item}
       onPointerEnter={event => {
-        if (event.pointerType === 'mouse') setMode(current => current || 'hover');
+        if (event.pointerType === 'mouse' && window.matchMedia('(min-width: 993px)').matches) {
+          setMode(current => current || 'hover');
+        }
       }}
       onPointerLeave={() => {
         if (!item.current.contains(document.activeElement)) {

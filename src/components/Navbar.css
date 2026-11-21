@@ -533,5 +533,39 @@
 .nav-products-panel a:hover { color: #187044; text-decoration: underline; }
 
 @media (max-width: 992px) {
-  .nav-menu:not(.active) { visibility: hidden; }
+  .nav-menu {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .nav-menu > :not(.nav-products) { display: none; }
+
+  .nav-products-toggle {
+    justify-content: center;
+    min-height: 44px;
+    padding-inline: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .nav-products-panel { padding-inline: 10px; }
+  .nav-products-panel::before { content: none; }
+  .nav-products-inner {
+    max-height: calc(100dvh - 154px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px;
+  }
+  .nav-products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .nav-products-grid > li { padding: 9px; }
+  .nav-products-grid ul a { padding-inline-start: 0; }
+}
+
+@media (max-width: 375px) {
+  .nav-container { padding-inline: 10px; }
+  .nav-products-heading h2, .nav-products-category { font-size: 13px; }
 }
