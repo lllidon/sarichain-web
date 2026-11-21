@@ -14,7 +14,12 @@ const products = catalog.filter(product => product.image).map(product => ({
   packages: productPackages(product),
 }));
 const packageOptions = new Map(products.flatMap(product => product.packages.map(pack => [pack.id, pack.name])));
-const pageSize = 4;
+const pageSize = 12;
+const lowestPrice = Math.min(...products.map(product => product.price));
+const highestPrice = Math.max(...products.map(product => product.price));
+
+const pricePosition = value => 100 * (value - lowestPrice) / Math.max(1, highestPrice - lowestPrice);
+const withinPriceBounds = value => Math.min(highestPrice, Math.max(lowestPrice, value));
 const categoryOptions = [['all', 'همه محصولات'], ...Object.entries(categories).map(([id, category]) => [id, category.name])];
 const number = new Intl.NumberFormat('fa-IR');
 
@@ -82,7 +87,8 @@ function CatalogCard({ product, onRequest, onMessage }) {
 export default function CategoriesPage() {
   const [category, setCategory] = useState('all');
   const [query, setQuery] = useState('');
-  const [availability, setAvailability] = useState('');
+  const [showAvailable, setShowAvailable] = useState(false);
+  const [showUnavailable, setShowUnavailable] = useState(false);
   const [packaging, setPackaging] = useState('');
   const [minimum, setMinimum] = useState('');
   const [maximum, setMaximum] = useState('');
@@ -100,7 +106,7 @@ export default function CategoriesPage() {
   const details = [...new Set(categoryProducts.map(product => product.detail))];
   const search = normalize(query);
   const results = categoryProducts.filter(product =>
-    (!availability || (availability === 'available' ? product.stock > 0 : product.stock === 0)) &&
+    (showAvailable === showUnavailable || (product.stock > 0 ? showAvailable : showUnavailable)) &&
     (!packaging || product.packages.some(pack => pack.id === packaging)) &&
     (!minimum || product.price >= Number(minimum)) &&
     (!maximum || product.price <= Number(maximum)) &&
@@ -114,6 +120,8 @@ export default function CategoriesPage() {
   const pageCount = Math.ceil(results.length / pageSize);
   const visibleProducts = results.slice((page - 1) * pageSize, page * pageSize);
   const invalidPrice = minimum !== '' && maximum !== '' && Number(minimum) > Number(maximum);
+  const sliderMaximum = withinPriceBounds(Number(maximum || highestPrice));
+  const sliderMinimum = Math.min(sliderMaximum, withinPriceBounds(Number(minimum || lowestPrice)));
 
   function changeFilter(setter, value) {
     setter(value);
@@ -133,7 +141,8 @@ export default function CategoriesPage() {
   function reset() {
     chooseCategory('all');
     setQuery('');
-    setAvailability('');
+    setShowAvailable(false);
+    setShowUnavailable(false);
     setPackaging('');
     setMinimum('');
     setMaximum('');
@@ -229,6 +238,18 @@ export default function CategoriesPage() {
 
               <fieldset className="catalog-filter-group">
                 <legend>قیمت پایه (تومان)</legend>
+                <div className="catalog-price-slider" dir="ltr" style={{
+                  '--price-start': `${pricePosition(sliderMinimum)}%`,
+                  '--price-end': `${pricePosition(sliderMaximum)}%`,
+                }}>
+                  <input type="range" min={lowestPrice} max={highestPrice} value={sliderMinimum}
+                    className={sliderMinimum === highestPrice ? 'is-uppermost' : undefined}
+                    aria-label="انتخاب حداقل قیمت پایه" aria-valuetext={`${number.format(sliderMinimum)} تومان`}
+                    onChange={event => changeFilter(setMinimum, String(Math.min(Number(event.target.value), sliderMaximum)))} />
+                  <input type="range" min={lowestPrice} max={highestPrice} value={sliderMaximum}
+                    aria-label="انتخاب حداکثر قیمت پایه" aria-valuetext={`${number.format(sliderMaximum)} تومان`}
+                    onChange={event => changeFilter(setMaximum, String(Math.max(Number(event.target.value), sliderMinimum)))} />
+                </div>
                 <div className="catalog-price-range">
                   <label>از<input inputMode="numeric" value={minimum} placeholder="حداقل" aria-invalid={invalidPrice}
                     onChange={event => changePrice(setMinimum, event.target.value)} /></label>
@@ -244,14 +265,19 @@ export default function CategoriesPage() {
                   {[...packageOptions].map(([id, name]) => <option key={id} value={id}>{name}</option>)}
                 </select>
               </div>
-              <div className="catalog-filter-group catalog-detail">
-                <label htmlFor="catalog-availability">وضعیت کالا</label>
-                <select id="catalog-availability" value={availability} onChange={event => changeFilter(setAvailability, event.target.value)}>
-                  <option value="">همه کالاها</option>
-                  <option value="available">فقط موجود</option>
-                  <option value="unavailable">فقط ناموجود</option>
-                </select>
-              </div>
+              <fieldset className="catalog-filter-group">
+                <legend>وضعیت کالا</legend>
+                <label className="catalog-status-option">
+                  <span>موجود</span>
+                  <input type="checkbox" role="switch" className="catalog-switch catalog-switch--available"
+                    checked={showAvailable} onChange={event => changeFilter(setShowAvailable, event.target.checked)} />
+                </label>
+                <label className="catalog-status-option">
+                  <span>ناموجود</span>
+                  <input type="checkbox" role="switch" className="catalog-switch catalog-switch--unavailable"
+                    checked={showUnavailable} onChange={event => changeFilter(setShowUnavailable, event.target.checked)} />
+                </label>
+              </fieldset>
             </div>
           </aside>
 

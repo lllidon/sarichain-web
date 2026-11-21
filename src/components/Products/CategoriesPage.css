@@ -297,3 +297,105 @@
 .catalog-request-dialog h2 { font-size: 17px; }
 .catalog-request-dialog p { font-size: 13px; margin-block: 8px 14px; }
 .catalog-request-dialog form > div { display: flex; justify-content: end; gap: 8px; }
+
+@font-face {
+  font-family: Vazirmatn;
+  src: url('../../fonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.catalog-page select,
+.catalog-page select option {
+  font-family: Vazirmatn, Tahoma, sans-serif;
+}
+
+.catalog-filter-group .catalog-status-option {
+  justify-content: space-between;
+  min-height: 40px;
+}
+
+.catalog-switch {
+  --switch-color: #187044;
+  --switch-background: #e4f1e8;
+  appearance: none;
+  position: relative;
+  width: 42px;
+  height: 23px;
+  border: 1px solid var(--switch-color);
+  border-radius: 20px;
+  background: var(--switch-background);
+  cursor: pointer;
+}
+
+.catalog-switch--unavailable {
+  --switch-color: #b42318;
+  --switch-background: #fcebe9;
+}
+
+.catalog-switch::before {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 17px;
+  height: 17px;
+  content: '';
+  border-radius: 50%;
+  background: var(--switch-color);
+}
+
+.catalog-switch:checked { background: var(--switch-color); }
+.catalog-switch:checked::before { transform: translateX(19px); background: white; }
+
+.catalog-price-slider {
+  --thumb-size: 18px;
+  position: relative;
+  height: 31px;
+  margin-bottom: 4px;
+  direction: ltr;
+}
+
+.catalog-price-slider::before {
+  position: absolute;
+  inset-inline: calc(var(--thumb-size) / 2);
+  top: 13px;
+  height: 5px;
+  border-radius: 5px;
+  background: linear-gradient(to right, #dce7df var(--price-start), var(--catalog-green) var(--price-start) var(--price-end), #dce7df var(--price-end));
+  content: '';
+}
+
+.catalog-price-slider input {
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.catalog-price-slider input.is-uppermost { z-index: 1; }
+
+.catalog-price-slider input::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border: 2px solid var(--catalog-green);
+  border-radius: 50%;
+  background: white;
+  cursor: ew-resize;
+  pointer-events: auto;
+}
+
+.catalog-price-slider input::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border: 2px solid var(--catalog-green);
+  border-radius: 50%;
+  background: white;
+  cursor: ew-resize;
+  pointer-events: auto;
+}
