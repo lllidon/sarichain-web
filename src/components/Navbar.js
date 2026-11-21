@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faBasketShopping, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
 import SearchModal from './modals/SearchModal';
+import ProductMegaMenu from './Products/ProductMegaMenu';
 import CartModal from './modals/CartModal';
 import { useCatalogCart } from './modals/cartStore';
 
@@ -88,65 +89,7 @@ const Navbar = () => {
 
         {/* Navigation Menu */}
         <ul className={`nav-menu ${isOpen ? 'active' : ''}`}>
-          {/* Products Mega Menu */}
-          <li 
-            className="nav-item mega-menu" 
-            onMouseEnter={() => handleMegaMenuEnter('products')}
-            onMouseLeave={handleMegaMenuLeave}
-          >
-            <Link href="/categories"
-              className="nav-link"
-              
-            >
-              محصولات 
-              <FontAwesomeIcon icon={faChevronDown} className="dropdown-icon" />
-            </Link>
-            {activeMegaMenu === 'products' && (
-              <div 
-                className="mega-menu-content"
-                onMouseEnter={() => handleMegaMenuEnter('products')}
-                onMouseLeave={handleMegaMenuLeave}
-              >
-                <div className="mega-menu-grid">
-                  <div className="mega-col">
-                    <h4>بیواستی مولانت‌ها</h4>
-                    <ul>
-                      <li><a href="#">بیو بوست</a></li>
-                      <li><a href="#">روت مکس</a></li>
-                      <li><a href="#">فرایت پرو</a></li>
-                      <li><a href="#">ویتا گرین</a></li>
-                    </ul>
-                  </div>
-                  <div className="mega-col">
-                    <h4>بیوفرتیلایزرها</h4>
-                    <ul>
-                      <li><a href="#">سویل لایف</a></li>
-                      <li><a href="#">نیتروفیکس</a></li>
-                      <li><a href="#">فوس سول</a></li>
-                      <li><a href="#">پوتاس بوست</a></li>
-                    </ul>
-                  </div>
-                  <div className="mega-col">
-                    <h4>محصولات ویژه</h4>
-                    <ul>
-                      <li><a href="#">عصاره جلبک دریایی</a></li>
-                      <li><a href="#">اسیدهای آمینه</a></li>
-                      <li><a href="#">اسیدهای هیومیک</a></li>
-                      <li><a href="#">میکروبیال‌ها</a></li>
-                    </ul>
-                  </div>
-                  <div className="mega-col featured">
-                    <div className="featured-product">
-                      <img src="https://placehold.co/200x150" alt="Featured" />
-                      <h4>محصول جدید</h4>
-                      <p>بیو بوست پلاس - فرمول پیشرفته</p>
-                      <button className="featured-btn">خرید کنید</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </li>
+          <ProductMegaMenu />
 
           {/* Solutions Mega Menu */}
           <li 

@@ -84,11 +84,10 @@ function CatalogCard({ product, onRequest, onMessage }) {
   );
 }
 
-export default function CategoriesPage() {
-  const [category, setCategory] = useState('all');
+export default function CategoriesPage({ initialCategory = 'all', initialDetail = '' }) {
+  const [category, setCategory] = useState(initialCategory);
   const [query, setQuery] = useState('');
-  const [showAvailable, setShowAvailable] = useState(false);
-  const [showUnavailable, setShowUnavailable] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
   const [packaging, setPackaging] = useState('');
   const [minimum, setMinimum] = useState('');
   const [maximum, setMaximum] = useState('');
@@ -98,7 +97,7 @@ export default function CategoriesPage() {
   const requestDialog = useRef(null);
   const resultsHeading = useRef(null);
   const [form, setForm] = useState('');
-  const [detail, setDetail] = useState('');
+  const [detail, setDetail] = useState(initialDetail);
   const [sort, setSort] = useState('default');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -106,7 +105,7 @@ export default function CategoriesPage() {
   const details = [...new Set(categoryProducts.map(product => product.detail))];
   const search = normalize(query);
   const results = categoryProducts.filter(product =>
-    (showAvailable === showUnavailable || (product.stock > 0 ? showAvailable : showUnavailable)) &&
+    (unavailable ? product.stock === 0 : product.stock > 0) &&
     (!packaging || product.packages.some(pack => pack.id === packaging)) &&
     (!minimum || product.price >= Number(minimum)) &&
     (!maximum || product.price <= Number(maximum)) &&
@@ -141,8 +140,7 @@ export default function CategoriesPage() {
   function reset() {
     chooseCategory('all');
     setQuery('');
-    setShowAvailable(false);
-    setShowUnavailable(false);
+    setUnavailable(false);
     setPackaging('');
     setMinimum('');
     setMaximum('');
@@ -268,14 +266,12 @@ export default function CategoriesPage() {
               <fieldset className="catalog-filter-group">
                 <legend>وضعیت کالا</legend>
                 <label className="catalog-status-option">
-                  <span>موجود</span>
-                  <input type="checkbox" role="switch" className="catalog-switch catalog-switch--available"
-                    checked={showAvailable} onChange={event => changeFilter(setShowAvailable, event.target.checked)} />
-                </label>
-                <label className="catalog-status-option">
-                  <span>ناموجود</span>
-                  <input type="checkbox" role="switch" className="catalog-switch catalog-switch--unavailable"
-                    checked={showUnavailable} onChange={event => changeFilter(setShowUnavailable, event.target.checked)} />
+                  <span className={unavailable ? 'catalog-status-text is-unavailable' : 'catalog-status-text'}>
+                    {unavailable ? 'ناموجود' : 'موجود'}
+                  </span>
+                  <input type="checkbox" role="switch" className="catalog-switch"
+                    aria-label="نمایش کالاهای ناموجود" checked={unavailable}
+                    onChange={event => changeFilter(setUnavailable, event.target.checked)} />
                 </label>
               </fieldset>
             </div>

@@ -14,6 +14,7 @@ import {
   faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import CartModal from '../modals/CartModal';
+import { categories } from '../Products/catalog';
 import { useCatalogCart } from '../modals/cartStore';
 import './BottomNavbar.css';
 
@@ -81,15 +82,15 @@ const BottomNavbar = () => {
           </div>
 
           {/* دسته بندی ها */}
-          <div 
+          <button type="button" aria-expanded={showCategoriesModal}
             className={`bottom-nav-item ${activeTab === 'categories' ? 'active' : ''}`}
             onClick={() => handleTabClick('categories')}
           >
-            <div className="nav-icon">
+            <span className="nav-icon">
               <FontAwesomeIcon icon={faThLarge} />
-            </div>
+            </span>
             <span className="nav-label">دسته‌ها</span>
-          </div>
+          </button>
 
           {/* سبد خرید */}
           <button type="button" aria-label="سبد خرید"
@@ -183,26 +184,17 @@ const BottomNavbar = () => {
             </div>
             <div className="mobile-modal-body">
               <div className="mobile-categories">
-                <Link href="/categories" className="category-item">
-                  <div className="category-icon">🌿</div>
-                  <span>بیواستی مولانت‌ها</span>
+                <Link href="/categories" className="category-item" onClick={() => setShowCategoriesModal(false)}>
+                  کاتالوگ محصولات
                   <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
                 </Link>
-                <Link href="/categories" className="category-item">
-                  <div className="category-icon">🧪</div>
-                  <span>بیوفرتیلایزرها</span>
-                  <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
-                </Link>
-                <Link href="/categories" className="category-item">
-                  <div className="category-icon">💧</div>
-                  <span>محصولات ویژه</span>
-                  <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
-                </Link>
-                <Link href="/categories" className="category-item">
-                  <div className="category-icon">🌱</div>
-                  <span>تسهیل‌کننده‌های رشد</span>
-                  <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
-                </Link>
+                {Object.entries(categories).map(([id, category]) => (
+                  <Link key={id} href={{ pathname: '/categories', query: { category: id } }} className="category-item"
+                    onClick={() => setShowCategoriesModal(false)}>
+                    {category.name}
+                    <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
