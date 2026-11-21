@@ -7,8 +7,10 @@ import { faMagnifyingGlass, faBasketShopping, faChevronDown } from '@fortawesome
 import './Navbar.css';
 import SearchModal from './modals/SearchModal';
 import CartModal from './modals/CartModal';
+import { useCatalogCart } from './modals/cartStore';
 
 const Navbar = () => {
+  const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const [isOpen, setIsOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -225,9 +227,9 @@ const Navbar = () => {
             <button className="search-btn" onClick={() => setIsSearchOpen(true)}>
               <FontAwesomeIcon icon={faMagnifyingGlass} />
             </button>
-            <button className="cart-btn" onClick={() => setIsCartOpen(true)}>
+            <button className="cart-btn" aria-label="سبد خرید" onClick={() => setIsCartOpen(true)}>
               <FontAwesomeIcon icon={faBasketShopping} />
-              <span className="cart-badge">4</span>
+              {cartCount > 0 && <span className="cart-badge">{cartCount.toLocaleString('fa-IR')}</span>}
             </button>
             
             {userPhone ? (

@@ -11,14 +11,14 @@ import {
   faUser, 
   faSignInAlt,
   faThLarge,
-  faTimes,
-  faMinus,
-  faPlus,
-  faTrash
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
+import CartModal from '../modals/CartModal';
+import { useCatalogCart } from '../modals/cartStore';
 import './BottomNavbar.css';
 
 const BottomNavbar = () => {
+  const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const router = useRouter();
   const path = usePathname();
   const [activeTab, setActiveTab] = useState('home');
@@ -92,16 +92,16 @@ const BottomNavbar = () => {
           </div>
 
           {/* سبد خرید */}
-          <div 
+          <button type="button" aria-label="سبد خرید"
             className={`bottom-nav-item ${activeTab === 'cart' ? 'active' : ''}`}
             onClick={() => handleTabClick('cart')}
           >
-            <div className="nav-icon cart-icon-wrapper">
+            <span className="nav-icon cart-icon-wrapper">
               <FontAwesomeIcon icon={faShoppingCart} />
-              <span className="cart-badge-mobile">4</span>
-            </div>
+              {cartCount > 0 && <span className="cart-badge-mobile">{cartCount.toLocaleString('fa-IR')}</span>}
+            </span>
             <span className="nav-label">سبد خرید</span>
-          </div>
+          </button>
 
           {/* جستجو */}
           <div 
@@ -169,90 +169,7 @@ const BottomNavbar = () => {
         </div>
       )}
 
-      {/* مودال سبد خرید */}
-      {showCartModal && (
-        <div className="mobile-modal-overlay" onClick={() => setShowCartModal(false)}>
-          <div className="mobile-modal cart-modal-mobile" onClick={(e) => e.stopPropagation()}>
-            <div className="mobile-modal-header">
-              <h3>سبد خرید</h3>
-              <button onClick={() => setShowCartModal(false)}>
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            <div className="mobile-modal-body">
-              <div className="mobile-cart-items">
-                <div className="mobile-cart-item">
-                  <img src="https://placehold.co/60x60" alt="product" />
-                  <div className="cart-item-info">
-                    <h4>بیو بوست</h4>
-                    <p>۲۵۰,۰۰۰ تومان</p>
-                    <div className="cart-item-qty">
-                      <button>
-                        <FontAwesomeIcon icon={faMinus} />
-                      </button>
-                      <span>۲</span>
-                      <button>
-                        <FontAwesomeIcon icon={faPlus} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="cart-item-price">۵۰۰,۰۰۰ تومان</div>
-                  <button className="cart-item-remove">
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-                <div className="mobile-cart-item">
-                  <img src="https://placehold.co/60x60" alt="product" />
-                  <div className="cart-item-info">
-                    <h4>روت مکس</h4>
-                    <p>۳۲۰,۰۰۰ تومان</p>
-                    <div className="cart-item-qty">
-                      <button>
-                        <FontAwesomeIcon icon={faMinus} />
-                      </button>
-                      <span>۱</span>
-                      <button>
-                        <FontAwesomeIcon icon={faPlus} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="cart-item-price">۳۲۰,۰۰۰ تومان</div>
-                  <button className="cart-item-remove">
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-                <div className="mobile-cart-item">
-                  <img src="https://placehold.co/60x60" alt="product" />
-                  <div className="cart-item-info">
-                    <h4>فرایت پرو</h4>
-                    <p>۲۸۰,۰۰۰ تومان</p>
-                    <div className="cart-item-qty">
-                      <button>
-                        <FontAwesomeIcon icon={faMinus} />
-                      </button>
-                      <span>۳</span>
-                      <button>
-                        <FontAwesomeIcon icon={faPlus} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="cart-item-price">۸۴۰,۰۰۰ تومان</div>
-                  <button className="cart-item-remove">
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              </div>
-              <div className="mobile-cart-total">
-                <span>جمع کل:</span>
-                <span>۱,۶۶۰,۰۰۰ تومان</span>
-              </div>
-              <button className="mobile-checkout-btn">
-                تایید و ثبت سفارش
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CartModal isOpen={showCartModal} onClose={() => setShowCartModal(false)} />
 
       {/* مودال دسته‌بندی */}
       {showCategoriesModal && (

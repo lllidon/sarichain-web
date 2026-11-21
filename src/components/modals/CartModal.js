@@ -1,126 +1,72 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { setCatalogQuantity, useCatalogCart } from './cartStore';
 import './Modal.css';
 
-const CartModal = ({ isOpen, onClose }) => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'بیو بوست',
-      price: 250000,
-      quantity: 2,
-      image: 'https://placehold.co/200x150'
-    },
-    {
-      id: 2,
-      name: 'روت مکس',
-      price: 320000,
-      quantity: 1,
-      image: 'https://placehold.co/200x150'
-    },
-    {
-      id: 3,
-      name: 'فرایت پرو',
-      price: 280000,
-      quantity: 3,
-      image: 'https://placehold.co/200x150'
-    },
-    {
-      id: 4,
-      name: 'ویتا گرین',
-      price: 190000,
-      quantity: 1,
-      image: 'https://placehold.co/200x150'
-    }
-  ]);
+const number = new Intl.NumberFormat('fa-IR');
 
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
+export default function CartModal({ isOpen, onClose }) {
+  const cartItems = useCatalogCart();
+  const [message, setMessage] = useState('');
+  const dialog = useRef(null);
 
-  const removeItem = (id) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
-
-  const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  };
-
-  const formatPrice = (price) => {
-    return price.toLocaleString('fa-IR') + ' تومان';
-  };
+  useEffect(() => {
+    if (isOpen) dialog.current.showModal();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container cart-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>سبد خرید</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
-        </div>
+  function update(item, quantity) {
+    setMessage(setCatalogQuantity(item, quantity) ? '' : 'تعداد بیشتر از موجودی محصول است.');
+  }
 
-        {cartItems.length === 0 ? (
-          <div className="empty-cart">
-            <div className="empty-cart-icon">🛒</div>
-            <p>سبد خرید شما خالی است</p>
-            <button className="continue-shopping" onClick={onClose}>بازگشت به فروشگاه</button>
-          </div>
-        ) : (
-          <>
-            <div className="cart-items">
-              {cartItems.map(item => (
-                <div key={item.id} className="cart-item">
-                  <img src={item.image} alt={item.name} className="cart-item-image" />
-                  <div className="cart-item-details">
-                    <h4>{item.name}</h4>
-                    <p className="cart-item-price">{formatPrice(item.price)}</p>
-                    <div className="cart-item-actions">
-                      <div className="quantity-control">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
-                        <span>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
-                      </div>
-                      <button className="remove-item" onClick={() => removeItem(item.id)}>
-                        حذف
-                      </button>
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return (
+    <dialog ref={dialog} className="modal-container cart-modal storefront-cart" aria-label="سبد خرید"
+      onClose={() => { setMessage(''); onClose(); }}>
+      <div className="modal-header">
+        <h3>سبد خرید</h3>
+        <button type="button" className="modal-close" aria-label="بستن سبد خرید" onClick={() => dialog.current.close()}>×</button>
+      </div>
+
+      {cartItems.length === 0 ? (
+        <div className="empty-cart">
+          <p>سبد خرید شما خالی است.</p>
+          <button className="continue-shopping" onClick={() => dialog.current.close()}>ادامه خرید</button>
+        </div>
+      ) : (
+        <>
+          <div className="cart-items">
+            {cartItems.map(item => (
+              <div key={item.id} className="cart-item">
+                <img src={item.image} alt="" className="cart-item-image" />
+                <div className="cart-item-details">
+                  <h4>{item.name}</h4>
+                  <p>{item.packName} {number.format(item.amount)} {item.unit}</p>
+                  <p className="cart-item-price">{number.format(item.price)} تومان</p>
+                  <div className="cart-item-actions">
+                    <div className="quantity-control">
+                      <button aria-label="کاهش تعداد" disabled={item.quantity === 1} onClick={() => update(item, item.quantity - 1)}>−</button>
+                      <span>{number.format(item.quantity)}</span>
+                      <button aria-label="افزایش تعداد" onClick={() => update(item, item.quantity + 1)}>+</button>
                     </div>
-                  </div>
-                  <div className="cart-item-total">
-                    {formatPrice(item.price * item.quantity)}
+                    <button className="remove-item" onClick={() => update(item, 0)}>حذف</button>
                   </div>
                 </div>
-              ))}
+                <div className="cart-item-total">{number.format(item.price * item.quantity)} تومان</div>
+              </div>
+            ))}
+          </div>
+          <div className="cart-summary">
+            {message && <p role="status">{message}</p>}
+            <div className="summary-row total">
+              <span>جمع کالاها</span>
+              <span className="total-amount">{number.format(total)} تومان</span>
             </div>
-
-            <div className="cart-summary">
-              <div className="summary-row">
-                <span>جمع کل:</span>
-                <span className="summary-amount">{formatPrice(calculateTotal())}</span>
-              </div>
-              <div className="summary-row">
-                <span>هزینه ارسال:</span>
-                <span className="summary-shipping">رایگان</span>
-              </div>
-              <div className="summary-row total">
-                <span>مبلغ قابل پرداخت:</span>
-                <span className="total-amount">{formatPrice(calculateTotal())}</span>
-              </div>
-              <button className="checkout-btn">
-                ثبت سفارش
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+        </>
+      )}
+    </dialog>
   );
-};
-
-export default CartModal;
+}
