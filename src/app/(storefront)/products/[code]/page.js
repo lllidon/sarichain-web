@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ProductPurchase from '../../../../components/Products/ProductPurchase';
+import ProductMarketplace from '../../../../components/Products/ProductMarketplace';
 import { catalog, categories, productHref, productImage, productPackages } from '../../../../components/Products/catalog';
 import '../../../../components/Products/CategoriesPage.css';
 import '../../../../components/Products/ProductDetails.css';
@@ -48,19 +48,14 @@ export default async function ProductPage({ params }) {
           <span aria-current="page">{product.name}</span>
         </nav>
 
-        <article className="product-overview" aria-labelledby="product-title">
-          <figure className="product-packshot">
-            <Image src={productImage(product)} alt={product.name} width={320} height={320} preload unoptimized />
-          </figure>
-          <div className="product-overview-info">
-            <Link className="product-category" href={categoryHref}>{category.name}</Link>
-            <h1 id="product-title">{product.name}</h1>
-            <p className="product-code">کد کالا <bdi>{product.code}</bdi></p>
-            <p className="product-description">{describe(product)}</p>
-            {product.stock === 0 && <span className="product-unavailable">ناموجود</span>}
-            <ProductPurchase product={product} className="product-purchase" />
-          </div>
-        </article>
+        <ProductMarketplace key={product.code} product={product} category={category}
+          categoryHref={categoryHref} description={describe(product)} />
+
+        <nav className="market-section-nav" aria-label="بخش‌های صفحه محصول">
+          <a href="#product-title">معرفی</a>
+          <a href="#product-sellers">فروشندگان</a>
+          <a href="#product-specifications">مشخصات</a>
+        </nav>
 
         <section className="product-specifications" aria-labelledby="product-specifications">
           <h2 id="product-specifications">مشخصات محصول</h2>

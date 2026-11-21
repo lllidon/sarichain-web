@@ -43,6 +43,7 @@ export default function CartModal({ isOpen, onClose }) {
                 <img src={item.image} alt="" className="cart-item-image" />
                 <div className="cart-item-details">
                   <h4>{item.name}</h4>
+                  {item.sellerName && <p>{item.sellerName} · {item.qualityName}</p>}
                   <p>{item.packName} {number.format(item.amount)} {item.unit}</p>
                   <p className="cart-item-price">{number.format(item.price)} تومان</p>
                   <div className="cart-item-actions">

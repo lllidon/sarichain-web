@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { catalog, productImage, productPackages } from '../Products/catalog';
+import { marketplaceOffer } from '../Products/marketplace';
 
 const storageKey = 'sarichain-catalog-cart';
 const empty = [];
@@ -53,14 +54,16 @@ export function useCatalogCart() {
   return useSyncExternalStore(subscribe, getCart, () => empty);
 }
 
-export function addCatalogItem(product, pack) {
+export function addCatalogItem(product, pack, offer) {
   const items = getCart();
-  const id = `${product.code}-${pack.id}`;
+  const baseId = `${product.code}-${pack.id}`;
+  const id = offer ? `${baseId}-${offer.sellerId}-${offer.qualityId}` : baseId;
   const existing = items.find(item => item.id === id);
   const line = {
     id,
     code: product.code,
     packId: pack.id,
+    ...(offer && { sellerId: offer.sellerId, qualityId: offer.qualityId }),
     quantity: (existing?.quantity ?? 0) + 1,
   };
   return updateCatalogItem(items, line);
@@ -75,6 +78,8 @@ function updateCatalogItem(items, line) {
   const product = catalog.find(product => product.code === line.code);
   const pack = product && productPackages(product).find(pack => pack.id === line.packId);
   if (!pack) return false;
+  const offer = line.sellerId ? marketplaceOffer(product, line.sellerId, line.qualityId) : null;
+  if (line.sellerId && !offer) return false;
   const used = others.filter(item => item.code === line.code)
     .reduce((total, item) => total + item.amount * item.quantity, 0);
   if (used + pack.amount * line.quantity > product.stock) return false;
@@ -83,7 +88,8 @@ function updateCatalogItem(items, line) {
     ...line,
     name: product.name,
     image: productImage(product),
-    price: pack.price,
+    price: offer ? offer.unitPrice * pack.amount : pack.price,
+    ...(offer && { sellerName: offer.sellerName, qualityName: offer.qualityName }),
     amount: pack.amount,
     unit: product.unit,
     packName: pack.name,
