@@ -1,9 +1,12 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import './Auth.css';
 
 const Register = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -78,7 +81,7 @@ const Register = () => {
       setTimeout(() => {
         setIsLoading(false);
         alert('ثبت نام با موفقیت انجام شد! لطفاً وارد شوید.');
-        navigate('/login');
+        router.push('/login');
       }, 1500);
     } else {
       setErrors(newErrors);
@@ -89,7 +92,7 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-wrapper">
         <div className="auth-card">
-          <Link to="/" className="back-home">
+          <Link href="/" className="back-home">
             ← بازگشت به صفحه اصلی
           </Link>
 
@@ -202,7 +205,7 @@ const Register = () => {
           <div className="auth-footer">
             <p>
               حساب کاربری دارید؟
-              <Link to="/login" className="switch-btn">
+              <Link href="/login" className="switch-btn">
                 وارد شوید
               </Link>
             </p>

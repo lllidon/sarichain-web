@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faBasketShopping, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
@@ -10,9 +12,15 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userPhone, setUserPhone] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('isAuthenticated') === 'true') {
+      setUserPhone(localStorage.getItem('userPhone') || 'کاربر');
+    }
+  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -51,7 +59,7 @@ const Navbar = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userPhone');
     localStorage.removeItem('userEmail');
-    setIsLoggedIn(false);
+    setUserPhone(null);
     window.location.href = '/';
   };
 
@@ -68,7 +76,7 @@ const Navbar = () => {
 
         {/* Mobile Menu Button */}
         <div className={`menu-icon `} >
-          <Link to="/quick-order" className="login-link">
+          <Link href="/quick-order" className="login-link">
             <button className="contact-btn">
               ثبت سفارش
 
@@ -84,7 +92,7 @@ const Navbar = () => {
             onMouseEnter={() => handleMegaMenuEnter('products')}
             onMouseLeave={handleMegaMenuLeave}
           >
-            <Link to="/categories" 
+            <Link href="/categories"
               className="nav-link"
               
             >
@@ -222,17 +230,17 @@ const Navbar = () => {
               <span className="cart-badge">4</span>
             </button>
             
-            {isLoggedIn ? (
+            {userPhone ? (
               <div className="user-menu">
                 <button className="user-btn">
-                  👤 {localStorage.getItem('userPhone') || 'کاربر'}
+                  👤 {userPhone}
                 </button>
                 <button onClick={handleLogout} className="logout-btn">
                   خروج
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="login-link">
+              <Link href="/login" className="login-link">
                 <button className="contact-btn">
                   ورود / ثبت نام
                 </button>

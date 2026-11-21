@@ -1,9 +1,12 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import './Auth.css';
 
 const Login = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [loginMethod, setLoginMethod] = useState('password'); // 'password' or 'otp'
   const [formData, setFormData] = useState({
     phone: '',
@@ -143,8 +146,7 @@ const Login = () => {
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userPhone', formData.phone);
         
-        navigate('/');
-        window.location.reload();
+        router.push('/');
       }, 1500);
     } else {
       setErrors(newErrors);
@@ -161,7 +163,7 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-wrapper">
         <div className="auth-card">
-          <Link to="/" className="back-home">
+          <Link href="/" className="back-home">
             ← بازگشت به صفحه اصلی
           </Link>
 
@@ -291,7 +293,7 @@ const Login = () => {
                 <input type="checkbox" /> مرا به خاطر بسپار
               </label>
               {loginMethod === 'password' && (
-                <Link to="/forgot-password" className="forgot-password">
+                <Link href="/forgot-password" className="forgot-password">
                   رمز عبور را فراموش کرده‌اید؟
                 </Link>
               )}
@@ -313,7 +315,7 @@ const Login = () => {
           <div className="auth-footer">
             <p>
               حساب کاربری ندارید؟
-              <Link to="/register" className="switch-btn">
+              <Link href="/register" className="switch-btn">
                 ثبت نام کنید
               </Link>
             </p>

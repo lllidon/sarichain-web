@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faHome, 
@@ -16,8 +19,8 @@ import {
 import './BottomNavbar.css';
 
 const BottomNavbar = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const path = usePathname();
   const [activeTab, setActiveTab] = useState('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -29,18 +32,17 @@ const BottomNavbar = () => {
     setIsLoggedIn(authStatus === 'true');
     
     // تعیین تب فعال بر اساس مسیر فعلی
-    const path = location.pathname;
     if (path === '/') setActiveTab('home');
     else if (path === '/categories') setActiveTab('categories');
     else if (path === '/profile') setActiveTab('profile');
-  }, [location]);
+  }, [path]);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
     
     switch(tab) {
       case 'home':
-        navigate('/');
+        router.push('/');
         break;
       case 'categories':
         setShowCategoriesModal(true);
@@ -53,9 +55,9 @@ const BottomNavbar = () => {
         break;
       case 'profile':
         if (isLoggedIn) {
-          navigate('/profile');
+          router.push('/profile');
         } else {
-          navigate('/login');
+          router.push('/login');
         }
         break;
       default:
@@ -264,22 +266,22 @@ const BottomNavbar = () => {
             </div>
             <div className="mobile-modal-body">
               <div className="mobile-categories">
-                <Link to="/categories" className="category-item">
+                <Link href="/categories" className="category-item">
                   <div className="category-icon">🌿</div>
                   <span>بیواستی مولانت‌ها</span>
                   <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
                 </Link>
-                <Link to="/categories" className="category-item">
+                <Link href="/categories" className="category-item">
                   <div className="category-icon">🧪</div>
                   <span>بیوفرتیلایزرها</span>
                   <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
                 </Link>
-                <Link to="/categories" className="category-item">
+                <Link href="/categories" className="category-item">
                   <div className="category-icon">💧</div>
                   <span>محصولات ویژه</span>
                   <FontAwesomeIcon icon={faThLarge} className="category-arrow" />
                 </Link>
-                <Link to="/categories" className="category-item">
+                <Link href="/categories" className="category-item">
                   <div className="category-icon">🌱</div>
                   <span>تسهیل‌کننده‌های رشد</span>
                   <FontAwesomeIcon icon={faThLarge} className="category-arrow" />

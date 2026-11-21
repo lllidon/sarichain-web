@@ -1,6 +1,6 @@
 .hero {
   height: 100vh;
-  background: url('/public/img/sliderFade.jpg') center/cover no-repeat;
+  background: url('/img/sliderFade.jpg') center/cover no-repeat;
   position: relative;
   display: flex;
   align-items: center;
