@@ -50,6 +50,7 @@ export default function ProductMegaMenu() {
           <div className="nav-products-inner">
             <div className="nav-products-heading">
               <h2>دسته‌بندی محصولات</h2>
+              <Link href="/partners" onClick={closeMenu}>همکاری فروشندگان</Link>
               <Link href="/categories" onClick={closeMenu}>
                 مشاهده کاتالوگ <FontAwesomeIcon icon={faArrowLeft} />
               </Link>

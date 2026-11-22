@@ -562,3 +562,5 @@
   .nav-container { padding-inline: 10px; }
   .nav-products-heading h2, .nav-products-category { font-size: 13px; }
 }
+
+@media (max-width: 540px) { .nav-products-heading { flex-wrap: wrap; } }

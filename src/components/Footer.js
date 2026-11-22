@@ -75,6 +75,7 @@ const Footer = () => {
             <ul className="footer-links">
               <li><a href="#">محصولات</a></li>
               <li><Link href="/suppliers">معرفی تأمین‌کنندگان مواد اولیه</Link></li>
+              <li><Link href="/partners">فروشندگان و همکاران</Link></li>
               <li><a href="#">راهکارها</a></li>
               <li><a href="#">درباره ما</a></li>
               <li><a href="#">وبلاگ</a></li>
