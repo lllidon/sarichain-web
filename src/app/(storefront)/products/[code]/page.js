@@ -3,11 +3,20 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import ProductMarketplace from '../../../../components/Products/ProductMarketplace';
 import { readCatalog } from '../../../../components/Products/catalog-data';
-import { productHref, productImage, productPackages } from '../../../../components/Products/catalog';
+import { productHref, productImage } from '../../../../components/Products/catalog';
+import { partnerBackend } from '../../../../lib/partnerBackend';
 import '../../../../components/Products/CategoriesPage.css';
 import '../../../../components/Products/ProductDetails.css';
 
-const number = new Intl.NumberFormat('fa-IR');
+async function readDelivery() {
+  try {
+    const response = await partnerBackend('/web/delivery-options');
+    if (response.ok) return (await response.json()).methods;
+  } catch {
+    // Display the labeled example if the estimate service is unavailable.
+  }
+  return [];
+}
 
 async function findProduct(code) {
   const data = await readCatalog();
@@ -31,7 +40,9 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ProductPage({ params }) {
-  const { catalog, categories, product } = await findProduct((await params).code);
+  const [{ catalog, categories, product }, delivery] = await Promise.all([
+    findProduct((await params).code), readDelivery(),
+  ]);
   const category = categories[product.category];
   const categoryHref = { pathname: '/categories', query: { category: product.category } };
   const related = catalog.filter(item => item.category === product.category && item.code !== product.code && item.orderable).slice(0, 3);
@@ -50,21 +61,7 @@ export default async function ProductPage({ params }) {
         </nav>
 
         <ProductMarketplace key={product.code} product={product} category={category}
-          categoryHref={categoryHref} description={describe(product)} />
-
-        <section className="product-specifications" aria-labelledby="product-specifications">
-          <h2 id="product-specifications">مشخصات محصول</h2>
-          <dl>
-            <div><dt>شکل محصول</dt><dd>{product.form}</dd></div>
-            <div><dt>{category.filter}</dt><dd>{product.detail}</dd></div>
-            <div><dt>واحد پایه</dt><dd>{product.unit}</dd></div>
-            <div>
-              <dt>واحد فروش</dt>
-              <dd>{productPackages(product).map(pack => pack.amount === 1 ? pack.name : `هر ${pack.name} = ${number.format(pack.amount)} ${product.unit}`).join('، ')}</dd>
-            </div>
-            {product.options.map(option => <div key={option.name}><dt>{option.name}</dt><dd>{option.value}</dd></div>)}
-          </dl>
-        </section>
+          categoryHref={categoryHref} description={describe(product)} delivery={delivery} />
 
         {related.length > 0 && (
           <section className="related-products" aria-labelledby="related-products">

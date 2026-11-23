@@ -33,6 +33,7 @@ export const readCatalog = cache(async () => {
         isVariant: product.kind === 'variant',
         parentCode: parent?.code,
         options: product.options || [],
+        physical: product.physical || parent?.physical || null,
         detail: detail || product.shortDescription || '', form: detail ? form : '',
         description: product.description || '',
         unit: product.saleUnit || parent?.unit || product.description?.match(/هر (لیتر|کیلوگرم)/)?.[1] || 'واحد',
