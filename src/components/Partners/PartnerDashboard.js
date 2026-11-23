@@ -1,0 +1,107 @@
+import Link from 'next/link';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faTruck, faUserPen } from '@fortawesome/free-solid-svg-icons';
+import { leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
+import { partnerHref, sections } from './workspaceSections';
+
+const icons = {
+  grid: faBorderAll, orders: faClipboardList, products: faBox, transport: faTruck,
+  bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
+};
+const feedback = {
+  saved: 'رکورد ثبت شد.', removed: 'رکورد حذف شد.',
+  invalid: 'لطفاً اطلاعات فرم را بررسی کنید.', error: 'عملیات انجام نشد. دوباره تلاش کنید.',
+};
+const statuses = { pending: 'در انتظار بررسی', confirmed: 'تأیید شده', processing: 'در حال آماده‌سازی', shipped: 'ارسال شده' };
+const number = new Intl.NumberFormat('fa-IR');
+const date = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeZone: 'Asia/Tehran' });
+
+function Orders({ items }) {
+  if (!items.length) return <div className="partner-empty"><p>سفارش جاری ندارید.</p><Link href="/quick-order">ثبت سفارش</Link></div>;
+  return <ul className="partner-records">
+    {items.map(order => <li key={order._id}>
+      <div className="partner-record-heading">
+        <div><strong>سفارش <bdi title={order._id}>{order._id.slice(0, 12)}</bdi></strong><small>{date.format(new Date(order.createdAt))}</small></div>
+        <span className="partner-status">{statuses[order.status] || 'ثبت شده'}</span>
+      </div>
+      <ul>{order.items.map(item => <li key={item.productId}>{item.name} <span>× {number.format(item.quantity)}</span></li>)}</ul>
+      <strong>{number.format(order.total)} {order.currency === 'IRR' ? 'ریال' : order.currency}</strong>
+    </li>)}
+  </ul>;
+}
+
+function WorkspaceEntries({ section, items }) {
+  const { entry, placeholder, help } = sections[section];
+  const action = saveWorkspaceEntry.bind(null, section);
+  return <div className="partner-entry-layout">
+    <form className="partner-entry-form" action={action}>
+      <h3>ثبت {entry}</h3>
+      <p>{help}</p>
+      <label>عنوان<input name="title" maxLength={120} required /></label>
+      <label>جزئیات<textarea name="details" rows={4} maxLength={1000} placeholder={placeholder} required /></label>
+      <button className="partner-primary" type="submit">{section === 'bulletin' ? 'انتشار آگهی' : 'ثبت'}</button>
+    </form>
+    <div>
+      {!items.length ? <div className="partner-empty"><p>هنوز موردی در این بخش ثبت نشده است.</p></div> :
+        <ul className="partner-records">
+          {items.map(item => <li key={item.id}>
+            <div className="partner-record-heading">
+              <div><strong>{item.title}</strong><small>{date.format(new Date(item.createdAt))}</small></div>
+              {item.owned && <form action={action}>
+                <input type="hidden" name="id" value={item.id} />
+                <button className="partner-remove" aria-label={`حذف ${item.title}`}>حذف</button>
+              </form>}
+            </div>
+            <p>{item.details}</p>
+          </li>)}
+        </ul>}
+    </div>
+  </div>;
+}
+
+export default function PartnerDashboard({ profile, section, result, data, unavailable, page, children }) {
+  const info = sections[section];
+  const message = typeof result === 'string' && Object.hasOwn(feedback, result) ? feedback[result] : '';
+  return <div className="catalog-page partners-page partner-dashboard" dir="rtl">
+    <div className="catalog-wrap">
+      <div className="partner-dash-shell">
+        <aside className="partner-dash-sidebar">
+          <div className="partner-dash-identity">
+            <span className="partner-avatar" aria-hidden="true">{profile.fullName?.trim().slice(0, 1) || 'س'}</span>
+            <div><strong>{profile.fullName || 'همکار ساری‌چین'}</strong><small>حساب همکاری ساری‌چین</small></div>
+          </div>
+          <nav aria-label="منوی پنل همکاران">
+            {Object.entries(sections).map(([key, item]) => <Link key={key} href={partnerHref(key)}
+              aria-current={key === section ? 'page' : undefined} prefetch={false}>
+              <FontAwesomeIcon icon={icons[item.icon]} /><span>{item.label}</span>
+            </Link>)}
+          </nav>
+          <form action={leaveWorkspace}><button className="partner-secondary">خروج از حساب</button></form>
+        </aside>
+        <section className="partner-dash-content" aria-labelledby="partner-section-title">
+          <header className="partner-dash-heading">
+            <div><h1 id="partner-section-title">{info.label}</h1>
+              {section === 'overview' && <p>{profile.fullName ? `${profile.fullName}، خوش آمدید.` : 'به پنل همکاران خوش آمدید.'}</p>}
+            </div>
+          </header>
+          {message && <p className="partner-dash-feedback" role={result === 'error' || result === 'invalid' ? 'alert' : 'status'}>{message}</p>}
+          {section === 'overview' && <div className="partner-dash-grid">
+            {Object.entries(sections).filter(([key]) => key !== 'overview').map(([key, item]) => <Link key={key} href={partnerHref(key)} prefetch={false}>
+              <span><FontAwesomeIcon icon={icons[item.icon]} /></span>
+              <strong>{item.label}</strong><FontAwesomeIcon icon={faArrowLeft} />
+            </Link>)}
+          </div>}
+          {section === 'profile' && children}
+          {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
+          {data && (section === 'orders' ? <Orders items={data.items} /> : <WorkspaceEntries section={section} items={data.items} />)}
+          {data && (page > 1 || page * data.limit < data.total) &&
+            <nav className="partner-pagination" aria-label="صفحه‌بندی">
+              {page > 1 && <Link href={partnerHref(section) + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
+              <span>{number.format(page)}</span>
+              {page * data.limit < data.total && <Link href={partnerHref(section) + '&page=' + (page + 1)}>صفحهٔ بعد</Link>}
+            </nav>}
+        </section>
+      </div>
+    </div>
+  </div>;
+}

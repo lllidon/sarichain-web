@@ -108,7 +108,7 @@ function ProfileForm({ profile, onSaved, onExpired }) {
     const value = key => String(fields.get(key) ?? '').trim();
     const data = {
       ...Object.fromEntries(['fullName', 'email', 'organization', 'address', 'customerType', 'productionActivity', 'serviceArea']
-        .filter(key => fields.has(key)).map(key => [key, value(key)])),
+        .filter(key => fields.has(key) && (key !== 'customerType' || value(key))).map(key => [key, value(key)])),
       ...(fields.has('provinceCode') && { provinceCode: value('provinceCode'), cityCode: value('cityCode') }),
       producerType: producer,
       serviceTypes: selected,
@@ -137,7 +137,7 @@ function ProfileForm({ profile, onSaved, onExpired }) {
 
       <fieldset disabled={busy} className="partner-fields">
         <legend><FontAwesomeIcon icon={faBasketShopping} /> خرید</legend>
-        <label>نوع خرید<select name="customerType" defaultValue={profile.customerType || 'consumer'}><SelectOptions options={buyers} /></select></label>
+        <label>نوع خرید<select name="customerType" defaultValue={profile.customerType || ''}><option value="">انتخاب کنید</option><SelectOptions options={buyers} /></select></label>
         <Link href="/categories" className="partner-text-link">مشاهده محصولات</Link>
       </fieldset>
 
@@ -182,47 +182,39 @@ function ProfileForm({ profile, onSaved, onExpired }) {
   );
 }
 
-export default function PartnerProfile({ initialProfile = null, initialMessage = '' }) {
+export function PartnerProfileEditor({ initialProfile }) {
   const [profile, setProfile] = useState(initialProfile);
-  const [message, setMessage] = useState(initialMessage);
+  const [message, setMessage] = useState('');
   const [revision, setRevision] = useState(0);
-
-  async function logout() {
-    try {
-      await request('logout', { method: 'POST' });
+  return <>
+    {message && <p className="partner-message" role="status">{message}</p>}
+    {profile ? <ProfileForm key={revision} profile={profile} onExpired={() => {
       setProfile(null);
-      setMessage('');
-    } catch { setMessage('خروج انجام نشد. دوباره تلاش کنید.'); }
-  }
+      setMessage('نشست پایان یافته است. دوباره وارد شوید.');
+    }} onSaved={updated => {
+      setProfile(updated);
+      setRevision(value => value + 1);
+      setMessage('پروفایل ذخیره شد.');
+    }} /> : <Link href="/partners">ورود دوباره</Link>}
+  </>;
+}
 
+export default function PartnerProfile({ initialMessage = '' }) {
   return (
-    <div className="catalog-page partners-page">
+    <div className="catalog-page partners-page" dir="rtl">
       <div className="catalog-wrap">
-        <nav className="catalog-breadcrumb" aria-label="مسیر صفحه"><Link href="/">صفحه اصلی</Link><span aria-hidden="true">/</span><span aria-current="page">فروشندگان و همکاران</span></nav>
+        <nav className="catalog-breadcrumb" aria-label="مسیر صفحه"><Link href="/">صفحه اصلی</Link><span aria-hidden="true">/</span><span aria-current="page">همکاران</span></nav>
         <header className="partner-header">
-          <div><h1>فروشندگان و همکاران ساری‌چین</h1>
-            <p>در یک حساب خرید کنید، محصول خودتان را عرضه کنید و برای ارائه خدمات درخواست بدهید.</p></div>
-          {profile && <button type="button" className="partner-secondary" onClick={logout}>خروج از حساب همکاری</button>}
+          <h1>پنل همکاران ساری‌چین</h1>
         </header>
-        {!profile ? (
-          <form className="partner-login" action="/web/login" method="post">
-            <h2>ورود به حساب همکاری</h2>
-            <label>شماره موبایل<input name="phone" type="tel" dir="ltr" autoComplete="username" maxLength={32} required /></label>
-            <label>رمز ورود<input name="password" type="password" dir="ltr" autoComplete="current-password" maxLength={128} required /></label>
-            <p>برای دریافت رمز ورود اولیه، با شعبه ساری‌چین هماهنگ کنید.</p>
-            {message && <p className="partner-error" role="alert">{message}</p>}
-            <button className="partner-primary" type="submit">ورود و تکمیل پروفایل</button>
-          </form>
-        ) : (
-          <>
-            {message && <p className="partner-message" role="status">{message}</p>}
-            <ProfileForm key={revision} profile={profile} onExpired={() => {
-              setProfile(null); setMessage('نشست پایان یافته است. دوباره وارد شوید.');
-            }} onSaved={updated => {
-              setProfile(updated); setRevision(value => value + 1); setMessage('پروفایل ذخیره شد.');
-            }} />
-          </>
-        )}
+        <form className="partner-login" action="/web/login" method="post">
+          <h2>ورود به حساب همکاری</h2>
+          <label>شماره موبایل<input name="phone" type="tel" dir="ltr" autoComplete="username" maxLength={32} required /></label>
+          <label>رمز ورود<input name="password" type="password" dir="ltr" autoComplete="current-password" maxLength={128} required /></label>
+          <p>برای دریافت رمز ورود اولیه، با شعبه ساری‌چین هماهنگ کنید.</p>
+          {initialMessage && <p className="partner-error" role="alert">{initialMessage}</p>}
+          <button className="partner-primary" type="submit">ورود به پنل</button>
+        </form>
       </div>
     </div>
   );
