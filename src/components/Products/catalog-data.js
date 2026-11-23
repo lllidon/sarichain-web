@@ -32,6 +32,8 @@ export const readCatalog = cache(async () => {
         orderable: true,
         isVariant: product.kind === 'variant',
         parentCode: parent?.code,
+        maxOrderQuantity: product.maxOrderQuantity ?? null,
+        familyMaxOrderQuantity: parent ? parent.maxOrderQuantity : product.maxOrderQuantity ?? null,
         options: product.options || [],
         physical: product.physical || parent?.physical || null,
         detail: detail || product.shortDescription || '', form: detail ? form : '',

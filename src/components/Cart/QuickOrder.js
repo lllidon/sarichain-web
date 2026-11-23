@@ -85,8 +85,8 @@ const QuickOrder = ({ initialCode = '' }) => {
     const existingItem = cartItems.find(item => item.code === product.code);
     
     if (existingItem) {
-      if (existingItem.quantity + 1 > 1000) {
-        alert('حداکثر تعداد مجاز ۱۰۰۰ واحد است.');
+      if (existingItem.quantity + 1 > (product.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER)) {
+        alert('تعداد از سقف خرید این محصول بیشتر است.');
         return;
       }
       setCartItems(cartItems.map(item =>
@@ -131,9 +131,10 @@ const QuickOrder = ({ initialCode = '' }) => {
   // تغییر تعداد محصول
   const updateQuantity = (code, newQuantity) => {
     if (newQuantity < 1) return;
-    const item = cartItems.find(i => i.code === code);
-    if (newQuantity > 1000) {
-      alert('حداکثر تعداد مجاز ۱۰۰۰ واحد است.');
+    const item = cartItems.find(item => item.code === code);
+    if (!item) return;
+    if (newQuantity > (item.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER) && newQuantity > item.quantity) {
+      alert('تعداد از سقف خرید این محصول بیشتر است.');
       return;
     }
     

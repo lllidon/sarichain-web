@@ -9,7 +9,7 @@ import { formatPrice, scalePrice, sumPrices } from '../Products/price';
 import { productHref, productImage, productPackages } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
 import { submitOrder } from '../Products/submitOrder';
-import { addCatalogItem, clearCatalogCart, removeOrderedItems, setCatalogQuantity, useCatalogCart } from './cartStore';
+import { addCatalogItem, catalogQuantityLimit, clearCatalogCart, removeOrderedItems, setCatalogQuantity, useCatalogCart } from './cartStore';
 import './cart.css';
 
 const number = new Intl.NumberFormat('fa-IR');
@@ -46,7 +46,7 @@ function CartLines({ items, busy, update, add }) {
                   <FontAwesomeIcon icon={faMinus} />
                 </button>
                 <output aria-live="polite">{number.format(quantity)}</output>
-                <button type="button" className="checkout-icon" disabled={busy || quantity >= 1000}
+                <button type="button" className="checkout-icon" disabled={busy || quantity >= item.maxQuantity}
                   aria-label={`افزایش تعداد ${pack.name} ${name}`} onClick={() => update(item, quantity + 1)}>
                   <FontAwesomeIcon icon={faPlus} />
                 </button>
@@ -141,11 +141,14 @@ export default function CartPage() {
     const product = purchasable.find(product => product.code === item.code && product.orderable);
     const packs = product ? productPackages(product) : [];
     const pack = packs.find(option => option.id === item.unitId);
-    const availableUnits = packs.filter(option => !cart.some(line => line.code === item.code && line.unitId === option.id));
-    return { ...item, product, pack, availableUnits };
+    const availableUnits = packs.filter(option => !cart.some(line => line.code === item.code && line.unitId === option.id) &&
+      catalogQuantityLimit(cart, product, option, catalog) >= 1);
+    const maxQuantity = pack ? catalogQuantityLimit(cart, product, pack, catalog) : 0;
+    return { ...item, product, pack, availableUnits, maxQuantity };
   });
   const subtotal = sumPrices(items.map(item => scalePrice(item.pack?.price, item.quantity)));
   const containsInactive = items.some(item => !item.pack);
+  const exceedsLimit = items.some(item => item.pack && item.quantity > item.maxQuantity);
   const selected = options?.find(option => option.id === method) ?? options?.[0];
   const window = selected?.windows.find(item => item.dispatchDate === requestedDate) ?? selected?.windows[0];
   const date = window?.dispatchDate;
@@ -153,15 +156,15 @@ export default function CartPage() {
   const total = selected ? sumPrices([subtotal, cost(selected.fee)]) : subtotal;
 
   function update(item, quantity) {
-    setMessage(setCatalogQuantity(item, quantity, item.product) ? '' : 'این تعداد برای محصول قابل سفارش نیست.');
+    setMessage(setCatalogQuantity(item, quantity, item.product, catalog) ? '' : 'این تعداد برای محصول قابل سفارش نیست.');
   }
 
   function add(product, unit) {
-    setMessage(addCatalogItem(product, unit) ? '' : 'این تعداد برای محصول قابل سفارش نیست.');
+    setMessage(addCatalogItem(product, unit, catalog) ? '' : 'این تعداد برای محصول قابل سفارش نیست.');
   }
 
   async function checkout() {
-    if (busy || containsInactive || !items.length || !selected || !date || !slot) return;
+    if (busy || containsInactive || exceedsLimit || !items.length || !selected || !date || !slot) return;
     setBusy(true);
     setMessage('');
     setLoginNeeded(false);
@@ -216,9 +219,10 @@ export default function CartPage() {
           <div className="checkout-grand"><dt>جمع برآوردی</dt><dd>{selected ? formatPrice(total) : '—'}</dd></div>
         </dl>
         {window && <p className="checkout-date-note"><strong>تحویل برآوردی</strong><span>{showDate(window.deliveryDate)}</span></p>}
+        {exceedsLimit && <p className="checkout-warning">تعداد بعضی اقلام بیشتر از سقف مجاز است. تعداد را کاهش دهید.</p>}
         {containsInactive && <p className="checkout-warning">برای ادامه، اقلام ناموجود را از سبد حذف کنید.</p>}
         {loginNeeded ? <Link className="checkout-submit" href="/partners">ورود به حساب برای ثبت سفارش</Link> :
-          <button type="button" className="checkout-submit" disabled={busy || containsInactive || !selected || confirmClear} onClick={checkout}>
+          <button type="button" className="checkout-submit" disabled={busy || containsInactive || exceedsLimit || !selected || confirmClear} onClick={checkout}>
             {busy ? 'در حال ثبت…' : 'ثبت درخواست سفارش'}<FontAwesomeIcon icon={faArrowLeft} />
           </button>}
       </aside>

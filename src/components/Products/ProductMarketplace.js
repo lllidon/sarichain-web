@@ -123,7 +123,6 @@ function PurchaseCard({ seller, product, selected, delivery }) {
     <div className="product-buy-action">
       <p>{selected.id === product.id ? 'محصول اصلی' : variantLabel(selected)}</p>
       <ProductPurchase key={selected.id} product={selected} className="product-purchase" chooseUnit />
-      <Link href="/cart" className="product-cart-link">مشاهدهٔ سبد خرید</Link>
       <details className="product-price-history">
         <summary>سابقهٔ قیمت ۳۰ روزه <span className="product-example">نمونه</span></summary>
         <p>بازهٔ نمونه {formatPrice({ min: 3, max: 4.5 })}</p>
@@ -159,7 +158,6 @@ export default function ProductMarketplace({ product, category, categoryHref, de
 
   return <div className="product-marketplace">
     <article className="product-overview" aria-labelledby="product-title">
-      <PurchaseCard seller={seller} product={product} selected={selected} delivery={delivery} />
       <ProductGallery product={galleryProduct} key={galleryProduct.id} showTab={setTab} />
       <section className="product-overview-info">
         <Link className="product-category" href={categoryHref}>{category.name}</Link>
@@ -183,6 +181,7 @@ export default function ProductMarketplace({ product, category, categoryHref, de
             <div key={unit.id}><dt>واحد فرعی</dt><dd>{unit.name} <small>{unit.amount.toLocaleString('fa-IR')} {selected.unit} در هر {unit.name}</small></dd></div>)}
         </dl>
       </section>
+      <PurchaseCard seller={seller} product={product} selected={selected} delivery={delivery} />
     </article>
     <nav className="market-section-nav" aria-label="بخش‌های صفحه محصول">
       <button id="product-about-tab" type="button" aria-pressed={tab === 'about'} aria-controls="product-about" onClick={() => setTab('about')}>معرفی</button>

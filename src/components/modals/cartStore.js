@@ -19,8 +19,8 @@ function getCart() {
       const id = JSON.stringify([item.code, packId]);
       const existing = lines.find(line => line.id === id);
       const quantity = item.unitId ? item.quantity : item.amount * item.quantity;
-      if (existing) existing.quantity = Math.min(1000, existing.quantity + quantity);
-      else lines.push({ ...item, id, unitId: packId, packId, amount: item.unitId ? item.amount : 1, quantity: Math.min(1000, quantity) });
+      if (existing) existing.quantity = Math.min(Number.MAX_SAFE_INTEGER, existing.quantity + quantity);
+      else lines.push({ ...item, id, unitId: packId, packId, amount: item.unitId ? item.amount : 1, quantity: Math.min(Number.MAX_SAFE_INTEGER, quantity) });
       return lines;
     }, []) : empty;
   } catch {
@@ -63,7 +63,27 @@ export function useCatalogCart() {
   return useSyncExternalStore(subscribe, getCart, () => empty);
 }
 
-export function addCatalogItem(product, pack) {
+export function catalogQuantityLimit(items, product, pack, catalog) {
+  const familyCode = product.parentCode ?? product.code;
+  const family = catalog.find(item => item.code === familyCode);
+  const products = family ? [family, ...family.variants] : [product];
+  let used = 0;
+  let familyUsed = 0;
+  for (const line of items) {
+    if (line.code === product.code && line.packId === pack.id) continue;
+    const match = products.find(item => item.code === line.code);
+    if (!match) continue;
+    const units = productPackages(match).find(option => option.id === line.packId)?.amount ?? 0;
+    const quantity = units * line.quantity;
+    familyUsed += quantity;
+    if (match.code === product.code) used += quantity;
+  }
+  const skuRemaining = (product.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER) - used;
+  const familyRemaining = (product.familyMaxOrderQuantity ?? Number.MAX_SAFE_INTEGER) - familyUsed;
+  return Math.max(0, Math.floor(Math.min(skuRemaining, familyRemaining) / pack.amount));
+}
+
+export function addCatalogItem(product, pack, catalog) {
   const items = getCart();
   const id = JSON.stringify([product.code, pack.id]);
   const existing = items.find(item => item.id === id);
@@ -74,10 +94,10 @@ export function addCatalogItem(product, pack) {
     unitId: pack.id,
     quantity: (existing?.quantity ?? 0) + 1,
   };
-  return updateCatalogItem(items, line, product);
+  return updateCatalogItem(items, line, product, catalog);
 }
 
-function updateCatalogItem(items, line, product) {
+function updateCatalogItem(items, line, product, catalog) {
   const others = items.filter(item => item.id !== line.id);
   if (line.quantity === 0) {
     saveCart(others);
@@ -86,12 +106,9 @@ function updateCatalogItem(items, line, product) {
   const pack = product && productPackages(product).find(pack => pack.id === line.packId);
   if (!pack || !product.orderable) return false;
   if (line.sellerId) return false;
-  const used = others.filter(item => item.code === line.code)
-    .reduce((total, item) => {
-      const current = productPackages(product).find(option => option.id === item.packId);
-      return total + (current?.amount ?? 0) * item.quantity;
-    }, 0);
-  if (used + pack.amount * line.quantity > 1000) return false;
+  const existing = items.find(item => item.id === line.id);
+  if (!Number.isSafeInteger(line.quantity) || line.quantity < 1 ||
+      (line.quantity > (existing?.quantity ?? 0) && line.quantity > catalogQuantityLimit(items, product, pack, catalog))) return false;
 
   const updated = {
     ...line,
@@ -102,14 +119,14 @@ function updateCatalogItem(items, line, product) {
     unit: product.unit,
     packName: pack.name,
   };
-  saveCart(items.some(item => item.id === line.id)
+  saveCart(existing
     ? items.map(item => item.id === line.id ? updated : item)
     : [...items, updated]);
   return true;
 }
 
-export function setCatalogQuantity(item, quantity, product) {
-  return updateCatalogItem(getCart(), { ...item, quantity }, product);
+export function setCatalogQuantity(item, quantity, product, catalog) {
+  return updateCatalogItem(getCart(), { ...item, quantity }, product, catalog);
 }
 
 export function removeOrderedItems(ordered) {
