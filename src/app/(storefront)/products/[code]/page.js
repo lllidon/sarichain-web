@@ -2,38 +2,35 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductMarketplace from '../../../../components/Products/ProductMarketplace';
-import { catalog, categories, productHref, productImage, productPackages } from '../../../../components/Products/catalog';
+import { readCatalog } from '../../../../components/Products/catalog-data';
+import { productHref, productImage, productPackages } from '../../../../components/Products/catalog';
 import '../../../../components/Products/CategoriesPage.css';
 import '../../../../components/Products/ProductDetails.css';
 
 const number = new Intl.NumberFormat('fa-IR');
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return catalog.map(({ code }) => ({ code }));
-}
-
-function findProduct(code) {
-  const product = catalog.find(product => product.code === code);
+async function findProduct(code) {
+  const data = await readCatalog();
+  const canonical = /^\d+$/.test(code) ? 'SC-' + code : code;
+  const product = data.catalog.find(product => product.code === canonical);
   if (!product) notFound();
-  return product;
+  return { ...data, product };
 }
 
 function describe(product) {
-  return `${product.name}، ${categories[product.category].name} ${product.form} با کاربرد ${product.detail}.`;
+  return product.description || product.detail || product.name;
 }
 
 export async function generateMetadata({ params }) {
-  const product = findProduct((await params).code);
+  const { product } = await findProduct((await params).code);
   return { title: product.name, description: describe(product) };
 }
 
 export default async function ProductPage({ params }) {
-  const product = findProduct((await params).code);
+  const { catalog, categories, product } = await findProduct((await params).code);
   const category = categories[product.category];
   const categoryHref = { pathname: '/categories', query: { category: product.category } };
-  const related = catalog.filter(item => item.category === product.category && item.code !== product.code && item.stock > 0).slice(0, 3);
+  const related = catalog.filter(item => item.category === product.category && item.code !== product.code && item.orderable).slice(0, 3);
 
   return (
     <div className="catalog-page product-details">

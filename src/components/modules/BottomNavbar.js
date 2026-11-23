@@ -14,11 +14,13 @@ import {
   faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import CartModal from '../modals/CartModal';
-import { categories } from '../Products/catalog';
+import SearchModal from '../modals/SearchModal';
+import { useCatalog } from '../Products/CatalogProvider';
 import { useCatalogCart } from '../modals/cartStore';
 import './BottomNavbar.css';
 
 const BottomNavbar = () => {
+  const { categories } = useCatalog();
   const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const router = useRouter();
   const path = usePathname();
@@ -55,11 +57,7 @@ const BottomNavbar = () => {
         setShowSearchModal(true);
         break;
       case 'profile':
-        if (isLoggedIn) {
-          router.push('/profile');
-        } else {
-          router.push('/login');
-        }
+        router.push('/partners');
         break;
       default:
         break;
@@ -131,44 +129,7 @@ const BottomNavbar = () => {
       </div>
 
       {/* مودال جستجو */}
-      {showSearchModal && (
-        <div className="mobile-modal-overlay" onClick={() => setShowSearchModal(false)}>
-          <div className="mobile-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="mobile-modal-header">
-              <h3>جستجوی محصولات</h3>
-              <button onClick={() => setShowSearchModal(false)}>
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            <div className="mobile-modal-body">
-              <input 
-                type="text" 
-                placeholder="نام محصول را جستجو کنید..." 
-                className="mobile-search-input"
-                autoFocus
-              />
-              <div className="mobile-search-results">
-                <div className="search-suggestion-item">
-                  <FontAwesomeIcon icon={faSearch} className="suggestion-icon" />
-                  بیو بوست
-                </div>
-                <div className="search-suggestion-item">
-                  <FontAwesomeIcon icon={faSearch} className="suggestion-icon" />
-                  روت مکس
-                </div>
-                <div className="search-suggestion-item">
-                  <FontAwesomeIcon icon={faSearch} className="suggestion-icon" />
-                  فرایت پرو
-                </div>
-                <div className="search-suggestion-item">
-                  <FontAwesomeIcon icon={faSearch} className="suggestion-icon" />
-                  ویتا گرین
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <SearchModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
 
       <CartModal isOpen={showCartModal} onClose={() => setShowCartModal(false)} />
 

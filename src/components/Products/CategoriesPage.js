@@ -5,22 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faMagnifyingGlass, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
-import { catalog, categories, productImage, productPackages, productHref } from './catalog';
+import { useCatalog } from './CatalogProvider';
+import { productImage, productPackages, productHref } from './catalog';
 import ProductPurchase from './ProductPurchase';
 import './CategoriesPage.css';
 
-const products = catalog.filter(product => product.image).map(product => ({
-  ...product,
-  packages: productPackages(product),
-}));
-const packageOptions = new Map(products.flatMap(product => product.packages.map(pack => [pack.id, pack.name])));
 const pageSize = 12;
-const lowestPrice = Math.min(...products.map(product => product.price));
-const highestPrice = Math.max(...products.map(product => product.price));
-
-const pricePosition = value => 100 * (value - lowestPrice) / Math.max(1, highestPrice - lowestPrice);
-const withinPriceBounds = value => Math.min(highestPrice, Math.max(lowestPrice, value));
-const categoryOptions = [['all', 'همه محصولات'], ...Object.entries(categories).map(([id, category]) => [id, category.name])];
 const number = new Intl.NumberFormat('fa-IR');
 
 function normalize(value) {
@@ -31,7 +21,7 @@ function normalize(value) {
     .replace(/[\s\u200c-]+/g, '');
 }
 
-function CatalogCard({ product, onMessage }) {
+function CatalogCard({ product, categoryName, onMessage }) {
   const href = productHref(product);
 
   return (
@@ -40,10 +30,10 @@ function CatalogCard({ product, onMessage }) {
         <Link href={href} className="catalog-card-image-link">
           <Image src={productImage(product)} alt={product.name} width={152} height={152} unoptimized />
         </Link>
-        {product.stock === 0 && <span className="catalog-stock is-unavailable">ناموجود</span>}
+        {!product.orderable && <span className="catalog-stock is-unavailable">سفارش مستقیم غیرفعال</span>}
       </div>
       <ProductPurchase product={product} className="catalog-card-info" onMessage={onMessage}>
-        <p className="catalog-card-category">{categories[product.category].name} · {product.form}</p>
+        <p className="catalog-card-category">{[categoryName, product.brand, product.form].filter(Boolean).join(' · ')}</p>
         <h3><Link href={href}>{product.name}</Link></h3>
         <p className="catalog-card-detail">{product.detail}</p>
       </ProductPurchase>
@@ -52,6 +42,19 @@ function CatalogCard({ product, onMessage }) {
 }
 
 export default function CategoriesPage({ initialCategory = 'all', initialDetail = '' }) {
+  const { catalog, categories, brands, unavailable: backendUnavailable } = useCatalog();
+  const [brand, setBrand] = useState('');
+  const products = catalog.map(product => ({
+    ...product,
+    packages: productPackages(product),
+  }));
+  const packageOptions = new Map(products.flatMap(product => product.packages.map(pack => [pack.id, pack.name])));
+  const lowestPrice = products.length ? Math.min(...products.map(product => product.price ?? 0)) : 0;
+  const highestPrice = Math.max(0, ...products.map(product => product.price ?? 0));
+
+  const pricePosition = value => 100 * (value - lowestPrice) / Math.max(1, highestPrice - lowestPrice);
+  const withinPriceBounds = value => Math.min(highestPrice, Math.max(lowestPrice, value));
+  const categoryOptions = [['all', 'همه محصولات'], ...Object.entries(categories).map(([id, category]) => [id, category.name])];
   const [category, setCategory] = useState(initialCategory);
   const [query, setQuery] = useState('');
   const [unavailable, setUnavailable] = useState(false);
@@ -66,11 +69,18 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   const [sort, setSort] = useState('default');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const categoryProducts = products.filter(product => category === 'all' || product.category === category);
+  const matchesCategory = id => {
+    for (let level = 0; id && level < 3; level++, id = categories[id]?.parentId) {
+      if (id === category) return true;
+    }
+    return false;
+  };
+  const categoryProducts = products.filter(product => category === 'all' || matchesCategory(product.category));
   const details = [...new Set(categoryProducts.map(product => product.detail))];
   const search = normalize(query);
   const results = categoryProducts.filter(product =>
-    (unavailable ? product.stock === 0 : product.stock > 0) &&
+    (!unavailable || !product.orderable) &&
+    (!brand || product.brandId === brand) &&
     (!packaging || product.packages.some(pack => pack.id === packaging)) &&
     (!minimum || product.price >= Number(minimum)) &&
     (!maximum || product.price <= Number(maximum)) &&
@@ -106,6 +116,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
     chooseCategory('all');
     setQuery('');
     setUnavailable(false);
+    setBrand('');
     setPackaging('');
     setMinimum('');
     setMaximum('');
@@ -151,6 +162,13 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
                 <button type="button" onClick={reset}>پاک کردن</button>
               </div>
 
+              <div className="catalog-filter-group catalog-detail">
+                <label htmlFor="catalog-brand">برند</label>
+                <select id="catalog-brand" value={brand} onChange={event => changeFilter(setBrand, event.target.value)}>
+                  <option value="">همه برندها</option>
+                  {brands.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}
+                </select>
+              </div>
               <fieldset className="catalog-filter-group">
                 <legend>دسته‌بندی</legend>
                 {categoryOptions.map(([id, label]) => (
@@ -215,10 +233,10 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
                 <legend>وضعیت کالا</legend>
                 <label className="catalog-status-option">
                   <span className={unavailable ? 'catalog-status-text is-unavailable' : 'catalog-status-text'}>
-                    {unavailable ? 'ناموجود' : 'موجود'}
+                    {unavailable ? 'بدون سفارش مستقیم' : 'همه محصولات'}
                   </span>
                   <input type="checkbox" role="switch" className="catalog-switch"
-                    aria-label="نمایش کالاهای ناموجود" checked={unavailable}
+                    aria-label="نمایش کالاهای بدون سفارش مستقیم" checked={unavailable}
                     onChange={event => changeFilter(setUnavailable, event.target.checked)} />
                 </label>
               </fieldset>
@@ -226,6 +244,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
           </aside>
 
           <div className="catalog-results">
+            {backendUnavailable && <p role="alert">ارتباط با کاتالوگ بک‌اند برقرار نشد.</p>}
             <div className="catalog-toolbar">
               <label className="catalog-search">
                 <FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -250,7 +269,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
             {results.length > 0 ? (
               <ul className="catalog-grid">
                 {visibleProducts.map(product => (
-                  <CatalogCard key={product.id} product={product} onMessage={setMessage} />
+                  <CatalogCard key={product.id} categoryName={categories[product.category].name} product={product} onMessage={setMessage} />
                 ))}
               </ul>
             ) : (

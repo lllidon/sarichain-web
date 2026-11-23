@@ -1,12 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { setCatalogQuantity, useCatalogCart } from './cartStore';
+import { useCatalog } from '../Products/CatalogProvider';
+import { submitOrder } from '../Products/submitOrder';
+import { removeOrderedItems, setCatalogQuantity, useCatalogCart } from './cartStore';
 import './Modal.css';
 
 const number = new Intl.NumberFormat('fa-IR');
 
 export default function CartModal({ isOpen, onClose }) {
+  const { catalog } = useCatalog();
+  const [busy, setBusy] = useState(false);
+  const orderRequest = useRef(null);
   const cartItems = useCatalogCart();
   const [message, setMessage] = useState('');
   const dialog = useRef(null);
@@ -18,7 +23,32 @@ export default function CartModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   function update(item, quantity) {
-    setMessage(setCatalogQuantity(item, quantity) ? '' : 'تعداد بیشتر از موجودی محصول است.');
+    setMessage(setCatalogQuantity(item, quantity, catalog.find(product => product.code === item.code)) ? '' : 'این مقدار برای محصول قابل سفارش نیست.');
+  }
+
+  async function checkout() {
+    if (busy) return;
+    const direct = cartItems.filter(item => !item.sellerId);
+    const quantities = new Map();
+    for (const item of direct) {
+      const product = catalog.find(product => product.code === item.code && product.orderable);
+      if (!product) {
+        setMessage('یکی از اقلام سبد در کاتالوگ فعال نیست.');
+        return;
+      }
+      quantities.set(product.id, (quantities.get(product.id) || 0) + item.quantity * item.amount);
+    }
+    if (!quantities.size) return;
+    setBusy(true);
+    try {
+      const result = await submitOrder(Array.from(quantities, ([productId, quantity]) => ({ productId, quantity })), orderRequest);
+      removeOrderedItems(direct.map(item => item.id));
+      setMessage('درخواست ثبت شد. کد پیگیری ' + result.id);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -30,6 +60,7 @@ export default function CartModal({ isOpen, onClose }) {
         <button type="button" className="modal-close" aria-label="بستن سبد خرید" onClick={() => dialog.current.close()}>×</button>
       </div>
 
+      {message && <p role="status">{message}</p>}
       {cartItems.length === 0 ? (
         <div className="empty-cart">
           <p>سبد خرید شما خالی است.</p>
@@ -60,7 +91,8 @@ export default function CartModal({ isOpen, onClose }) {
             ))}
           </div>
           <div className="cart-summary">
-            {message && <p role="status">{message}</p>}
+            {cartItems.some(item => item.sellerId) && <p>پیشنهادهای آزمایشی فروشندگان در سفارش ثبت نمی‌شوند.</p>}
+            <button type="button" className="continue-shopping" disabled={busy || !cartItems.some(item => !item.sellerId)} onClick={checkout}>ثبت سفارش</button>
             <div className="summary-row total">
               <span>جمع کالاها</span>
               <span className="total-amount">{number.format(total)} تومان</span>

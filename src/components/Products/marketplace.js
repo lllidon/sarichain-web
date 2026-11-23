@@ -19,7 +19,7 @@ const sellers = [
 export function marketplaceOffer(product, sellerId, qualityId) {
   const seller = sellers.find(seller => seller.id === sellerId);
   const quality = qualities.find(quality => quality.id === qualityId);
-  if (!product.stock || !seller || !quality || !seller.qualities.includes(qualityId)) return null;
+  if (!product.orderable || !seller || !quality || !seller.qualities.includes(qualityId)) return null;
 
   return {
     sellerId,

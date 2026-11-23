@@ -564,3 +564,17 @@
 }
 
 @media (max-width: 540px) { .nav-products-heading { flex-wrap: wrap; } }
+
+.partner-link {
+  display: inline-flex;
+  align-items: center;
+  padding: .35rem .85rem;
+  border-radius: 999px;
+  border: 1px solid #1d6552;
+  color: #144737;
+  background: #e9f3e9;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.partner-link:hover, .partner-link:focus-visible { background: #d3e9d7; }

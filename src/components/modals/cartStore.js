@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { catalog, productImage, productPackages } from '../Products/catalog';
+import { productImage, productPackages } from '../Products/catalog';
 import { marketplaceOffer } from '../Products/marketplace';
 
 const storageKey = 'sarichain-catalog-cart';
@@ -66,26 +66,26 @@ export function addCatalogItem(product, pack, offer) {
     ...(offer && { sellerId: offer.sellerId, qualityId: offer.qualityId }),
     quantity: (existing?.quantity ?? 0) + 1,
   };
-  return updateCatalogItem(items, line);
+  return updateCatalogItem(items, line, product);
 }
 
-function updateCatalogItem(items, line) {
+function updateCatalogItem(items, line, product) {
   const others = items.filter(item => item.id !== line.id);
   if (line.quantity === 0) {
     saveCart(others);
     return true;
   }
-  const product = catalog.find(product => product.code === line.code);
   const pack = product && productPackages(product).find(pack => pack.id === line.packId);
-  if (!pack) return false;
+  if (!pack || !product.orderable) return false;
   const offer = line.sellerId ? marketplaceOffer(product, line.sellerId, line.qualityId) : null;
   if (line.sellerId && !offer) return false;
   const used = others.filter(item => item.code === line.code)
     .reduce((total, item) => total + item.amount * item.quantity, 0);
-  if (used + pack.amount * line.quantity > product.stock) return false;
+  if (used + pack.amount * line.quantity > 1000) return false;
 
   const updated = {
     ...line,
+    productId: product.id,
     name: product.name,
     image: productImage(product),
     price: offer ? offer.unitPrice * pack.amount : pack.price,
@@ -100,6 +100,10 @@ function updateCatalogItem(items, line) {
   return true;
 }
 
-export function setCatalogQuantity(item, quantity) {
-  return updateCatalogItem(getCart(), { ...item, quantity });
+export function setCatalogQuantity(item, quantity, product) {
+  return updateCatalogItem(getCart(), { ...item, quantity }, product);
+}
+
+export function removeOrderedItems(ids) {
+  saveCart(getCart().filter(item => !ids.includes(item.id)));
 }

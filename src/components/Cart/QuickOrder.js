@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -9,29 +9,25 @@ import {
   faMinus,
   faShoppingCart,
   faSave,
-  faPrint,
   faTimes,
-  faCheckCircle,
   faBarcode,
   faBox
 } from '@fortawesome/free-solid-svg-icons';
-import { catalog, categories, productImage } from '../Products/catalog';
+import { productImage } from '../Products/catalog';
+import { useCatalog } from '../Products/CatalogProvider';
+import { submitOrder } from '../Products/submitOrder';
 import './QuickOrder.css';
 
-const productsDatabase = catalog.map(product => ({
-  ...product,
-  category: categories[product.category].name,
-  image: productImage(product) ?? `https://placehold.co/100x100/2e7d32/white?text=${product.code}`,
-}));
-
 const QuickOrder = ({ initialCode = '' }) => {
+  const { catalog, categories, unavailable } = useCatalog();
+  const productsDatabase = useMemo(() => catalog.filter(product => product.orderable).map(product => ({
+    ...product, category: categories[product.category].name, image: productImage(product),
+  })), [catalog, categories]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const orderRequest = useRef(null);
   const [productCode, setProductCode] = useState(initialCode);
   const [cartItems, setCartItems] = useState([]);
-  const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    phone: '',
-    address: ''
-  });
   const [scanMode, setScanMode] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
@@ -71,7 +67,7 @@ const QuickOrder = ({ initialCode = '' }) => {
 
   // جستجوی محصول با کد دقیق
   const findProductByCode = (code) => {
-    return productsDatabase.find(product => product.code === code);
+    return productsDatabase.find(product => product.code.toLowerCase() === code.toLowerCase());
   };
 
   // انتخاب محصول از لیست جستجو
@@ -85,16 +81,11 @@ const QuickOrder = ({ initialCode = '' }) => {
 
   // افزودن به سبد خرید با محصول
   const addToCartByProduct = (product) => {
-    if (product.stock === 0) {
-      alert('این محصول ناموجود است');
-      return;
-    }
-
     const existingItem = cartItems.find(item => item.code === product.code);
     
     if (existingItem) {
-      if (existingItem.quantity + 1 > product.stock) {
-        alert(`موجودی انبار: ${product.stock} عدد`);
+      if (existingItem.quantity + 1 > 1000) {
+        alert('حداکثر تعداد مجاز ۱۰۰۰ واحد است.');
         return;
       }
       setCartItems(cartItems.map(item =>
@@ -141,8 +132,8 @@ const QuickOrder = ({ initialCode = '' }) => {
   const updateQuantity = (code, newQuantity) => {
     if (newQuantity < 1) return;
     const item = cartItems.find(i => i.code === code);
-    if (newQuantity > item.stock) {
-      alert(`موجودی انبار: ${item.stock} عدد`);
+    if (newQuantity > 1000) {
+      alert('حداکثر تعداد مجاز ۱۰۰۰ واحد است.');
       return;
     }
     
@@ -171,18 +162,19 @@ const QuickOrder = ({ initialCode = '' }) => {
   };
 
   // ثبت نهایی سفارش
-  const submitOrder = () => {
-    if (cartItems.length === 0) {
-      alert('سبد خرید خالی است');
-      return;
+  async function checkout() {
+    if (busy || !cartItems.length) return;
+    setBusy(true);
+    try {
+      const order = await submitOrder(cartItems.map(item => ({ productId: item.id, quantity: item.quantity })), orderRequest);
+      setCartItems([]);
+      setMessage('درخواست ثبت شد. کد پیگیری ' + order.id);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy(false);
     }
-    if (!customerInfo.name || !customerInfo.phone) {
-      alert('لطفاً اطلاعات مشتری را کامل کنید');
-      return;
-    }
-    
-    alert(`سفارش آزمایشی ثبت شد.\nمبلغ کل: ${formatPrice(calculateTotal())}`);
-  };
+  }
 
   // هندل کردن کلیدهای صفحه کلید برای نتایج جستجو
   const handleKeyDown = (e) => {
@@ -222,6 +214,8 @@ const QuickOrder = ({ initialCode = '' }) => {
   return (
     <div className="quick-order-page">
       <div className="quick-order-container">
+        {unavailable && <p role="alert">ارتباط با کاتالوگ برقرار نشد.</p>}
+        {message && <p role="status">{message}</p>}
         {/* Header */}
         <div className="order-header">
           <h1>
@@ -284,7 +278,6 @@ const QuickOrder = ({ initialCode = '' }) => {
                             <div className="result-info">
                               <span className="result-category">{product.category}</span>
                               <span className="result-unit">{product.unit}</span>
-                              <span className="result-stock">موجودی: {product.stock}</span>
                             </div>
                           </div>
                           <div className="result-price">
@@ -325,44 +318,6 @@ const QuickOrder = ({ initialCode = '' }) => {
               </div>
             </div>
           </div>
-
-          {/* بخش اطلاعات مشتری */}
-          {/*<div className="customer-section">
-            <div className="customer-card">
-              <h3>اطلاعات مشتری</h3>
-              <div className="customer-form">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>نام مشتری *</label>
-                    <input
-                      type="text"
-                      value={customerInfo.name}
-                      onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
-                      placeholder="نام و نام خانوادگی"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>شماره تماس *</label>
-                    <input
-                      type="tel"
-                      value={customerInfo.phone}
-                      onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
-                      placeholder="09123456789"
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>آدرس</label>
-                  <textarea
-                    value={customerInfo.address}
-                    onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}
-                    placeholder="آدرس کامل"
-                    rows="2"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>*/}
 
           {/* جدول سبد خرید */}
           <div className="cart-section">
@@ -460,7 +415,7 @@ const QuickOrder = ({ initialCode = '' }) => {
                       <FontAwesomeIcon icon={faTrash} />
                       پاک کردن سبد
                     </button>
-                    <button onClick={submitOrder} className="submit-btn">
+                    <button onClick={checkout} disabled={busy} className="submit-btn">
                       <FontAwesomeIcon icon={faSave} />
                       ثبت نهایی سفارش
                     </button>

@@ -14,7 +14,7 @@ const vehicles = { motorcycle: 'موتورسیکلت', car: 'خودرو', pickup
 const statuses = { pending: 'در انتظار بررسی', approved: 'تأییدشده', rejected: 'ردشده' };
 
 async function request(path, options = {}) {
-  const result = await fetch('/api/partners/' + path, {
+  const result = await fetch('/web/' + path, {
     method: options.method,
     signal: options.signal,
     cache: 'no-store',

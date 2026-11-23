@@ -77,6 +77,8 @@ const Navbar = () => {
           </a>
         </div>
 
+        <Link href="/partners" className="partner-link">همکاران</Link>
+
         {/* Mobile Menu Button */}
         <div className={`menu-icon `} >
           <Link href="/quick-order" className="login-link">

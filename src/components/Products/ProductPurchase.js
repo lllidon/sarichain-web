@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, useState } from 'react';
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBasketShopping } from '@fortawesome/free-solid-svg-icons';
 import { productPackages } from './catalog';
@@ -11,8 +11,6 @@ const number = new Intl.NumberFormat('fa-IR');
 export default function ProductPurchase({ product, className, children, onMessage, offer }) {
   const [packId, setPackId] = useState('');
   const [message, setMessage] = useState('');
-  const requestDialog = useRef(null);
-  const requestTitle = useId();
   const packages = productPackages(product);
   const pack = packages.find(option => option.id === packId);
   const unitPrice = offer?.unitPrice ?? product.price;
@@ -28,31 +26,20 @@ export default function ProductPurchase({ product, className, children, onMessag
     if (!pack) return;
     report(addCatalogItem(product, pack, offer)
       ? `${pack.name} ${product.name} به سبد خرید اضافه شد.`
-      : 'مقدار این بسته بیشتر از موجودی قابل خرید است.');
-  }
-
-  function confirmRequest(event) {
-    event.preventDefault();
-    try {
-      window.localStorage.setItem(`sarichain-preorder-${product.code}`, new Date().toISOString());
-      report(`درخواست آزمایشی سفارش ${product.name} در این مرورگر ثبت شد.`);
-    } catch {
-      report('ذخیره درخواست در این مرورگر امکان‌پذیر نیست.');
-    }
-    requestDialog.current.close();
+      : 'تعداد از حداکثر مجاز سفارش بیشتر است.');
   }
 
   return (
     <>
       <form className={className} onSubmit={addToCart}>
         {children}
-        {product.stock > 0 ? (
+        {product.orderable ? (
           <>
             <select className="catalog-package-choice" required value={packId}
               aria-label={`واحد خرید ${product.name}`} onChange={event => setPackId(event.target.value)}>
               <option value="">انتخاب واحد خرید</option>
               {packages.map(option => (
-                <option key={option.id} value={option.id} disabled={option.amount > product.stock}>
+                <option key={option.id} value={option.id}>
                   {option.name} {number.format(option.amount)} {product.unit}
                 </option>
               ))}
@@ -66,23 +53,12 @@ export default function ProductPurchase({ product, className, children, onMessag
             </button>
           </>
         ) : (
-          <button className="catalog-order catalog-request" type="button" onClick={() => requestDialog.current.showModal()}
-            aria-label={`ثبت سفارش ${product.name}`}>ثبت سفارش</button>
+          <div className="catalog-card-price">
+            {product.price === null ? 'قیمت اعلام نشده' : <strong>{number.format(product.price)} تومان</strong>}
+          </div>
         )}
       </form>
       {!onMessage && <div role="status" className={message ? 'catalog-feedback' : undefined}>{message}</div>}
-      {product.stock === 0 && (
-        <dialog ref={requestDialog} className="catalog-request-dialog" aria-labelledby={requestTitle}>
-          <form onSubmit={confirmRequest}>
-            <h2 id={requestTitle}>درخواست سفارش {product.name}</h2>
-            <p>این محصول ناموجود است. درخواست آزمایشی در همین مرورگر ذخیره می‌شود.</p>
-            <div>
-              <button type="button" onClick={() => requestDialog.current.close()}>انصراف</button>
-              <button type="submit">ثبت درخواست</button>
-            </div>
-          </form>
-        </dialog>
-      )}
     </>
   );
 }

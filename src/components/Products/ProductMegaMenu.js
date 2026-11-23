@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faChevronDown, faFlask, faLeaf, faSeedling, faWheatAwn } from '@fortawesome/free-solid-svg-icons';
-import { catalog, categories } from './catalog';
+import { useCatalog } from './CatalogProvider';
 
 const icons = {
   biostimulant: faLeaf,
@@ -14,6 +14,7 @@ const icons = {
 };
 
 export default function ProductMegaMenu() {
+  const { catalog, categories } = useCatalog();
   const menu = useRef(null);
 
   useEffect(() => {
@@ -58,13 +59,13 @@ export default function ProductMegaMenu() {
 
             <ul className="nav-products-grid">
               {Object.entries(categories).map(([id, category]) => {
-                const details = [...new Set(catalog.filter(product => product.category === id && product.stock > 0)
+                const details = [...new Set(catalog.filter(product => product.category === id && product.orderable)
                   .map(product => product.detail))].slice(0, 3);
                 return (
                   <li key={id}>
                     <Link className="nav-products-category" href={{ pathname: '/categories', query: { category: id } }}
                       onClick={closeMenu}>
-                      <FontAwesomeIcon icon={icons[id]} />
+                      <FontAwesomeIcon icon={icons[id] || faLeaf} />
                       {category.name}
                     </Link>
                     <ul>

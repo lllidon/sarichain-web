@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { catalog, productHref, productImage } from './Products/catalog';
+import { useCatalog } from './Products/CatalogProvider';
+import { productHref, productImage } from './Products/catalog';
 import './Products.css';
 
-const products = catalog.filter(product => product.stock > 0).slice(0, 5);
-
 const Products = () => {
+  const { catalog, unavailable } = useCatalog();
+  const products = catalog.filter(product => product.orderable).slice(0, 5);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -16,6 +17,7 @@ const Products = () => {
   // Get visible products (3 at a time)
   const getVisibleProducts = () => {
     const visible = [];
+    if (!products.length) return visible;
     for (let i = 0; i < 3; i++) {
       const index = (currentIndex + i) % products.length;
       visible.push(products[index]);
@@ -31,7 +33,7 @@ const Products = () => {
     let startTime;
     let animationFrame;
     
-    if (isAutoPlaying) {
+    if (isAutoPlaying && products.length > 1) {
       startTime = Date.now();
       setProgress(0);
       
@@ -92,6 +94,8 @@ const Products = () => {
   const radius = 20;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  if (!products.length) return <section className="products"><p>{unavailable ? 'کاتالوگ در دسترس نیست.' : 'محصولی برای نمایش وجود ندارد.'}</p></section>;
 
   return (
     <section className="products">

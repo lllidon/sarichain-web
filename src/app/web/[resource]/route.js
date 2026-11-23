@@ -3,10 +3,11 @@ import { NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 const cookieName = 'sarichain-member-session';
 const routes = {
-  login: { POST: '/marketplace/login' },
-  profile: { GET: '/marketplace/profile', PATCH: '/marketplace/profile' },
-  provinces: { GET: '/locations/provinces' },
-  cities: { GET: '/locations/cities' },
+  login: { POST: '/web/login' },
+  orders: { POST: '/web/orders' },
+  profile: { GET: '/web/profile', PATCH: '/web/profile' },
+  provinces: { GET: '/web/locations/provinces' },
+  cities: { GET: '/web/locations/cities' },
 };
 
 function response(data, status = 200) {
@@ -33,14 +34,15 @@ async function forward(request, { params }) {
 
   if (resource === 'logout' && method === 'POST') {
     const result = response({ ok: true });
-    result.cookies.delete({ name: cookieName, path: '/api/partners' });
+    result.cookies.delete({ name: cookieName, path: '/web' });
     return result;
   }
 
   const route = Object.hasOwn(routes, resource) && routes[resource][method];
   if (!route) return response({}, 404);
   const token = request.cookies.get(cookieName)?.value;
-  if (resource === 'profile' && !token) return response({}, 401);
+  const requiresSession = resource === 'profile' || resource === 'orders';
+  if (requiresSession && !token) return response({}, 401);
   if (method !== 'GET' && !request.headers.get('content-type')?.startsWith('application/json')) return response({}, 415);
   try {
     const upstream = new URL(route, process.env.BACKEND_URL || 'http://127.0.0.1:3001');
@@ -48,7 +50,7 @@ async function forward(request, { params }) {
     const result = await fetch(upstream, {
       method, cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10000),
       headers: {
-        ...(resource === 'profile' && { Authorization: `Bearer ${token}` }),
+        ...(requiresSession && { Authorization: `Bearer ${token}` }),
         ...(method !== 'GET' && { 'Content-Type': 'application/json' }),
       },
       ...(method !== 'GET' && { body: await request.text() }),
@@ -58,7 +60,7 @@ async function forward(request, { params }) {
       const session = response({ ok: true });
       session.cookies.set(cookieName, data.accessToken, {
         httpOnly: true, sameSite: 'lax', secure: (caller?.protocol ?? request.nextUrl.protocol) === 'https:',
-        path: '/api/partners', maxAge: data.expiresIn,
+        path: '/web', maxAge: data.expiresIn,
       });
       return session;
     }

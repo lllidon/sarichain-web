@@ -17,8 +17,8 @@ function ProductGallery({ product }) {
   const [message, setMessage] = useState('');
   const dialog = useRef(null);
   const favoriteKey = `sarichain-favorite-${product.code}`;
-  const gallery = [{ src: productImage(product), label: 'نمای روبه‌رو' }];
-  if (product.code === '1001') {
+  const gallery = [{ src: productImage({ ...product, image: product.fullImage || product.image }), label: 'نمای روبه‌رو' }];
+  if (product.code === 'SC-1001') {
     gallery.push(
       { src: '/img/catalog/bio-boost-angle.webp', label: 'نمای سه‌رخ' },
       { src: '/img/catalog/bio-boost-label.webp', label: 'نمای نزدیک برچسب' },
@@ -109,7 +109,7 @@ export default function ProductMarketplace({ product, category, categoryHref, de
           <h1 id="product-title">{product.name}</h1>
           <p className="product-code">کد کالا <bdi>{product.code}</bdi></p>
           <p className="product-description">{description}</p>
-          {product.stock > 0 && (
+          {product.orderable && (
             <fieldset className="market-quality">
               <legend>درجه کیفی محصول</legend>
               <div>
