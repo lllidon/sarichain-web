@@ -4,7 +4,18 @@ import { partnerBackend, partnerSessionCookie } from '../../../lib/partnerBacken
 
 export const metadata = { title: 'فروشندگان و همکاران ساری‌چین', robots: { index: false, follow: true } };
 
-export default async function PartnersPage() {
+const loginMessages = {
+  credentials: 'شماره موبایل یا رمز ورود صحیح نیست.',
+  'rate-limit': 'تعداد تلاش‌ها زیاد است. کمی بعد دوباره امتحان کنید.',
+  unavailable: 'ارتباط با سامانه برقرار نشد. دوباره تلاش کنید.',
+  rejected: 'درخواست ورود از این نشانی پذیرفته نشد. صفحه را دوباره باز کنید.',
+};
+
+export default async function PartnersPage({ searchParams }) {
+  const { login } = await searchParams;
+  if (typeof login === 'string' && Object.hasOwn(loginMessages, login)) {
+    return <PartnerProfile initialMessage={loginMessages[login]} />;
+  }
   const token = (await cookies()).get(partnerSessionCookie)?.value;
   if (!token) return <PartnerProfile />;
 

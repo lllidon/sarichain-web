@@ -40,3 +40,7 @@ npm start -- --hostname 0.0.0.0
 ```bash
 NEXT_DEV_ALLOWED_HOSTS=192.168.1.161 npm run dev -- --hostname 0.0.0.0
 ```
+
+حساب‌های نمونهٔ همکار با رمز کوتاه فقط وقتی فعال‌اند که بک‌اند توسعه با
+`SEED_MARKETPLACE_DEMO=true` و خارج از حالت `NODE_ENV=production` اجرا شود.
+اجرای نسخهٔ build شدهٔ سایت، تنظیمات فرایند جداگانهٔ بک‌اند را تغییر نمی‌دهد.

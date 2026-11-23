@@ -184,23 +184,8 @@ function ProfileForm({ profile, onSaved, onExpired }) {
 
 export default function PartnerProfile({ initialProfile = null, initialMessage = '' }) {
   const [profile, setProfile] = useState(initialProfile);
-  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(initialMessage);
   const [revision, setRevision] = useState(0);
-
-  async function login(event) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setBusy(true);
-    setMessage('');
-    try {
-      await request('login', { method: 'POST', body: { phone: String(form.get('phone')).trim(), password: form.get('password') } });
-      setProfile(await request('profile'));
-    } catch (error) {
-      setMessage(error.status === 401 || error.status === 400 ? 'شماره موبایل یا رمز ورود صحیح نیست.'
-        : error.status === 429 ? 'تعداد تلاش‌ها زیاد است. کمی بعد دوباره امتحان کنید.' : 'ارتباط با سامانه برقرار نشد.');
-    } finally { setBusy(false); }
-  }
 
   async function logout() {
     try {
@@ -220,13 +205,13 @@ export default function PartnerProfile({ initialProfile = null, initialMessage =
           {profile && <button type="button" className="partner-secondary" onClick={logout}>خروج از حساب همکاری</button>}
         </header>
         {!profile ? (
-          <form className="partner-login" onSubmit={login}>
+          <form className="partner-login" action="/web/login" method="post">
             <h2>ورود به حساب همکاری</h2>
-            <label>شماره موبایل<input name="phone" type="tel" dir="ltr" autoComplete="username" required /></label>
-            <label>رمز ورود<input name="password" type="password" dir="ltr" autoComplete="current-password" required /></label>
+            <label>شماره موبایل<input name="phone" type="tel" dir="ltr" autoComplete="username" maxLength={32} required /></label>
+            <label>رمز ورود<input name="password" type="password" dir="ltr" autoComplete="current-password" maxLength={128} required /></label>
             <p>برای دریافت رمز ورود اولیه، با شعبه ساری‌چین هماهنگ کنید.</p>
             {message && <p className="partner-error" role="alert">{message}</p>}
-            <button className="partner-primary" type="submit" disabled={busy}>{busy ? 'در حال ورود…' : 'ورود و تکمیل پروفایل'}</button>
+            <button className="partner-primary" type="submit">ورود و تکمیل پروفایل</button>
           </form>
         ) : (
           <>
