@@ -14,9 +14,10 @@ const vehicles = { motorcycle: 'موتورسیکلت', car: 'خودرو', pickup
 const statuses = { pending: 'در انتظار بررسی', approved: 'تأییدشده', rejected: 'ردشده' };
 
 async function request(path, options = {}) {
+  const timeout = AbortSignal.timeout(12000);
   const result = await fetch('/web/' + path, {
     method: options.method,
-    signal: options.signal,
+    signal: options.signal ? AbortSignal.any([options.signal, timeout]) : timeout,
     cache: 'no-store',
     ...(options.body && { body: JSON.stringify(options.body), headers: { 'Content-Type': 'application/json' } }),
   });
@@ -181,21 +182,11 @@ function ProfileForm({ profile, onSaved, onExpired }) {
   );
 }
 
-export default function PartnerProfile() {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function PartnerProfile({ initialProfile = null, initialMessage = '' }) {
+  const [profile, setProfile] = useState(initialProfile);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(initialMessage);
   const [revision, setRevision] = useState(0);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    request('profile', { signal: controller.signal })
-      .then(data => { if (!controller.signal.aborted) setProfile(data); })
-      .catch(error => { if (!controller.signal.aborted && error.status !== 401) setMessage('پروفایل دریافت نشد.'); })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
-  }, []);
 
   async function login(event) {
     event.preventDefault();
@@ -228,7 +219,7 @@ export default function PartnerProfile() {
             <p>در یک حساب خرید کنید، محصول خودتان را عرضه کنید و برای ارائه خدمات درخواست بدهید.</p></div>
           {profile && <button type="button" className="partner-secondary" onClick={logout}>خروج از حساب همکاری</button>}
         </header>
-        {loading ? <p className="partner-message" role="status">در حال دریافت پروفایل…</p> : !profile ? (
+        {!profile ? (
           <form className="partner-login" onSubmit={login}>
             <h2>ورود به حساب همکاری</h2>
             <label>شماره موبایل<input name="phone" type="tel" dir="ltr" autoComplete="username" required /></label>

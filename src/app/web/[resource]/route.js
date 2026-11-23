@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { partnerBackend, partnerSessionCookie } from '../../../lib/partnerBackend';
 
 export const runtime = 'nodejs';
-const cookieName = 'sarichain-member-session';
 const routes = {
   login: { POST: '/web/login' },
   orders: { POST: '/web/orders' },
@@ -34,34 +34,32 @@ async function forward(request, { params }) {
 
   if (resource === 'logout' && method === 'POST') {
     const result = response({ ok: true });
-    result.cookies.delete({ name: cookieName, path: '/web' });
+    const expired = [`/web`, `/`].map(path =>
+      `${partnerSessionCookie}=; Path=${path}; Max-Age=0; HttpOnly; SameSite=Lax`);
+    for (const cookie of expired) result.headers.append('Set-Cookie', cookie);
     return result;
   }
 
   const route = Object.hasOwn(routes, resource) && routes[resource][method];
   if (!route) return response({}, 404);
-  const token = request.cookies.get(cookieName)?.value;
+  const token = request.cookies.get(partnerSessionCookie)?.value;
   const requiresSession = resource === 'profile' || resource === 'orders';
   if (requiresSession && !token) return response({}, 401);
   if (method !== 'GET' && !request.headers.get('content-type')?.startsWith('application/json')) return response({}, 415);
   try {
-    const upstream = new URL(route, process.env.BACKEND_URL || 'http://127.0.0.1:3001');
-    upstream.search = request.nextUrl.search;
-    const result = await fetch(upstream, {
-      method, cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10000),
-      headers: {
-        ...(requiresSession && { Authorization: `Bearer ${token}` }),
-        ...(method !== 'GET' && { 'Content-Type': 'application/json' }),
-      },
-      ...(method !== 'GET' && { body: await request.text() }),
+    const result = await partnerBackend(route, {
+      method, query: request.nextUrl.search,
+      token: requiresSession ? token : undefined,
+      body: method === 'GET' ? undefined : await request.text(),
     });
     const data = await result.json();
     if (resource === 'login' && result.ok) {
       const session = response({ ok: true });
-      session.cookies.set(cookieName, data.accessToken, {
+      session.cookies.set(partnerSessionCookie, data.accessToken, {
         httpOnly: true, sameSite: 'lax', secure: (caller?.protocol ?? request.nextUrl.protocol) === 'https:',
-        path: '/web', maxAge: data.expiresIn,
+        path: '/', maxAge: data.expiresIn,
       });
+      session.headers.append('Set-Cookie', `${partnerSessionCookie}=; Path=/web; Max-Age=0; HttpOnly; SameSite=Lax`);
       return session;
     }
     return response(data, result.status);
