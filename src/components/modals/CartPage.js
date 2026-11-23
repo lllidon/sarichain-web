@@ -4,13 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBasketShopping, faCalendarDays, faMinus, faPlus, faTrash, faTruck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faBasketShopping, faCalendarDays, faMinus, faPlus, faTrash, faTruck } from '@fortawesome/free-solid-svg-icons';
 import { formatPrice, scalePrice, sumPrices } from '../Products/price';
 import { productHref, productImage, productPackages } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
 import { submitOrder } from '../Products/submitOrder';
 import { addCatalogItem, clearCatalogCart, removeOrderedItems, setCatalogQuantity, useCatalogCart } from './cartStore';
-import './Modal.css';
 import './cart.css';
 
 const number = new Intl.NumberFormat('fa-IR');
@@ -103,11 +102,10 @@ function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, 
   </div>;
 }
 
-export default function CartModal({ isOpen, onClose }) {
+export default function CartPage() {
   const { catalog } = useCatalog();
   const cart = useCatalogCart();
   const orderRequest = useRef(null);
-  const dialog = useRef(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [loginNeeded, setLoginNeeded] = useState(false);
@@ -119,13 +117,9 @@ export default function CartModal({ isOpen, onClose }) {
   const [requestedDate, setDate] = useState('');
   const [requestedSlot, setSlot] = useState('');
 
-  useEffect(() => {
-    if (isOpen && !dialog.current.open) dialog.current.showModal();
-  }, [isOpen]);
-
   const hasItems = cart.length > 0;
   useEffect(() => {
-    if (!isOpen || !hasItems) return;
+    if (!hasItems) return;
     const controller = new AbortController();
     setOptions(null);
     setFailed(false);
@@ -140,12 +134,11 @@ export default function CartModal({ isOpen, onClose }) {
       })
       .catch(() => { if (!controller.signal.aborted) setFailed(true); });
     return () => controller.abort();
-  }, [isOpen, hasItems, revision]);
+  }, [hasItems, revision]);
 
-  if (!isOpen) return null;
-
+  const purchasable = catalog.flatMap(product => [product, ...product.variants]);
   const items = cart.map(item => {
-    const product = catalog.find(product => product.code === item.code && product.orderable);
+    const product = purchasable.find(product => product.code === item.code && product.orderable);
     const packs = product ? productPackages(product) : [];
     const pack = packs.find(option => option.id === item.unitId);
     const availableUnits = packs.filter(option => !cart.some(line => line.code === item.code && line.unitId === option.id));
@@ -165,13 +158,6 @@ export default function CartModal({ isOpen, onClose }) {
 
   function add(product, unit) {
     setMessage(addCatalogItem(product, unit) ? '' : 'این تعداد برای محصول قابل سفارش نیست.');
-  }
-
-  function close() {
-    setMessage('');
-    setLoginNeeded(false);
-    setConfirmClear(false);
-    onClose();
   }
 
   async function checkout() {
@@ -194,15 +180,12 @@ export default function CartModal({ isOpen, onClose }) {
     }
   }
 
-  return <dialog ref={dialog} className="checkout-dialog" aria-labelledby="checkout-title" dir="rtl"
-    onCancel={event => { if (busy) event.preventDefault(); }} onClose={close}>
+  return <div className="checkout-page" dir="rtl">
     <header className="checkout-header">
-      <div><FontAwesomeIcon icon={faBasketShopping} /><h2 id="checkout-title">سبد خرید</h2>
+      <div><FontAwesomeIcon icon={faBasketShopping} /><h1 id="checkout-title">سبد خرید</h1>
         {hasItems && <span>{number.format(cart.length)} قلم</span>}
       </div>
-      <button type="button" className="checkout-icon" aria-label="بستن سبد خرید" disabled={busy} onClick={() => dialog.current.close()}>
-        <FontAwesomeIcon icon={faXmark} />
-      </button>
+      <Link className="checkout-continue" href="/categories">ادامهٔ خرید <FontAwesomeIcon icon={faArrowLeft} /></Link>
     </header>
     {message && <p className="checkout-message" role="status">{message}</p>}
     {hasItems ? <div className="checkout-grid">
@@ -242,7 +225,7 @@ export default function CartModal({ isOpen, onClose }) {
     </div> : <div className="checkout-empty">
       <FontAwesomeIcon icon={faBasketShopping} />
       <h3>سبد خرید شما خالی است</h3>
-      <button type="button" className="checkout-submit" onClick={() => dialog.current.close()}>ادامهٔ خرید</button>
+      <Link className="checkout-submit" href="/categories">مشاهدهٔ محصولات</Link>
     </div>}
-  </dialog>;
+  </div>;
 }

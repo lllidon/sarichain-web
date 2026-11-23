@@ -13,7 +13,6 @@ import {
   faThLarge,
   faTimes
 } from '@fortawesome/free-solid-svg-icons';
-import CartModal from '../modals/CartModal';
 import SearchModal from '../modals/SearchModal';
 import { useCatalog } from '../Products/CatalogProvider';
 import { useCatalogCart } from '../modals/cartStore';
@@ -27,7 +26,6 @@ const BottomNavbar = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [showCartModal, setShowCartModal] = useState(false);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
 
   useEffect(() => {
@@ -36,6 +34,7 @@ const BottomNavbar = () => {
     
     // تعیین تب فعال بر اساس مسیر فعلی
     if (path === '/') setActiveTab('home');
+    else if (path === '/cart') setActiveTab('cart');
     else if (path === '/categories') setActiveTab('categories');
     else if (path === '/profile') setActiveTab('profile');
   }, [path]);
@@ -49,9 +48,6 @@ const BottomNavbar = () => {
         break;
       case 'categories':
         setShowCategoriesModal(true);
-        break;
-      case 'cart':
-        setShowCartModal(true);
         break;
       case 'search':
         setShowSearchModal(true);
@@ -91,16 +87,15 @@ const BottomNavbar = () => {
           </button>
 
           {/* سبد خرید */}
-          <button type="button" aria-label="سبد خرید"
+          <Link href="/cart" aria-current={path === '/cart' ? 'page' : undefined} aria-label={cartCount ? `سبد خرید، ${cartCount.toLocaleString('fa-IR')} کالا` : 'سبد خرید'}
             className={`bottom-nav-item ${activeTab === 'cart' ? 'active' : ''}`}
-            onClick={() => handleTabClick('cart')}
           >
             <span className="nav-icon cart-icon-wrapper">
               <FontAwesomeIcon icon={faShoppingCart} />
               {cartCount > 0 && <span className="cart-badge-mobile">{cartCount.toLocaleString('fa-IR')}</span>}
             </span>
             <span className="nav-label">سبد خرید</span>
-          </button>
+          </Link>
 
           {/* جستجو */}
           <div 
@@ -131,7 +126,6 @@ const BottomNavbar = () => {
       {/* مودال جستجو */}
       <SearchModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
 
-      <CartModal isOpen={showCartModal} onClose={() => setShowCartModal(false)} />
 
       {/* مودال دسته‌بندی */}
       {showCategoriesModal && (

@@ -321,3 +321,4 @@ button.bottom-nav-item {
     display: none;
   }
 }
+a.bottom-nav-item { text-decoration: none; }

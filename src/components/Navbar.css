@@ -578,3 +578,11 @@
   white-space: nowrap;
 }
 .partner-link:hover, .partner-link:focus-visible { background: #d3e9d7; }
+
+.cart-btn { text-decoration: none; position: relative; }
+.cart-btn .cart-badge {
+  position: absolute; inset-block-start: 1px; inset-inline-end: 0;
+  display: grid; place-items: center; min-width: 17px; height: 17px; padding-inline: 3px;
+  background: #28553e; color: #fff; border: 1px solid #fff; border-radius: 999px;
+  font-size: 10px; font-weight: 800; line-height: 1; white-space: nowrap;
+}

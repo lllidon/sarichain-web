@@ -1,31 +1,26 @@
-.checkout-dialog {
+.checkout-page {
   --cart-ink: #19392d;
   --cart-muted: #536b5d;
   --cart-green: #155440;
   --cart-border: #d6e4da;
   color: var(--cart-ink);
   background: #f4f7f2;
-  width: min(1120px, calc(100% - 32px));
-  max-height: calc(100dvh - 32px);
-  max-width: none;
-  margin: auto;
-  padding: 0;
+  max-width: 1280px;
+  min-height: 58vh;
+  margin: 104px auto 45px;
   border: 1px solid var(--cart-border);
   border-radius: 19px;
-  box-shadow: 0 20px 70px #102c1c44;
-  overflow: auto;
-  overscroll-behavior: contain;
 }
-.checkout-dialog::backdrop { background: #152e24a8; }
-.checkout-dialog :focus-visible { outline: 2px solid var(--cart-green); outline-offset: 3px; }
-.checkout-dialog button, .checkout-dialog select { font: inherit; cursor: pointer; }
-.checkout-dialog button:disabled { opacity: .5; cursor: default; }
+.checkout-continue { color: var(--cart-green); font-weight: 700; }
+.checkout-page :focus-visible { outline: 2px solid var(--cart-green); outline-offset: 3px; }
+.checkout-page button, .checkout-page select { font: inherit; cursor: pointer; }
+.checkout-page button:disabled { opacity: .5; cursor: default; }
 .checkout-header {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;
   background: white; padding: 13px clamp(14px, 3vw, 26px); border-bottom: 1px solid var(--cart-border);
 }
 .checkout-header > div { display: flex; align-items: center; gap: 9px; }
-.checkout-header h2 { margin: 0; font-size: 1.23rem; }
+.checkout-header h1 { margin: 0; font-size: 1.23rem; }
 .checkout-header span { color: var(--cart-muted); font-size: .82rem; }
 .checkout-header svg, .checkout-shipping legend svg { color: var(--cart-green); }
 .checkout-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr); gap: 14px; align-items: start; padding: 14px; }
@@ -88,7 +83,9 @@
 .checkout-empty h3 { margin: 0; }
 .checkout-message { margin: 10px 14px 0; overflow-wrap: anywhere; }
 @media(max-width: 760px) {
-  .checkout-dialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); }
+  .checkout-page { width: calc(100% - 16px); margin: 86px auto 80px; }
   .checkout-grid { grid-template-columns: minmax(0, 1fr); padding: 8px; }
   .checkout-line { grid-template-columns: minmax(0, 54px) minmax(0, 1fr); }
 }
+
+@media (min-width: 761px) and (max-width: 1300px) { .checkout-page { margin-inline: 14px; } }

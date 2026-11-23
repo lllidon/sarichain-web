@@ -7,7 +7,6 @@ import { faMagnifyingGlass, faBasketShopping, faChevronDown } from '@fortawesome
 import './Navbar.css';
 import SearchModal from './modals/SearchModal';
 import ProductMegaMenu from './Products/ProductMegaMenu';
-import CartModal from './modals/CartModal';
 import { useCatalogCart } from './modals/cartStore';
 
 const Navbar = () => {
@@ -17,7 +16,6 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [userPhone, setUserPhone] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem('isAuthenticated') === 'true') {
@@ -173,10 +171,10 @@ const Navbar = () => {
             <button className="search-btn" onClick={() => setIsSearchOpen(true)}>
               <FontAwesomeIcon icon={faMagnifyingGlass} />
             </button>
-            <button className="cart-btn" aria-label="سبد خرید" onClick={() => setIsCartOpen(true)}>
+            <Link className="cart-btn" href="/cart" aria-label={cartCount ? `سبد خرید، ${cartCount.toLocaleString('fa-IR')} کالا` : 'سبد خرید'}>
               <FontAwesomeIcon icon={faBasketShopping} />
               {cartCount > 0 && <span className="cart-badge">{cartCount.toLocaleString('fa-IR')}</span>}
-            </button>
+            </Link>
             
             {userPhone ? (
               <div className="user-menu">
@@ -200,7 +198,6 @@ const Navbar = () => {
 
       {/* Modals */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-      <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 };

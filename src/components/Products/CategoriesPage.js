@@ -30,7 +30,6 @@ function CatalogCard({ product, categoryName, onMessage }) {
         <Link href={href} className="catalog-card-image-link">
           <Image src={productImage(product)} alt={product.name} width={152} height={152} unoptimized />
         </Link>
-        {!product.orderable && <span className="catalog-stock is-unavailable">سفارش مستقیم غیرفعال</span>}
       </div>
       <ProductPurchase product={product} className="catalog-card-info" onMessage={onMessage}>
         <p className="catalog-card-category">{[categoryName, product.brand, product.form].filter(Boolean).join(' · ')}</p>
@@ -45,7 +44,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   const { catalog, categories, brands, unavailable: backendUnavailable } = useCatalog();
   const [brand, setBrand] = useState('');
   const products = catalog;
-  const units = [...new Set(products.map(product => product.unit))];
+  const units = [...new Set(products.flatMap(product => [product.unit, ...product.saleUnits.map(option => option.name)]))];
   const lowestPrice = products.reduce((min, product) => Math.min(min, product.price.min), products[0]?.price.min ?? 0);
   const highestPrice = products.reduce((max, product) => Math.max(max, product.price.max), 0);
   const forms = [...new Set(products.map(product => product.form).filter(Boolean))];
@@ -55,7 +54,6 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   const categoryOptions = [['all', 'همه محصولات'], ...Object.entries(categories).map(([id, category]) => [id, category.name])];
   const [category, setCategory] = useState(initialCategory);
   const [query, setQuery] = useState('');
-  const [unavailable, setUnavailable] = useState(false);
   const [unit, setUnit] = useState('');
   const [minimum, setMinimum] = useState('');
   const [maximum, setMaximum] = useState('');
@@ -73,9 +71,8 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   const invalidPrice = minimum !== '' && maximum !== '' && Number(minimum) > Number(maximum);
   const results = categoryProducts.filter(product =>
     !invalidPrice &&
-    (!unavailable || !product.orderable) &&
     (!brand || product.brandId === brand) &&
-    (!unit || product.unit === unit) &&
+    (!unit || product.unit === unit || product.saleUnits.some(option => option.name === unit)) &&
     (!minimum || product.price.max >= Number(minimum)) &&
     (!maximum || product.price.min <= Number(maximum)) &&
     (!form || product.form === form) &&
@@ -110,7 +107,6 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   function reset() {
     chooseCategory('all');
     setQuery('');
-    setUnavailable(false);
     setBrand('');
     setUnit('');
     setMinimum('');
@@ -220,21 +216,10 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
               <div className="catalog-filter-group catalog-detail">
                 <label htmlFor="catalog-unit">واحد فروش</label>
                 <select id="catalog-unit" value={unit} onChange={event => changeFilter(setUnit, event.target.value)}>
-                  <option value="">همه بسته‌بندی‌ها</option>
+                  <option value="">همه واحدهای فروش</option>
                   {units.map(value => <option key={value} value={value}>{value}</option>)}
                 </select>
               </div>
-              <fieldset className="catalog-filter-group">
-                <legend>وضعیت کالا</legend>
-                <label className="catalog-status-option">
-                  <span className={unavailable ? 'catalog-status-text is-unavailable' : 'catalog-status-text'}>
-                    {unavailable ? 'بدون سفارش مستقیم' : 'همه محصولات'}
-                  </span>
-                  <input type="checkbox" role="switch" className="catalog-switch"
-                    aria-label="نمایش کالاهای بدون سفارش مستقیم" checked={unavailable}
-                    onChange={event => changeFilter(setUnavailable, event.target.checked)} />
-                </label>
-              </fieldset>
             </div>
           </aside>
 

@@ -7,9 +7,11 @@ import { productPackages } from './catalog';
 import { formatPrice } from './price';
 import { addCatalogItem } from '../modals/cartStore';
 
-export default function ProductPurchase({ product, className, children, onMessage }) {
+export default function ProductPurchase({ product, className, children, onMessage, chooseUnit = false }) {
   const [message, setMessage] = useState('');
-  const [pack] = productPackages(product);
+  const [unit, setUnit] = useState('unit');
+  const packs = productPackages(product);
+  const pack = packs.find(option => option.id === unit) ?? packs[0];
 
   function report(value) {
     if (onMessage) onMessage(value);
@@ -29,9 +31,16 @@ export default function ProductPurchase({ product, className, children, onMessag
         {children}
         {product.orderable ? (
           <>
+            {chooseUnit && packs.length > 1 && <label className="product-unit-picker">واحد خرید
+              <select value={pack.id} onChange={event => setUnit(event.target.value)}>
+                {packs.map(option => <option value={option.id} key={option.id}>{option.name}
+                  {option.amount > 1 ? ` · ${option.amount.toLocaleString('fa-IR')} ${product.unit}` : ' · واحد اصلی'}
+                </option>)}
+              </select>
+            </label>}
             <div className="catalog-card-price">
-              <strong>{formatPrice(product.price)}</strong>{' '}
-              <small>/ {product.unit}</small>
+              <strong>{formatPrice(pack.price)}</strong>{' '}
+              <small>/ {pack.name}</small>
             </div>
             <button className="catalog-order" type="submit" aria-label={`افزودن به سبد خرید ${product.name}`}>
               افزودن به سبد خرید <FontAwesomeIcon icon={faBasketShopping} />

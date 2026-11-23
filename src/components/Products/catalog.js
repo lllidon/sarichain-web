@@ -15,7 +15,7 @@ export function productPackages(product) {
 }
 
 export function productHref(product) {
-  return `/products/${encodeURIComponent(product.code)}`;
+  return `/products/${encodeURIComponent(product.parentCode || product.code)}`;
 }
 
 export function categoryContains(categories, parent, current) {

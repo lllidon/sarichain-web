@@ -23,21 +23,29 @@ export const readCatalog = cache(async () => {
       name: row.name, parentId: row.parentId, filter: 'کاربرد',
     }]));
     const brandNames = new Map(brands.map(brand => [brand._id, brand.name]));
-    const catalog = products.filter(product => categories[product.categoryId]).map(product => {
+    function mapProduct(product, parent) {
       const [form, detail] = (product.shortDescription || '').split(' · ');
+      const gallery = product.gallery || [];
       return {
         id: product._id, code: product.sku, name: product.name, category: product.categoryId,
         price: catalogPrice(product.price),
-        orderable: product.kind === 'master',
+        orderable: true,
+        isVariant: product.kind === 'variant',
+        parentCode: parent?.code,
         options: product.options || [],
         detail: detail || product.shortDescription || '', form: detail ? form : '',
         description: product.description || '',
-        unit: product.saleUnit || product.description?.match(/هر (لیتر|کیلوگرم)/)?.[1] || 'واحد',
-        saleUnits: product.saleUnits || [],
+        unit: product.saleUnit || parent?.unit || product.description?.match(/هر (لیتر|کیلوگرم)/)?.[1] || 'واحد',
+        saleUnits: product.saleUnits?.length ? product.saleUnits : parent?.saleUnits || [],
         brandId: product.brandId, brand: brandNames.get(product.brandId) || '',
-        image: product.thumbnailUrl || product.imageUrl || '',
-        fullImage: product.imageUrl || '',
+        image: gallery[0] || product.thumbnailUrl || product.imageUrl || parent?.image || '',
+        fullImage: gallery[0] || product.imageUrl || parent?.fullImage || '',
+        gallery,
       };
+    }
+    const catalog = products.filter(product => product.kind === 'master' && categories[product.categoryId]).map(row => {
+      const product = mapProduct(row);
+      return { ...product, variants: (row.variants || []).map(variant => mapProduct(variant, product)) };
     });
     return { catalog, categories, brands, unavailable: false };
   } catch {

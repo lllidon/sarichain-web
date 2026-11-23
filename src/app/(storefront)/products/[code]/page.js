@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import ProductMarketplace from '../../../../components/Products/ProductMarketplace';
 import { readCatalog } from '../../../../components/Products/catalog-data';
 import { productHref, productImage, productPackages } from '../../../../components/Products/catalog';
@@ -13,7 +13,11 @@ async function findProduct(code) {
   const data = await readCatalog();
   const canonical = /^\d+$/.test(code) ? 'SC-' + code : code;
   const product = data.catalog.find(product => product.code === canonical);
-  if (!product) notFound();
+  if (!product) {
+    const parent = data.catalog.find(item => item.variants.some(variant => variant.code === canonical));
+    if (parent) redirect(productHref(parent));
+    notFound();
+  }
   return { ...data, product };
 }
 
@@ -47,12 +51,6 @@ export default async function ProductPage({ params }) {
 
         <ProductMarketplace key={product.code} product={product} category={category}
           categoryHref={categoryHref} description={describe(product)} />
-
-        <nav className="market-section-nav" aria-label="بخش‌های صفحه محصول">
-          <a href="#product-title">معرفی</a>
-          <a href="#product-sellers">فروشندگان</a>
-          <a href="#product-specifications">مشخصات</a>
-        </nav>
 
         <section className="product-specifications" aria-labelledby="product-specifications">
           <h2 id="product-specifications">مشخصات محصول</h2>
