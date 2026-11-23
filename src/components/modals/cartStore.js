@@ -15,11 +15,12 @@ function getCart() {
     savedCart = Array.isArray(value) ? value.reduce((lines, item) => {
       if (!item || typeof item.code !== 'string' || !Number.isSafeInteger(item.quantity) ||
           !Number.isSafeInteger(item.amount) || item.quantity < 1 || item.amount < 1 || item.sellerId) return lines;
-      const id = item.code + '-unit';
+      const packId = typeof item.unitId === 'string' ? item.unitId : 'unit';
+      const id = JSON.stringify([item.code, packId]);
       const existing = lines.find(line => line.id === id);
-      const quantity = item.amount * item.quantity;
+      const quantity = item.unitId ? item.quantity : item.amount * item.quantity;
       if (existing) existing.quantity = Math.min(1000, existing.quantity + quantity);
-      else lines.push({ ...item, id, amount: 1, packId: 'unit', packName: item.unit, quantity: Math.min(1000, quantity) });
+      else lines.push({ ...item, id, unitId: packId, packId, amount: item.unitId ? item.amount : 1, quantity: Math.min(1000, quantity) });
       return lines;
     }, []) : empty;
   } catch {
@@ -64,12 +65,13 @@ export function useCatalogCart() {
 
 export function addCatalogItem(product, pack) {
   const items = getCart();
-  const id = `${product.code}-${pack.id}`;
+  const id = JSON.stringify([product.code, pack.id]);
   const existing = items.find(item => item.id === id);
   const line = {
     id,
     code: product.code,
     packId: pack.id,
+    unitId: pack.id,
     quantity: (existing?.quantity ?? 0) + 1,
   };
   return updateCatalogItem(items, line, product);
@@ -85,7 +87,10 @@ function updateCatalogItem(items, line, product) {
   if (!pack || !product.orderable) return false;
   if (line.sellerId) return false;
   const used = others.filter(item => item.code === line.code)
-    .reduce((total, item) => total + item.amount * item.quantity, 0);
+    .reduce((total, item) => {
+      const current = productPackages(product).find(option => option.id === item.packId);
+      return total + (current?.amount ?? 0) * item.quantity;
+    }, 0);
   if (used + pack.amount * line.quantity > 1000) return false;
 
   const updated = {
@@ -107,6 +112,15 @@ export function setCatalogQuantity(item, quantity, product) {
   return updateCatalogItem(getCart(), { ...item, quantity }, product);
 }
 
-export function removeOrderedItems(ids) {
-  saveCart(getCart().filter(item => !ids.includes(item.id)));
+export function removeOrderedItems(ordered) {
+  const quantities = new Map(ordered.map(item => [item.id, item.quantity]));
+  saveCart(getCart().flatMap(item => {
+    const quantity = item.quantity - (quantities.get(item.id) ?? 0);
+    return quantity > 0 ? [{ ...item, quantity }] : [];
+  }));
+}
+
+export function clearCatalogCart() {
+  if (!getCart().length) return;
+  saveCart([]);
 }

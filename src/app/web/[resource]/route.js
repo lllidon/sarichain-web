@@ -5,6 +5,7 @@ export const runtime = 'nodejs';
 const routes = {
   login: { POST: '/web/login' },
   orders: { POST: '/web/orders' },
+  'delivery-options': { GET: '/web/delivery-options' },
   profile: { GET: '/web/profile', PATCH: '/web/profile' },
   provinces: { GET: '/web/locations/provinces' },
   cities: { GET: '/web/locations/cities' },
