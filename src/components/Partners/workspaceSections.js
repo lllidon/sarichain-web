@@ -1,8 +1,7 @@
 export const sections = {
   overview: { label: 'داشبورد', icon: 'grid' },
   orders: { label: 'سفارش‌های جاری من', icon: 'orders' },
-  products: { label: 'محصولات من', icon: 'products', entry: 'محصول',
-    help: 'محصول و مشخصات عرضه را در فهرست شخصی خود ثبت کنید.', placeholder: 'رقم، مقدار قابل عرضه و زمان برداشت' },
+  products: { label: 'محصولات من', icon: 'products', entry: 'عرضهٔ محصول' },
   transport: { label: 'حمل‌ونقل من', icon: 'transport', entry: 'درخواست حمل',
     help: 'درخواست‌های شخصی حمل‌ونقل را اینجا نگه دارید.', placeholder: 'مبدأ، مقصد، نوع بار و زمان پیشنهادی' },
   bulletin: { label: 'بولتن حمل‌ونقل', icon: 'bulletin', entry: 'آگهی حمل',

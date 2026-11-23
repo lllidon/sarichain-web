@@ -24,3 +24,11 @@ export function categoryContains(categories, parent, current) {
   }
   return false;
 }
+
+export function normalizeCatalogSearch(value) {
+  return value.toLowerCase()
+    .replace(/ي/g, 'ی').replace(/ك/g, 'ک')
+    .replace(/[۰-۹]/g, digit => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
+    .replace(/[٠-٩]/g, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+    .replace(/[\s\u200c-]+/g, '');
+}

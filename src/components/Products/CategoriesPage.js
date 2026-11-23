@@ -6,20 +6,12 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faMagnifyingGlass, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './CatalogProvider';
-import { categoryContains, productImage, productHref } from './catalog';
+import { categoryContains, normalizeCatalogSearch as normalize, productImage, productHref } from './catalog';
 import ProductPurchase from './ProductPurchase';
 import './CategoriesPage.css';
 
 const pageSize = 12;
 const number = new Intl.NumberFormat('fa-IR');
-
-function normalize(value) {
-  return value.toLowerCase()
-    .replace(/ي/g, 'ی').replace(/ك/g, 'ک')
-    .replace(/[۰-۹]/g, digit => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
-    .replace(/[٠-٩]/g, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
-    .replace(/[\s\u200c-]+/g, '');
-}
 
 function CatalogCard({ product, categoryName, onMessage }) {
   const href = productHref(product);

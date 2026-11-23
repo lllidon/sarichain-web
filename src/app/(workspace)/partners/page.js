@@ -5,6 +5,7 @@ import PartnerDashboard from '../../../components/Partners/PartnerDashboard';
 import { sections } from '../../../components/Partners/workspaceSections';
 import { loginMessages } from '../../../lib/loginMessages';
 import { partnerBackend, partnerSessionCookie } from '../../../lib/partnerBackend';
+import { readCatalog } from '../../../components/Products/catalog-data';
 
 export const metadata = { title: 'فروشندگان و همکاران ساری‌چین', robots: { index: false, follow: true } };
 
@@ -32,6 +33,7 @@ export default async function PartnersPage({ searchParams }) {
   if (returnToCart) redirect('/cart');
 
   let data;
+  const offerCatalog = section === 'products' && profile.producerType ? readCatalog() : null;
   const isList = section !== 'overview' && section !== 'profile';
   if (isList) {
     try {
@@ -43,7 +45,8 @@ export default async function PartnersPage({ searchParams }) {
       // Navigation remains usable if the selected section is unavailable.
     }
   }
-  return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback} unavailable={isList && !data}>
+  return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback}
+    offerCatalog={await offerCatalog} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} />}
   </PartnerDashboard>;
 }

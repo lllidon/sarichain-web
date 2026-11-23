@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faTruck, faUserPen } from '@fortawesome/free-solid-svg-icons';
 import { leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
 import { partnerHref, sections } from './workspaceSections';
+import ProductOfferForm from './ProductOfferForm';
 
 const icons = {
   grid: faBorderAll, orders: faClipboardList, products: faBox, transport: faTruck,
@@ -15,6 +16,7 @@ const feedback = {
 };
 const statuses = { pending: 'در انتظار بررسی', confirmed: 'تأیید شده', processing: 'در حال آماده‌سازی', shipped: 'ارسال شده' };
 const number = new Intl.NumberFormat('fa-IR');
+const offerPrice = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 4 });
 const date = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeZone: 'Asia/Tehran' });
 
 function Orders({ items }) {
@@ -32,17 +34,23 @@ function Orders({ items }) {
   </ul>;
 }
 
-function WorkspaceEntries({ section, items }) {
+function WorkspaceEntries({ section, items, offerCatalog, result }) {
   const { entry, placeholder, help } = sections[section];
   const action = saveWorkspaceEntry.bind(null, section);
   return <div className="partner-entry-layout">
-    <form className="partner-entry-form" action={action}>
+    {section === 'products' ? offerCatalog && !offerCatalog.unavailable ?
+      <ProductOfferForm key={result === 'saved' ? items[0]?.id : undefined} categories={offerCatalog.categories} brands={offerCatalog.brands}
+        products={offerCatalog.catalog.flatMap(product => [product, ...product.variants])
+          .map(({ id, name, code, brand, brandId, category, unit }) => ({ id, name, code, brand, brandId, category, unit }))} /> :
+      <div className="partner-empty"><p>{offerCatalog ? 'کاتالوگ موقتاً در دسترس نیست.' : 'برای ثبت عرضه باید نقش تولیدکننده در پروفایل شما فعال باشد.'}</p>
+        <Link href={partnerHref(offerCatalog ? 'products' : 'profile')}>{offerCatalog ? 'تلاش دوباره' : 'ویرایش پروفایل'}</Link>
+      </div> : <form className="partner-entry-form" action={action}>
       <h3>ثبت {entry}</h3>
       <p>{help}</p>
       <label>عنوان<input name="title" maxLength={120} required /></label>
       <label>جزئیات<textarea name="details" rows={4} maxLength={1000} placeholder={placeholder} required /></label>
       <button className="partner-primary" type="submit">{section === 'bulletin' ? 'انتشار آگهی' : 'ثبت'}</button>
-    </form>
+    </form>}
     <div>
       {!items.length ? <div className="partner-empty"><p>هنوز موردی در این بخش ثبت نشده است.</p></div> :
         <ul className="partner-records">
@@ -54,14 +62,20 @@ function WorkspaceEntries({ section, items }) {
                 <button className="partner-remove" aria-label={`حذف ${item.title}`}>حذف</button>
               </form>}
             </div>
-            <p>{item.details}</p>
+            {item.offer && <dl className="partner-offer-summary">
+              <div><dt>قیمت هر {item.offer.unit}</dt><dd>{offerPrice.format(item.offer.price)} کارسا</dd></div>
+              <div><dt>موجودی تقریبی</dt><dd>{number.format(item.offer.stock)} {item.offer.unit}</dd></div>
+              {item.offer.harvestDate && <div><dt>برداشت تقریبی</dt><dd>{date.format(new Date(item.offer.harvestDate + 'T12:00:00Z'))}</dd></div>}
+              <div><dt>کد محصول</dt><dd><bdi>{item.offer.sku}</bdi></dd></div>
+            </dl>}
+            {item.details && <p>{item.details}</p>}
           </li>)}
         </ul>}
     </div>
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, unavailable, page, children }) {
+export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, children }) {
   const info = sections[section];
   const message = typeof result === 'string' && Object.hasOwn(feedback, result) ? feedback[result] : '';
   return <div className="catalog-page partners-page partner-dashboard" dir="rtl">
@@ -95,7 +109,8 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           </div>}
           {section === 'profile' && children}
           {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
-          {data && (section === 'orders' ? <Orders items={data.items} /> : <WorkspaceEntries section={section} items={data.items} />)}
+          {data && (section === 'orders' ? <Orders items={data.items} /> :
+            <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
               {page > 1 && <Link href={partnerHref(section) + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
