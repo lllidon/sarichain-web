@@ -61,9 +61,10 @@ export default async function ProductPage({ params }) {
             <div><dt>{category.filter}</dt><dd>{product.detail}</dd></div>
             <div><dt>واحد پایه</dt><dd>{product.unit}</dd></div>
             <div>
-              <dt>بسته‌بندی</dt>
-              <dd>{productPackages(product).map(pack => `${pack.name} ${number.format(pack.amount)} ${product.unit}`).join('، ')}</dd>
+              <dt>واحد فروش</dt>
+              <dd>{productPackages(product).map(pack => `${number.format(pack.amount)} ${pack.name}`).join('، ')}</dd>
             </div>
+            {product.options.map(option => <div key={option.name}><dt>{option.name}</dt><dd>{option.value}</dd></div>)}
           </dl>
         </section>
 

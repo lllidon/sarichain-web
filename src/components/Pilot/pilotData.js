@@ -46,11 +46,3 @@ export const scenario = {
     ],
   },
 };
-
-export const initialBasket = [
-  { id: 'orange', name: 'پرتقال فصل', unit: 'کیلوگرم', quantity: 2, price: 69000 },
-  { id: 'greens', name: 'سبزی تازه', unit: 'بسته', quantity: 1, price: 39000 },
-  { id: 'eggs', name: 'تخم‌مرغ محلی', unit: 'بسته', quantity: 1, price: 102000 },
-];
-
-export const basketSuggestion = { id: 'apple', name: 'سیب فصل', unit: 'کیلوگرم', quantity: 1, price: 61000 };

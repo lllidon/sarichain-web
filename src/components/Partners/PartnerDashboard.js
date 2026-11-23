@@ -1,3 +1,4 @@
+import { formatPrice } from '../Products/price';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faTruck, faUserPen } from '@fortawesome/free-solid-svg-icons';
@@ -25,7 +26,7 @@ function Orders({ items }) {
         <span className="partner-status">{statuses[order.status] || 'ثبت شده'}</span>
       </div>
       <ul>{order.items.map(item => <li key={item.productId}>{item.name} <span>× {number.format(item.quantity)}</span></li>)}</ul>
-      <strong>{number.format(order.total)} {order.currency === 'IRR' ? 'ریال' : order.currency}</strong>
+      <strong>{order.price ? formatPrice(order.price) : `${number.format(order.total)} ${order.currency === 'IRR' ? 'ریال' : order.currency}`}</strong>
     </li>)}
   </ul>;
 }

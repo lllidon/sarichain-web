@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { formatPrice, scalePrice, sumPrices } from '../Products/price';
+import { productImage } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
 import { submitOrder } from '../Products/submitOrder';
 import { removeOrderedItems, setCatalogQuantity, useCatalogCart } from './cartStore';
@@ -51,7 +53,11 @@ export default function CartModal({ isOpen, onClose }) {
     }
   }
 
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const currentItems = cartItems.map(item => ({
+    ...item, product: catalog.find(product => product.code === item.code && product.orderable),
+  }));
+  const total = sumPrices(currentItems.map(item => scalePrice(item.product?.price, item.quantity)));
+  const containsInactive = currentItems.some(item => !item.product);
   return (
     <dialog ref={dialog} className="modal-container cart-modal storefront-cart" aria-label="سبد خرید"
       onClose={() => { setMessage(''); onClose(); }}>
@@ -69,33 +75,32 @@ export default function CartModal({ isOpen, onClose }) {
       ) : (
         <>
           <div className="cart-items">
-            {cartItems.map(item => (
+            {currentItems.map(item => (
               <div key={item.id} className="cart-item">
-                <img src={item.image} alt="" className="cart-item-image" />
+                <img src={item.product ? productImage(item.product) : item.image} alt="" className="cart-item-image" />
                 <div className="cart-item-details">
-                  <h4>{item.name}</h4>
-                  {item.sellerName && <p>{item.sellerName} · {item.qualityName}</p>}
-                  <p>{item.packName} {number.format(item.amount)} {item.unit}</p>
-                  <p className="cart-item-price">{number.format(item.price)} تومان</p>
+                  <h4>{item.product?.name ?? item.name}</h4>
+                  <p>{item.product?.unit ?? item.unit}</p>
+                  <p className="cart-item-price">{item.product ? formatPrice(item.product.price) : 'محصول در دسترس نیست'}</p>
                   <div className="cart-item-actions">
                     <div className="quantity-control">
                       <button aria-label="کاهش تعداد" disabled={item.quantity === 1} onClick={() => update(item, item.quantity - 1)}>−</button>
                       <span>{number.format(item.quantity)}</span>
-                      <button aria-label="افزایش تعداد" onClick={() => update(item, item.quantity + 1)}>+</button>
+                      <button aria-label="افزایش تعداد" disabled={!item.product || busy} onClick={() => update(item, item.quantity + 1)}>+</button>
                     </div>
                     <button className="remove-item" onClick={() => update(item, 0)}>حذف</button>
                   </div>
                 </div>
-                <div className="cart-item-total">{number.format(item.price * item.quantity)} تومان</div>
+                <div className="cart-item-total">{item.product && formatPrice(scalePrice(item.product.price, item.quantity))}</div>
               </div>
             ))}
           </div>
           <div className="cart-summary">
-            {cartItems.some(item => item.sellerId) && <p>پیشنهادهای آزمایشی فروشندگان در سفارش ثبت نمی‌شوند.</p>}
-            <button type="button" className="continue-shopping" disabled={busy || !cartItems.some(item => !item.sellerId)} onClick={checkout}>ثبت سفارش</button>
+            {containsInactive && <p>برای ثبت سفارش، محصول غیرفعال را از سبد حذف کنید.</p>}
+            <button type="button" className="continue-shopping" disabled={busy || containsInactive} onClick={checkout}>ثبت سفارش</button>
             <div className="summary-row total">
               <span>جمع کالاها</span>
-              <span className="total-amount">{number.format(total)} تومان</span>
+              <span className="total-amount">{formatPrice(total)}</span>
             </div>
           </div>
         </>

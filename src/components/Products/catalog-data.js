@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { catalogPrice } from './price';
 
 const empty = { catalog: [], categories: {}, brands: [], unavailable: true };
 
@@ -26,8 +27,9 @@ export const readCatalog = cache(async () => {
       const [form, detail] = (product.shortDescription || '').split(' · ');
       return {
         id: product._id, code: product.sku, name: product.name, category: product.categoryId,
-        price: product.basePrice?.currency === 'IRR' ? product.basePrice.amount / 10 : null,
-        orderable: product.kind === 'master' && product.basePrice?.currency === 'IRR',
+        price: catalogPrice(product.price),
+        orderable: product.kind === 'master',
+        options: product.options || [],
         detail: detail || product.shortDescription || '', form: detail ? form : '',
         description: product.description || '',
         unit: product.description?.match(/هر (لیتر|کیلوگرم)/)?.[1] || 'واحد',

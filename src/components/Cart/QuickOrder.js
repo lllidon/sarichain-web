@@ -13,6 +13,7 @@ import {
   faBarcode,
   faBox
 } from '@fortawesome/free-solid-svg-icons';
+import { formatPrice, scalePrice, sumPrices } from '../Products/price';
 import { productImage } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
 import { submitOrder } from '../Products/submitOrder';
@@ -90,14 +91,13 @@ const QuickOrder = ({ initialCode = '' }) => {
       }
       setCartItems(cartItems.map(item =>
         item.code === product.code
-          ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
+          ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
     } else {
       setCartItems([...cartItems, {
         ...product,
         quantity: 1,
-        total: product.price
       }]);
     }
   };
@@ -139,14 +139,14 @@ const QuickOrder = ({ initialCode = '' }) => {
     
     setCartItems(cartItems.map(item =>
       item.code === code
-        ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
+        ? { ...item, quantity: newQuantity }
         : item
     ));
   };
 
   // محاسبه جمع کل
   const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.total, 0);
+    return sumPrices(cartItems.map(item => scalePrice(item.price, item.quantity)));
   };
 
   // محاسبه تعداد کل اقلام
@@ -192,11 +192,6 @@ const QuickOrder = ({ initialCode = '' }) => {
     } else if (e.key === 'Enter') {
       addToCart();
     }
-  };
-
-  // فرمت قیمت
-  const formatPrice = (price) => {
-    return price.toLocaleString('fa-IR') + ' تومان';
   };
 
   // بستن نتایج جستجو با کلیک خارج
@@ -383,7 +378,7 @@ const QuickOrder = ({ initialCode = '' }) => {
                                 </button>
                               </div>
                             </td>
-                            <td className="total-cell">{formatPrice(item.total)}</td>
+                            <td className="total-cell">{formatPrice(scalePrice(item.price, item.quantity))}</td>
                             <td>
                               <button 
                                 onClick={() => removeFromCart(item.code)}

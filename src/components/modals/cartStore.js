@@ -2,7 +2,6 @@
 
 import { useSyncExternalStore } from 'react';
 import { productImage, productPackages } from '../Products/catalog';
-import { marketplaceOffer } from '../Products/marketplace';
 
 const storageKey = 'sarichain-catalog-cart';
 const empty = [];
@@ -13,7 +12,16 @@ function getCart() {
   if (savedCart) return savedCart;
   try {
     const value = JSON.parse(window.localStorage.getItem(storageKey));
-    savedCart = Array.isArray(value) ? value : empty;
+    savedCart = Array.isArray(value) ? value.reduce((lines, item) => {
+      if (!item || typeof item.code !== 'string' || !Number.isSafeInteger(item.quantity) ||
+          !Number.isSafeInteger(item.amount) || item.quantity < 1 || item.amount < 1 || item.sellerId) return lines;
+      const id = item.code + '-unit';
+      const existing = lines.find(line => line.id === id);
+      const quantity = item.amount * item.quantity;
+      if (existing) existing.quantity = Math.min(1000, existing.quantity + quantity);
+      else lines.push({ ...item, id, amount: 1, packId: 'unit', packName: item.unit, quantity: Math.min(1000, quantity) });
+      return lines;
+    }, []) : empty;
   } catch {
     savedCart = empty;
   }
@@ -54,16 +62,14 @@ export function useCatalogCart() {
   return useSyncExternalStore(subscribe, getCart, () => empty);
 }
 
-export function addCatalogItem(product, pack, offer) {
+export function addCatalogItem(product, pack) {
   const items = getCart();
-  const baseId = `${product.code}-${pack.id}`;
-  const id = offer ? `${baseId}-${offer.sellerId}-${offer.qualityId}` : baseId;
+  const id = `${product.code}-${pack.id}`;
   const existing = items.find(item => item.id === id);
   const line = {
     id,
     code: product.code,
     packId: pack.id,
-    ...(offer && { sellerId: offer.sellerId, qualityId: offer.qualityId }),
     quantity: (existing?.quantity ?? 0) + 1,
   };
   return updateCatalogItem(items, line, product);
@@ -77,8 +83,7 @@ function updateCatalogItem(items, line, product) {
   }
   const pack = product && productPackages(product).find(pack => pack.id === line.packId);
   if (!pack || !product.orderable) return false;
-  const offer = line.sellerId ? marketplaceOffer(product, line.sellerId, line.qualityId) : null;
-  if (line.sellerId && !offer) return false;
+  if (line.sellerId) return false;
   const used = others.filter(item => item.code === line.code)
     .reduce((total, item) => total + item.amount * item.quantity, 0);
   if (used + pack.amount * line.quantity > 1000) return false;
@@ -88,8 +93,6 @@ function updateCatalogItem(items, line, product) {
     productId: product.id,
     name: product.name,
     image: productImage(product),
-    price: offer ? offer.unitPrice * pack.amount : pack.price,
-    ...(offer && { sellerName: offer.sellerName, qualityName: offer.qualityName }),
     amount: pack.amount,
     unit: product.unit,
     packName: pack.name,

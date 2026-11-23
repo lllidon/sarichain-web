@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faMagnifyingGlass, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './CatalogProvider';
-import { productImage, productPackages, productHref } from './catalog';
+import { categoryContains, productImage, productHref } from './catalog';
 import ProductPurchase from './ProductPurchase';
 import './CategoriesPage.css';
 
@@ -44,21 +44,19 @@ function CatalogCard({ product, categoryName, onMessage }) {
 export default function CategoriesPage({ initialCategory = 'all', initialDetail = '' }) {
   const { catalog, categories, brands, unavailable: backendUnavailable } = useCatalog();
   const [brand, setBrand] = useState('');
-  const products = catalog.map(product => ({
-    ...product,
-    packages: productPackages(product),
-  }));
-  const packageOptions = new Map(products.flatMap(product => product.packages.map(pack => [pack.id, pack.name])));
-  const lowestPrice = products.length ? Math.min(...products.map(product => product.price ?? 0)) : 0;
-  const highestPrice = Math.max(0, ...products.map(product => product.price ?? 0));
+  const products = catalog;
+  const units = [...new Set(products.map(product => product.unit))];
+  const lowestPrice = products.reduce((min, product) => Math.min(min, product.price.min), products[0]?.price.min ?? 0);
+  const highestPrice = products.reduce((max, product) => Math.max(max, product.price.max), 0);
+  const forms = [...new Set(products.map(product => product.form).filter(Boolean))];
 
-  const pricePosition = value => 100 * (value - lowestPrice) / Math.max(1, highestPrice - lowestPrice);
+  const pricePosition = value => 100 * (value - lowestPrice) / (highestPrice - lowestPrice || 1);
   const withinPriceBounds = value => Math.min(highestPrice, Math.max(lowestPrice, value));
   const categoryOptions = [['all', 'همه محصولات'], ...Object.entries(categories).map(([id, category]) => [id, category.name])];
   const [category, setCategory] = useState(initialCategory);
   const [query, setQuery] = useState('');
   const [unavailable, setUnavailable] = useState(false);
-  const [packaging, setPackaging] = useState('');
+  const [unit, setUnit] = useState('');
   const [minimum, setMinimum] = useState('');
   const [maximum, setMaximum] = useState('');
   const [page, setPage] = useState(1);
@@ -69,31 +67,27 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   const [sort, setSort] = useState('default');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const matchesCategory = id => {
-    for (let level = 0; id && level < 3; level++, id = categories[id]?.parentId) {
-      if (id === category) return true;
-    }
-    return false;
-  };
-  const categoryProducts = products.filter(product => category === 'all' || matchesCategory(product.category));
+  const categoryProducts = products.filter(product => category === 'all' || categoryContains(categories, category, product.category));
   const details = [...new Set(categoryProducts.map(product => product.detail))];
   const search = normalize(query);
+  const invalidPrice = minimum !== '' && maximum !== '' && Number(minimum) > Number(maximum);
   const results = categoryProducts.filter(product =>
+    !invalidPrice &&
     (!unavailable || !product.orderable) &&
     (!brand || product.brandId === brand) &&
-    (!packaging || product.packages.some(pack => pack.id === packaging)) &&
-    (!minimum || product.price >= Number(minimum)) &&
-    (!maximum || product.price <= Number(maximum)) &&
+    (!unit || product.unit === unit) &&
+    (!minimum || product.price.max >= Number(minimum)) &&
+    (!maximum || product.price.min <= Number(maximum)) &&
     (!form || product.form === form) &&
     (!detail || product.detail === detail) &&
-    [product.name, product.code, categories[product.category].name].some(value => normalize(value).includes(search))
+    [product.name, product.code, product.brand, categories[product.category].name].some(value => normalize(value).includes(search))
   );
-  if (sort === 'lowest') results.sort((a, b) => a.price - b.price);
-  if (sort === 'highest') results.sort((a, b) => b.price - a.price);
+  if (sort === 'lowest') results.sort((a, b) => a.price.min - b.price.min || a.price.max - b.price.max);
+  if (sort === 'highest') results.sort((a, b) => b.price.max - a.price.max || b.price.min - a.price.min);
 
   const pageCount = Math.ceil(results.length / pageSize);
   const visibleProducts = results.slice((page - 1) * pageSize, page * pageSize);
-  const invalidPrice = minimum !== '' && maximum !== '' && Number(minimum) > Number(maximum);
+
   const sliderMaximum = withinPriceBounds(Number(maximum || highestPrice));
   const sliderMinimum = Math.min(sliderMaximum, withinPriceBounds(Number(minimum || lowestPrice)));
 
@@ -104,7 +98,8 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   }
 
   function changePrice(setter, value) {
-    changeFilter(setter, normalize(value).replace(/[^0-9]/g, '').slice(0, 9));
+    const input = normalize(value).replace(/٫/g, '.').replace(/[٬,]/g, '');
+    if (/^\d{0,7}(?:\.\d{0,6})?$/.test(input) && input !== '.') changeFilter(setter, input);
   }
 
   function chooseCategory(id) {
@@ -117,7 +112,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
     setQuery('');
     setUnavailable(false);
     setBrand('');
-    setPackaging('');
+    setUnit('');
     setMinimum('');
     setMaximum('');
     setForm('');
@@ -192,7 +187,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
 
               <fieldset className="catalog-filter-group">
                 <legend>شکل محصول</legend>
-                {[['', 'همه'], ['مایع', 'مایع'], ['پودری', 'پودری']].map(([value, label]) => (
+                {[['', 'همه'], ...forms.map(value => [value, value])].map(([value, label]) => (
                   <label key={value}>
                     <input type="radio" name="catalog-form" checked={form === value} onChange={() => changeFilter(setForm, value)} />
                     {label}
@@ -201,32 +196,32 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
               </fieldset>
 
               <fieldset className="catalog-filter-group">
-                <legend>قیمت پایه (تومان)</legend>
+                <legend>بازهٔ قیمت (کارسا)</legend>
                 <div className="catalog-price-slider" dir="ltr" style={{
                   '--price-start': `${pricePosition(sliderMinimum)}%`,
                   '--price-end': `${pricePosition(sliderMaximum)}%`,
                 }}>
-                  <input type="range" min={lowestPrice} max={highestPrice} value={sliderMinimum}
+                  <input type="range" min={lowestPrice} max={highestPrice} step="0.000001" disabled={lowestPrice === highestPrice} value={sliderMinimum}
                     className={sliderMinimum === highestPrice ? 'is-uppermost' : undefined}
-                    aria-label="انتخاب حداقل قیمت پایه" aria-valuetext={`${number.format(sliderMinimum)} تومان`}
+                    aria-label="انتخاب حداقل قیمت" aria-valuetext={`${number.format(sliderMinimum)} کارسا`}
                     onChange={event => changeFilter(setMinimum, String(Math.min(Number(event.target.value), sliderMaximum)))} />
-                  <input type="range" min={lowestPrice} max={highestPrice} value={sliderMaximum}
-                    aria-label="انتخاب حداکثر قیمت پایه" aria-valuetext={`${number.format(sliderMaximum)} تومان`}
+                  <input type="range" min={lowestPrice} max={highestPrice} step="0.000001" disabled={lowestPrice === highestPrice} value={sliderMaximum}
+                    aria-label="انتخاب حداکثر قیمت" aria-valuetext={`${number.format(sliderMaximum)} کارسا`}
                     onChange={event => changeFilter(setMaximum, String(Math.max(Number(event.target.value), sliderMinimum)))} />
                 </div>
                 <div className="catalog-price-range">
-                  <label>از<input inputMode="numeric" value={minimum} placeholder="حداقل" aria-invalid={invalidPrice}
+                  <label>از<input inputMode="decimal" value={minimum} placeholder="حداقل" aria-invalid={invalidPrice}
                     onChange={event => changePrice(setMinimum, event.target.value)} /></label>
-                  <label>تا<input inputMode="numeric" value={maximum} placeholder="حداکثر" aria-invalid={invalidPrice}
+                  <label>تا<input inputMode="decimal" value={maximum} placeholder="حداکثر" aria-invalid={invalidPrice}
                     onChange={event => changePrice(setMaximum, event.target.value)} /></label>
                 </div>
                 {invalidPrice && <p role="alert">حداکثر باید برابر یا بیشتر از حداقل باشد.</p>}
               </fieldset>
               <div className="catalog-filter-group catalog-detail">
-                <label htmlFor="catalog-packaging">نوع بسته‌بندی</label>
-                <select id="catalog-packaging" value={packaging} onChange={event => changeFilter(setPackaging, event.target.value)}>
+                <label htmlFor="catalog-unit">واحد فروش</label>
+                <select id="catalog-unit" value={unit} onChange={event => changeFilter(setUnit, event.target.value)}>
                   <option value="">همه بسته‌بندی‌ها</option>
-                  {[...packageOptions].map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                  {units.map(value => <option key={value} value={value}>{value}</option>)}
                 </select>
               </div>
               <fieldset className="catalog-filter-group">

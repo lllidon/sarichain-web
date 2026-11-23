@@ -4,11 +4,12 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBasketShopping, faBox, faCalendarDays, faCircleCheck, faLeaf, faPlus, faShieldHalved, faStore, faTruck, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { initialBasket, basketSuggestion, scenario } from './pilotData';
+import { scenario } from './pilotData';
+import { useCatalog } from '../Products/CatalogProvider';
+import { formatPrice, scalePrice, sumPrices } from '../Products/price';
 import './pilot.css';
 
 const number = new Intl.NumberFormat('fa-IR');
-const currency = value => number.format(value) + ' تومان';
 const sections = [
   ['basket', 'سبد هفتگی', faBasketShopping], ['market', 'بازار خانوار و تجاری', faStore],
   ['production', 'عرضه و پیشنهاد کشت', faLeaf], ['inputs', 'خرید تجمیعی نهاده', faBox],
@@ -16,19 +17,21 @@ const sections = [
   ['roles', 'حساب چندنقشی', faUsers],
 ];
 
-function Basket() {
+function Basket({ products, unavailable }) {
+  const initialBasket = products.slice(0, 3).map((product, index) => ({ ...product, quantity: index === 0 ? 2 : 1 }));
+  const suggested = products[3];
   const [items, setItems] = useState(initialBasket);
   const [basketType, setBasketType] = useState('routine');
   const [paused, pause] = useState(false);
   const [suggestion, setSuggestion] = useState('pending');
   const [confirmed, confirm] = useState(false);
-  const subtotal = items.reduce((total, item) => total + item.quantity * item.price, 0);
-  const delivery = subtotal ? 25000 : 0;
+  const total = sumPrices(items.map(item => scalePrice(item.price, item.quantity)));
+  const hasItems = items.some(item => item.quantity > 0);
 
   function chooseBasket(value) {
     setBasketType(value);
     setItems(value === 'routine' ? initialBasket : initialBasket.map(item => ({
-      ...item, quantity: value === 'seasonal' && item.id !== 'eggs' ? 1 : 0,
+      ...item, quantity: value === 'seasonal' ? 1 : 0,
     })));
     setSuggestion('pending');
     confirm(false);
@@ -50,9 +53,10 @@ function Basket() {
         </select>
       </label>
       <p className="review-muted"><FontAwesomeIcon icon={faCalendarDays} /> تحویل نمونه شنبه، زون ساری</p>
+      {!items.length && <p role="status">{unavailable ? 'دریافت کاتالوگ انجام نشد.' : 'محصولی در کاتالوگ در دسترس نیست.'}</p>}
       <ul className="review-items">
         {items.map(item => <li key={item.id}>
-          <div><strong>{item.name}</strong><small>{currency(item.price)} برای هر {item.unit}</small></div>
+          <div><strong>{item.name}</strong><small>{formatPrice(item.price)} برای هر {item.unit}</small></div>
           <div className="review-quantity">
             <button type="button" aria-label={'کاهش ' + item.name} disabled={paused || !item.quantity} onClick={() => adjust(item.id, item.quantity - 1)}>−</button>
             <b>{number.format(item.quantity)}</b>
@@ -60,25 +64,23 @@ function Basket() {
           </div>
         </li>)}
       </ul>
-      <div className="review-suggestion">
-        <strong>پیشنهاد فصلی نمونه</strong>
-        <p>سیب فصل را به دلیل عرضهٔ محلی می‌توانید به سبد اضافه کنید.</p>
+      {suggested && <div className="review-suggestion">
+        <strong>پیشنهاد تکمیلی نمونه</strong>
+        <p>{suggested.name} را از کاتالوگ به سبد اضافه کنید.</p>
         {suggestion === 'pending' ? <div className="review-actions">
           <button type="button" className="review-primary" disabled={paused} onClick={() => {
-            setItems(previous => [...previous, basketSuggestion]); setSuggestion('added'); confirm(false);
-          }}><FontAwesomeIcon icon={faPlus} /> افزودن سیب</button>
+            setItems(previous => [...previous, { ...suggested, quantity: 1 }]); setSuggestion('added'); confirm(false);
+          }}><FontAwesomeIcon icon={faPlus} /> افزودن به سبد</button>
           <button type="button" onClick={() => setSuggestion('dismissed')}>رد پیشنهاد</button>
-        </div> : <small role="status">{suggestion === 'added' ? 'سیب به سبد نمونه اضافه شد.' : 'پیشنهاد رد شد.'}</small>}
-      </div>
+        </div> : <small role="status">{suggestion === 'added' ? 'محصول به سبد نمونه اضافه شد.' : 'پیشنهاد رد شد.'}</small>}
+      </div>}
     </section>
     <aside className="review-box review-breakdown">
       <h2>خلاصهٔ سفارش</h2>
       <dl>
-        <div><dt>جمع کالا</dt><dd>{currency(subtotal)}</dd></div>
-        <div><dt>هزینهٔ تحویل نمونه</dt><dd>{currency(delivery)}</dd></div>
-        <div><dt>مبلغ نمونه</dt><dd>{currency(subtotal + delivery)}</dd></div>
+        <div><dt>بازهٔ قیمت کالاها</dt><dd>{formatPrice(total)}</dd></div>
       </dl>
-      <button type="button" className="review-primary" disabled={paused || !subtotal} onClick={() => confirm(true)}>مرور تأیید سبد</button>
+      <button type="button" className="review-primary" disabled={paused || !hasItems} onClick={() => confirm(true)}>مرور تأیید سبد</button>
       <button type="button" onClick={() => { pause(!paused); confirm(false); }}>{paused ? 'ادامهٔ سبد' : 'توقف برای این هفته'}</button>
       {paused && <p role="status">این چرخه در ماک متوقف شد.</p>}
       {confirmed && <p role="status">پیش‌نمایش تأیید آماده است. سفارش یا پرداختی ثبت نمی‌شود.</p>}
@@ -107,6 +109,7 @@ function Scenario({ section }) {
 
 export default function PilotPreview() {
   const [section, select] = useState('basket');
+  const { catalog, unavailable } = useCatalog();
   return <div className="review-page" dir="rtl">
     <div className="review-wrap">
       <header className="review-hero">
@@ -121,7 +124,7 @@ export default function PilotPreview() {
         {sections.map(([id, label, icon]) => <button key={id} type="button" aria-current={id === section ? 'page' : undefined}
           onClick={() => select(id)}><FontAwesomeIcon icon={icon} /><span>{label}</span></button>)}
       </nav>
-      <div hidden={section !== 'basket'}><Basket /></div>
+      <div hidden={section !== 'basket'}><Basket products={catalog.filter(product => product.orderable)} unavailable={unavailable} /></div>
       {section !== 'basket' && <Scenario section={section} key={section} />}
     </div>
   </div>;
