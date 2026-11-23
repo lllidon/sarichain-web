@@ -85,7 +85,7 @@ const QuickOrder = ({ initialCode = '' }) => {
     const existingItem = cartItems.find(item => item.code === product.code);
     
     if (existingItem) {
-      if (existingItem.quantity + 1 > (product.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER)) {
+      if (existingItem.quantity + 1 > Math.min(product.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER, product.offer.stock)) {
         alert('تعداد از سقف خرید این محصول بیشتر است.');
         return;
       }
@@ -133,7 +133,7 @@ const QuickOrder = ({ initialCode = '' }) => {
     if (newQuantity < 1) return;
     const item = cartItems.find(item => item.code === code);
     if (!item) return;
-    if (newQuantity > (item.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER) && newQuantity > item.quantity) {
+    if (newQuantity > Math.min(item.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER, item.offer.stock) && newQuantity > item.quantity) {
       alert('تعداد از سقف خرید این محصول بیشتر است.');
       return;
     }
@@ -167,7 +167,7 @@ const QuickOrder = ({ initialCode = '' }) => {
     if (busy || !cartItems.length) return;
     setBusy(true);
     try {
-      const order = await submitOrder(cartItems.map(item => ({ productId: item.id, quantity: item.quantity })), orderRequest);
+      const order = await submitOrder(cartItems.map(item => ({ productId: item.id, quantity: item.quantity, offerId: item.offer.id })), orderRequest);
       setCartItems([]);
       setMessage('درخواست ثبت شد. کد پیگیری ' + order.id);
     } catch (error) {

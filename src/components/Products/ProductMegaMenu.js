@@ -59,7 +59,7 @@ export default function ProductMegaMenu() {
 
             <ul className="nav-products-grid">
               {Object.entries(categories).map(([id, category]) => {
-                const details = [...new Set(catalog.filter(product => product.category === id && product.orderable)
+                const details = [...new Set(catalog.filter(product => product.category === id)
                   .map(product => product.detail))].slice(0, 3);
                 return (
                   <li key={id}>

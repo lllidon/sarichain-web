@@ -6,12 +6,13 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faEllipsis, faHeart, faImage, faList, faMagnifyingGlassPlus, faShareNodes, faShieldHalved, faStar, faStore, faTruck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import ProductPurchase from './ProductPurchase';
-import { productImage, productPackages } from './catalog';
+import { cheapestVariant, productImage, productPackages, withOffer } from './catalog';
 import { formatPrice } from './price';
 import ProductSellers from './ProductSellers';
 import ProductSpecifications from './ProductSpecifications';
-import { rankSellers, sellerPreview } from './sellerPreview';
+import { withExampleMetrics } from './sellerPreview';
 
+const stockNumber = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 3 });
 const percent = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 });
 const date = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeZone: 'Asia/Tehran' });
 const displayDate = day => date.format(new Date(day + 'T12:00:00Z'));
@@ -111,18 +112,24 @@ function ProductGallery({ product, showTab }) {
 
 function PurchaseCard({ seller, product, selected, delivery, initialUnit }) {
   return <aside className="market-purchase product-buy-card" id="product-buy-card" aria-label="خرید محصول">
-    <div className="product-buy-title"><h2>خرید محصول</h2><span className="product-example">فروشندهٔ نمونه</span></div>
+    <div className="product-buy-title"><h2>خرید محصول</h2></div>
+    {seller && <>
     <div className="product-card-seller">
       <span className="seller-logo"><FontAwesomeIcon icon={faStore} /></span>
-      <div><strong>{seller.name}</strong><small>{seller.city} · فاصلهٔ نمونه {percent.format(seller.distance)} کیلومتر</small></div>
+      <div><strong>{seller.name}</strong><small>{seller.city && seller.city + ' · '}فاصلهٔ نمونه {percent.format(seller.distance)} کیلومتر</small></div>
     </div>
     <div className="product-card-scores">
       <span><FontAwesomeIcon icon={faStar} /> {percent.format(seller.rating)} از ۵ کاربران</span>
       <span>نظارت {percent.format(seller.oversight)}٪</span>
+      <span className="product-example">نمونه</span>
     </div>
+    <dl className="product-inline-specs">
+      <div><dt>موجودی تقریبی</dt><dd>{stockNumber.format(seller.stock)} {seller.unit}</dd></div>
+      <div><dt>برداشت تقریبی</dt><dd>{seller.harvestDate ? displayDate(seller.harvestDate) : 'اعلام نشده'}</dd></div>
+    </dl></>}
     <div className="product-buy-action">
       <p>{selected.id === product.id ? 'محصول اصلی' : variantLabel(selected)}</p>
-      <ProductPurchase key={selected.id} product={selected} className="product-purchase" chooseUnit initialUnit={initialUnit} />
+      <ProductPurchase key={selected.id + ':' + (seller?.id ?? '')} product={selected} className="product-purchase" chooseUnit initialUnit={initialUnit} />
       <details className="product-price-history">
         <summary>سابقهٔ قیمت ۳۰ روزه <span className="product-example">نمونه</span></summary>
         <p>بازهٔ نمونه {formatPrice({ min: 3, max: 4.5 })}</p>
@@ -146,13 +153,16 @@ function variantLabel(variant) {
   return variant.options.length ? variant.options.map(option => option.value).join(' · ') : variant.name;
 }
 
-export default function ProductMarketplace({ product, category, categoryHref, description, delivery = [], initialVariant, initialUnit }) {
-  const [variantId, setVariant] = useState(initialVariant ?? product.id);
+export default function ProductMarketplace({ product, category, categoryHref, description, delivery = [], initialVariant, initialUnit, initialOffer }) {
+  const initialProductId = initialVariant ?? cheapestVariant(product).id;
+  const [variantId, setVariant] = useState(initialProductId);
   const [tab, setTab] = useState('about');
-  const [priority, setPriority] = useState('score');
-  const [sellerId, selectSeller] = useState(null);
-  const seller = sellerPreview.find(item => item.id === sellerId) ?? rankSellers(priority)[0];
-  const selected = product.variants.find(variant => variant.id === variantId) ?? product;
+  const [priority, setPriority] = useState('price');
+  const [sellerId, selectSeller] = useState(initialOffer ?? null);
+  const variant = product.variants.find(item => item.id === variantId) ?? product;
+  const sellers = withExampleMetrics(variant.offers);
+  const seller = sellers.find(item => item.id === sellerId) ?? sellers.find(item => item.id === variant.offer?.id);
+  const selected = withOffer(variant, seller);
   const galleryProduct = selected.gallery.length ? { ...selected, code: product.code } : product;
   const units = productPackages(selected);
 
@@ -168,7 +178,7 @@ export default function ProductMarketplace({ product, category, categoryHref, de
         {!!product.variants.length && <fieldset className="product-variant-picker">
           <legend>{product.variants.some(variant => variant.options.some(option => option.name.includes('کیف'))) ? 'کیفیت و گزینه‌ها' : 'گزینه‌های محصول'}</legend>
           {[product, ...product.variants].map(item => <label key={item.id}>
-            <input type="radio" name="product-variant" checked={variantId === item.id} onChange={() => setVariant(item.id)} />
+            <input type="radio" name="product-variant" checked={variantId === item.id} onChange={() => { setVariant(item.id); selectSeller(null); }} />
             <span>{item.id === product.id && !item.options.length ? 'محصول اصلی' : variantLabel(item)}</span>
           </label>)}
         </fieldset>}
@@ -181,7 +191,7 @@ export default function ProductMarketplace({ product, category, categoryHref, de
             <div key={unit.id}><dt>واحد فرعی</dt><dd>{unit.name} <small>{unit.amount.toLocaleString('fa-IR')} {selected.unit} در هر {unit.name}</small></dd></div>)}
         </dl>
       </section>
-      <PurchaseCard seller={seller} product={product} selected={selected} delivery={delivery} initialUnit={selected.id === (initialVariant ?? product.id) ? initialUnit : undefined} />
+      <PurchaseCard seller={seller} product={product} selected={selected} delivery={delivery} initialUnit={selected.id === initialProductId ? initialUnit : undefined} />
     </article>
     <nav className="market-section-nav" aria-label="بخش‌های صفحه محصول">
       <button id="product-about-tab" type="button" aria-pressed={tab === 'about'} aria-controls="product-about" onClick={() => setTab('about')}>معرفی</button>
@@ -191,9 +201,7 @@ export default function ProductMarketplace({ product, category, categoryHref, de
     <section id="product-about" className="market-sellers" aria-labelledby="product-about-tab" hidden={tab !== 'about'}>
       <h2>معرفی محصول</h2><p>{description}</p>
     </section>
-    <ProductSellers hidden={tab !== 'sellers'} priority={priority} setPriority={value => {
-      setPriority(value); selectSeller(null);
-    }} selected={seller} selectSeller={selectSeller} />
+    <ProductSellers hidden={tab !== 'sellers'} sellers={sellers} priority={priority} setPriority={setPriority} selected={seller} selectSeller={selectSeller} />
     <ProductSpecifications product={product} category={category} description={selected.description || product.description}
       selected={selected} hidden={tab !== 'specs'} />
   </div>;

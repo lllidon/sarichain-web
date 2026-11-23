@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBasketShopping, faCalendarDays, faMinus, faPlus, faTrash, faTruck } from '@fortawesome/free-solid-svg-icons';
 import { formatPrice, scalePrice, sumPrices } from '../Products/price';
 import { isCartProduct } from '../Products/cartData';
-import { productHref, productImage, productPackages } from '../Products/catalog';
+import { productHref, productImage, productPackages, withOffer } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
 import { submitOrder } from '../Products/submitOrder';
 import { addCatalogItem, catalogQuantityLimit, clearCatalogCart, removeOrderedItems, setCatalogQuantity, useCatalogCart } from './cartStore';
@@ -39,6 +39,7 @@ function CartLines({ items, busy, update, add }) {
               <strong>{pack.name}</strong>
               {pack.amount > 1 && <span>هر {pack.name} = {number.format(pack.amount)} {product.unit}</span>}
               <span>{formatPrice(pack.price)} برای هر {pack.name}</span>
+              {product.offer && <span>فروشنده: {product.offer.name}</span>}
             </p>
             <div className="checkout-line-footer">
               <div className="checkout-quantity" aria-label={`تعداد ${pack.name} ${name}`}>
@@ -139,12 +140,14 @@ export default function CartPage({ initialMessage = '' }) {
 
   const purchasable = catalog.flatMap(product => [product, ...product.variants]);
   const items = cart.map(item => {
-    const product = purchasable.find(product => isCartProduct(item, product) && product.orderable);
-    const packs = product ? productPackages(product) : [];
+    const catalogItem = purchasable.find(product => isCartProduct(item, product));
+    const product = catalogItem && withOffer(catalogItem, item.offerId ? catalogItem.offers.find(offer => offer.id === item.offerId) : catalogItem.offer);
+    const packs = product?.orderable ? productPackages(product) : [];
     const pack = packs.find(option => option.id === item.unitId);
-    const availableUnits = packs.filter(option => !cart.some(line => isCartProduct(line, product) && line.unitId === option.id) &&
+    const availableUnits = packs.filter(option => !cart.some(line => isCartProduct(line, product) &&
+      (line.offerId ?? catalogItem.offer?.id) === product.offer?.id && line.unitId === option.id) &&
       catalogQuantityLimit(cart, product, option, catalog) >= 1);
-    const maxQuantity = pack ? catalogQuantityLimit(cart, product, pack, catalog) : 0;
+    const maxQuantity = pack ? catalogQuantityLimit(cart, product, pack, catalog, item.offerId ?? null) : 0;
     return { ...item, product, pack, availableUnits, maxQuantity };
   });
   const subtotal = sumPrices(items.map(item => scalePrice(item.pack?.price, item.quantity)));
@@ -171,7 +174,7 @@ export default function CartPage({ initialMessage = '' }) {
     setLoginNeeded(false);
     try {
       const result = await submitOrder(items.map(item => ({
-        productId: item.product.id, quantity: item.quantity, unitId: item.pack.id,
+        productId: item.product.id, quantity: item.quantity, unitId: item.pack.id, offerId: item.product.offer.id,
       })), orderRequest, { method: selected.id, dispatchDate: date, slot });
       removeOrderedItems(items);
       setMessage('درخواست ثبت شد. کد پیگیری ' + result.id);

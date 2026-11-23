@@ -1,10 +1,16 @@
-export const sellerPreview = [
-  { id: 'sari', name: 'باغداران ساری', city: 'ساری', distance: 4.2, quality: 91, grade: 'درجه یک', oversight: 94, rating: 4.7, reviews: 41 },
-  { id: 'joybar', name: 'تعاونی محلی جویبار', city: 'جویبار', distance: 9.8, quality: 96, grade: 'ممتاز', oversight: 86, rating: 4.9, reviews: 58 },
-  { id: 'babol', name: 'تأمین سبز بابل', city: 'بابل', distance: 15.5, quality: 86, grade: 'درجه دو', oversight: 97, rating: 4.5, reviews: 32 },
+// Only comparison metrics are examples. Seller identity and commercial terms come from the offer.
+const examples = [
+  { distance: 4.2, quality: 91, grade: 'درجه یک', oversight: 94, rating: 4.7, reviews: 41 },
+  { distance: 9.8, quality: 96, grade: 'ممتاز', oversight: 86, rating: 4.9, reviews: 58 },
+  { distance: 15.5, quality: 86, grade: 'درجه دو', oversight: 97, rating: 4.5, reviews: 32 },
 ];
 
+export function withExampleMetrics(offers) {
+  return offers.map((offer, index) => ({ ...examples[index % examples.length], ...offer }));
+}
+
 export const sellerSorting = {
+  price: 'کمترین قیمت',
   score: 'پیشنهاد ساری‌چین',
   distance: 'نزدیک‌ترین',
   quality: 'کیفیت بالاتر',
@@ -17,9 +23,9 @@ export function scores(seller) {
   return .35 * proximity + .25 * seller.quality + .20 * seller.oversight + .20 * (seller.rating / 5 * 100);
 }
 
-export function rankSellers(priority) {
-  return [...sellerPreview].sort((a, b) => {
-    if (priority === 'distance') return a.distance - b.distance;
+export function rankSellers(sellers, priority) {
+  return [...sellers].sort((a, b) => {
+    if (priority === 'distance' || priority === 'price') return a[priority] - b[priority];
     if (priority !== 'score') return b[priority] - a[priority];
     return scores(b) - scores(a);
   });

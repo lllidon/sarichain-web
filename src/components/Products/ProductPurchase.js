@@ -19,9 +19,11 @@ export default function ProductPurchase({ product, className, children, onMessag
   const [message, setMessage] = useState('');
   const [unit, setUnit] = useState(initialUnit);
   const packs = productPackages(product);
-  const existingUnit = chooseUnit && cart.find(item => isCartProduct(item, product) && packs.some(option => option.id === item.packId));
+  const offerId = product.offer?.id;
+  const matchesOffer = item => isCartProduct(item, product) && item.offerId === offerId;
+  const existingUnit = chooseUnit && cart.find(item => matchesOffer(item) && packs.some(option => option.id === item.packId));
   const pack = packs.find(option => option.id === (unit || existingUnit?.packId)) ?? packs[0];
-  const line = cart.find(item => isCartProduct(item, product) && item.packId === pack.id);
+  const line = cart.find(item => matchesOffer(item) && item.packId === pack.id);
   const max = catalogQuantityLimit(cart, product, pack, catalog);
   const quantity = line?.quantity ?? 0;
   const cartFull = !line && cart.length >= cartLineLimit;
@@ -49,6 +51,7 @@ export default function ProductPurchase({ product, className, children, onMessag
     <>
       <form className={className} action="/web/cart" method="post" onSubmit={addToCart}>
         <input type="hidden" name="productId" value={product.id} />
+        {offerId && <input type="hidden" name="offerId" value={offerId} />}
         {(!chooseUnit || packs.length === 1) && <input type="hidden" name="unitId" value={pack.id} />}
         {children}
         {product.orderable ? (
@@ -88,7 +91,8 @@ export default function ProductPurchase({ product, className, children, onMessag
           </>
         ) : (
           <div className="catalog-card-price">
-            <strong>{formatPrice(product.price)}</strong>
+            <strong>{offerId ? formatPrice(product.price) : 'قیمت هنوز اعلام نشده'}</strong>
+            {offerId && <small> · موجودی قابل سفارش نیست</small>}
           </div>
         )}
       </form>

@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react';
 import { productImage, productPackages } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
-import { cartCookie, cartLineId, cartLineLimit, catalogQuantityLimit, parseCart, serializeCart } from '../Products/cartData';
+import { cartCookie, cartFitsCookie, cartLineId, catalogQuantityLimit, parseCart, serializeCart } from '../Products/cartData';
 
 export { catalogQuantityLimit };
 
@@ -18,7 +18,7 @@ function readCookie() {
 }
 
 function writeCookie(items) {
-  if (items.length > cartLineLimit) return;
+  if (!cartFitsCookie(items)) return;
   const secure = location.protocol === 'https:' ? '; Secure' : '';
   document.cookie = cartCookie + '=' + serializeCart(items) + '; Path=/; Max-Age=2592000; SameSite=Lax' + secure;
 }
@@ -96,11 +96,13 @@ export function useCatalogCart() {
 
 export function addCatalogItem(product, pack, catalog) {
   const items = getCart();
-  const id = cartLineId(product.id, pack.id);
+  const offerId = product.offer?.id;
+  const id = cartLineId(product.id, pack.id, offerId);
   const existing = items.find(item => item.id === id);
   const line = {
     id,
     productId: product.id,
+    offerId,
     code: product.code,
     packId: pack.id,
     unitId: pack.id,
@@ -119,9 +121,8 @@ function updateCatalogItem(items, line, product, catalog) {
   if (!pack || !product.orderable) return false;
   if (line.sellerId) return false;
   const existing = items.find(item => item.id === line.id);
-  if (!existing && items.length >= cartLineLimit) return false;
   if (!Number.isSafeInteger(line.quantity) || line.quantity < 1 ||
-      (line.quantity > (existing?.quantity ?? 0) && line.quantity > catalogQuantityLimit(items, product, pack, catalog))) return false;
+      (line.quantity > (existing?.quantity ?? 0) && line.quantity > catalogQuantityLimit(items, product, pack, catalog, line.offerId ?? null))) return false;
 
   const updated = {
     ...line,
@@ -132,9 +133,11 @@ function updateCatalogItem(items, line, product, catalog) {
     unit: product.unit,
     packName: pack.name,
   };
-  saveCart(existing
+  const next = existing
     ? items.map(item => item.id === line.id ? updated : item)
-    : [...items, updated]);
+    : [...items, updated];
+  if (!cartFitsCookie(next)) return false;
+  saveCart(next);
   return true;
 }
 

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faMagnifyingGlass, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './CatalogProvider';
-import { categoryContains, normalizeCatalogSearch as normalize, productImage, productHref } from './catalog';
+import { categoryContains, cheapestVariant, normalizeCatalogSearch as normalize, productImage, productHref } from './catalog';
 import ProductPurchase from './ProductPurchase';
 import './CategoriesPage.css';
 
@@ -23,7 +23,7 @@ function CatalogCard({ product, categoryName, onMessage }) {
           <Image src={productImage(product)} alt={product.name} width={152} height={152} unoptimized />
         </Link>
       </div>
-      <ProductPurchase product={product} className="catalog-card-info" onMessage={onMessage}>
+      <ProductPurchase product={product.listing} className="catalog-card-info" onMessage={onMessage}>
         <p className="catalog-card-category">{[categoryName, product.brand, product.form].filter(Boolean).join(' · ')}</p>
         <h3><Link href={href}>{product.name}</Link></h3>
         <p className="catalog-card-detail">{product.detail}</p>
@@ -35,10 +35,11 @@ function CatalogCard({ product, categoryName, onMessage }) {
 export default function CategoriesPage({ initialCategory = 'all', initialDetail = '' }) {
   const { catalog, categories, brands, unavailable: backendUnavailable } = useCatalog();
   const [brand, setBrand] = useState('');
-  const products = catalog;
+  const products = catalog.map(product => ({ ...product, listing: cheapestVariant(product) }));
+  const priced = products.filter(product => product.listing.offer);
   const units = [...new Set(products.flatMap(product => [product.unit, ...product.saleUnits.map(option => option.name)]))];
-  const lowestPrice = products.reduce((min, product) => Math.min(min, product.price.min), products[0]?.price.min ?? 0);
-  const highestPrice = products.reduce((max, product) => Math.max(max, product.price.max), 0);
+  const lowestPrice = priced.reduce((min, product) => Math.min(min, product.listing.price.min), priced[0]?.listing.price.min ?? 0);
+  const highestPrice = priced.reduce((max, product) => Math.max(max, product.listing.price.max), 0);
   const forms = [...new Set(products.map(product => product.form).filter(Boolean))];
 
   const pricePosition = value => 100 * (value - lowestPrice) / (highestPrice - lowestPrice || 1);
@@ -65,14 +66,17 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
     !invalidPrice &&
     (!brand || product.brandId === brand) &&
     (!unit || product.unit === unit || product.saleUnits.some(option => option.name === unit)) &&
-    (!minimum || product.price.max >= Number(minimum)) &&
-    (!maximum || product.price.min <= Number(maximum)) &&
+    (!minimum || (product.listing.offer && product.listing.price.max >= Number(minimum))) &&
+    (!maximum || (product.listing.offer && product.listing.price.min <= Number(maximum))) &&
     (!form || product.form === form) &&
     (!detail || product.detail === detail) &&
     [product.name, product.code, product.brand, categories[product.category].name].some(value => normalize(value).includes(search))
   );
-  if (sort === 'lowest') results.sort((a, b) => a.price.min - b.price.min || a.price.max - b.price.max);
-  if (sort === 'highest') results.sort((a, b) => b.price.max - a.price.max || b.price.min - a.price.min);
+  if (sort === 'lowest' || sort === 'highest') {
+    const direction = sort === 'lowest' ? 1 : -1;
+    results.sort((a, b) => Number(Boolean(b.listing.offer)) - Number(Boolean(a.listing.offer))
+      || direction * (a.listing.price.min - b.listing.price.min));
+  }
 
   const pageCount = Math.ceil(results.length / pageSize);
   const visibleProducts = results.slice((page - 1) * pageSize, page * pageSize);

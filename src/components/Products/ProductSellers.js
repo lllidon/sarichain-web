@@ -2,14 +2,15 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClipboardCheck, faLocationDot, faSeedling, faStar, faStore } from '@fortawesome/free-solid-svg-icons';
+import { formatPrice } from './price';
 import { rankSellers, scores, sellerSorting } from './sellerPreview';
 
 const number = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 });
 
-export default function ProductSellers({ hidden, priority, setPriority, selected, selectSeller }) {
+export default function ProductSellers({ hidden, sellers, priority, setPriority, selected, selectSeller }) {
   return <section id="product-sellers" className="product-seller-board" aria-labelledby="product-sellers-tab" hidden={hidden}>
     <div className="product-board-heading">
-      <div><h2>فروشندگان این محصول</h2><span className="product-example">دادهٔ نمونه · فاصله از مرکز ساری</span></div>
+      <div><h2>فروشندگان این محصول</h2><span className="product-example">فاصله، کیفیت، نظارت و نظر کاربران · نمونه</span></div>
       <label>مرتب‌سازی <select value={priority} onChange={event => setPriority(event.target.value)}>
         {Object.entries(sellerSorting).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
       </select></label>
@@ -17,11 +18,12 @@ export default function ProductSellers({ hidden, priority, setPriority, selected
     <details className="seller-ranking-details"><summary>معیار پیشنهاد ساری‌چین</summary>
       <p>فاصله ۳۵٪، کیفیت ۲۵٪، پوشش نظارت ۲۰٪ و امتیاز کاربران ۲۰٪.</p>
     </details>
+    {!sellers.length && <p>هنوز فروشنده‌ای برای این گزینه عرضه ثبت نکرده است.</p>}
     <ol className="seller-comparison">
-      {rankSellers(priority).map((seller, index) => <li key={seller.id} className={selected.id === seller.id ? 'is-picked' : undefined}>
+      {rankSellers(sellers, priority).map((seller, index) => <li key={seller.id} className={selected?.id === seller.id ? 'is-picked' : undefined}>
         <div className="seller-identity">
           <span className="seller-logo"><FontAwesomeIcon icon={faStore} /></span>
-          <div><strong>{seller.name}</strong><small>{seller.city} · رتبهٔ {number.format(index + 1)}</small></div>
+          <div><strong>{seller.name}</strong><small>{seller.city && seller.city + ' · '}رتبهٔ {number.format(index + 1)}</small></div>
         </div>
         <dl className="seller-metrics">
           <div><dt><FontAwesomeIcon icon={faLocationDot} /> فاصله</dt><dd>{number.format(seller.distance)} کیلومتر</dd></div>
@@ -30,9 +32,10 @@ export default function ProductSellers({ hidden, priority, setPriority, selected
           <div><dt><FontAwesomeIcon icon={faStar} /> کاربران</dt><dd>{number.format(seller.rating)} از ۵ <small>({number.format(seller.reviews)} نظر)</small></dd></div>
         </dl>
         <div className="seller-select">
-          <small>امتیاز ترکیبی {number.format(scores(seller))}</small>
-          <button type="button" aria-pressed={selected.id === seller.id} onClick={() => selectSeller(seller.id)}>
-            {selected.id === seller.id ? 'در کارت خرید' : 'نمایش در کارت خرید'}
+          <strong>{formatPrice({ min: seller.price, max: seller.price })} / {seller.unit}</strong>
+          <small>امتیاز ترکیبی نمونه {number.format(scores(seller))}</small>
+          <button type="button" aria-pressed={selected?.id === seller.id} onClick={() => selectSeller(seller.id)}>
+            {selected?.id === seller.id ? 'در کارت خرید' : 'نمایش در کارت خرید'}
           </button>
         </div>
       </li>)}

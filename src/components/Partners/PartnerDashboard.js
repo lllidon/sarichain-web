@@ -27,7 +27,7 @@ function Orders({ items }) {
         <div><strong>سفارش <bdi title={order._id}>{order._id.slice(0, 12)}</bdi></strong><small>{date.format(new Date(order.createdAt))}</small></div>
         <span className="partner-status">{statuses[order.status] || 'ثبت شده'}</span>
       </div>
-      <ul>{order.items.map(item => <li key={item.productId + ':' + (item.unitId ?? 'unit')}>{item.name} <span>× {number.format(item.quantity)} {item.unitName}</span></li>)}</ul>
+      <ul>{order.items.map(item => <li key={item.productId + ':' + (item.unitId ?? 'unit') + ':' + (item.offerId ?? '')}>{item.name} <span>× {number.format(item.quantity)} {item.unitName}</span>{item.sellerName && <small>{item.sellerName}</small>}</li>)}</ul>
       {order.delivery && <p>{order.delivery.label} · تحویل برآوردی {date.format(new Date(order.delivery.date + 'T12:00:00Z'))} · بازهٔ ارسال {order.delivery.slotLabel}</p>}
       <strong>{order.price ? formatPrice(order.price) : `${number.format(order.total)} ${order.currency === 'IRR' ? 'ریال' : order.currency}`}</strong>
     </li>)}

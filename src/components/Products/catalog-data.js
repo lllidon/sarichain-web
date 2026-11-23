@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { catalogPrice } from './price';
+import { defaultOffer, withOffer } from './catalog';
 
 const empty = { catalog: [], categories: {}, brands: [], unavailable: true };
 
@@ -26,10 +26,9 @@ export const readCatalog = cache(async () => {
     function mapProduct(product, parent) {
       const [form, detail] = (product.shortDescription || '').split(' · ');
       const gallery = product.gallery || [];
-      return {
+      const item = {
         id: product._id, code: product.sku, name: product.name, category: product.categoryId,
-        price: catalogPrice(product.price),
-        orderable: true,
+        offers: product.offers ?? [],
         isVariant: product.kind === 'variant',
         parentCode: parent?.code,
         maxOrderQuantity: product.maxOrderQuantity ?? null,
@@ -45,6 +44,7 @@ export const readCatalog = cache(async () => {
         fullImage: gallery[0] || product.imageUrl || parent?.fullImage || '',
         gallery,
       };
+      return withOffer(item, defaultOffer(item));
     }
     const catalog = products.filter(product => product.kind === 'master' && categories[product.categoryId]).map(row => {
       const product = mapProduct(row);

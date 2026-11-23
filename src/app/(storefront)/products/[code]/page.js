@@ -44,11 +44,11 @@ export default async function ProductPage({ params, searchParams }) {
     findProduct((await params).code), readDelivery(),
   ]);
   const query = await searchParams;
-  const initialVariant = product.variants.find(item => item.code === query.variant)?.id;
+  const initialVariant = [product, ...product.variants].find(item => item.code === query.variant || item.offers.some(offer => offer.id === query.offer))?.id;
   const initialUnit = typeof query.unit === 'string' ? query.unit : undefined;
   const category = categories[product.category];
   const categoryHref = { pathname: '/categories', query: { category: product.category } };
-  const related = catalog.filter(item => item.category === product.category && item.code !== product.code && item.orderable).slice(0, 3);
+  const related = catalog.filter(item => item.category === product.category && item.code !== product.code).slice(0, 3);
 
   return (
     <div className="catalog-page product-details">
@@ -64,7 +64,7 @@ export default async function ProductPage({ params, searchParams }) {
         </nav>
 
         <ProductMarketplace key={product.code} product={product} category={category}
-          categoryHref={categoryHref} description={describe(product)} delivery={delivery} initialVariant={initialVariant} initialUnit={initialUnit} />
+          categoryHref={categoryHref} description={describe(product)} delivery={delivery} initialVariant={initialVariant} initialUnit={initialUnit} initialOffer={typeof query.offer === 'string' ? query.offer : undefined} />
 
         {related.length > 0 && (
           <section className="related-products" aria-labelledby="related-products">

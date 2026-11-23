@@ -9,7 +9,7 @@ import './Products.css';
 
 const Products = () => {
   const { catalog, unavailable } = useCatalog();
-  const products = catalog.filter(product => product.orderable).slice(0, 5);
+  const products = catalog.slice(0, 5);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
