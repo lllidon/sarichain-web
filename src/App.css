@@ -1,3 +1,12 @@
+:root {
+  --brand-blue: #064399;
+  --brand-blue-dark: #08336c;
+  --brand-green: #4a7600;
+  --brand-green-dark: #3e6b00;
+  --brand-green-deep: #2c4f00;
+  --brand-green-light: #bde774;
+}
+
 * {
   margin: 0;
   padding: 0;

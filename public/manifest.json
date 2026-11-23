@@ -1,25 +1,20 @@
 {
-  "short_name": "ساری چین",
-  "name": "ساری چین",
+  "short_name": "ساری‌چین",
+  "name": "فروشگاه ساری‌چین",
   "icons": [
     {
-      "src": "/favicon.png",
-      "sizes": "any",
+      "src": "img/sarichain-icon-192.png",
+      "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "img/sarichain-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
+  "theme_color": "#064399",
   "background_color": "#ffffff"
 }

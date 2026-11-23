@@ -22,7 +22,7 @@
 }
 .testimonial-card h4 {
   margin-top: 20px;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
 }
 @media (max-width: 768px) {
   .testimonial-card p { font-size: 1rem; }

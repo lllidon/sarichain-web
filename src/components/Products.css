@@ -78,7 +78,7 @@
 .product-item h3 {
   margin: 20px 0 10px;
   font-size: 1.5rem;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
 }
 
 .product-item p {
@@ -93,7 +93,7 @@
 .product-btn {
   display: inline-block;
   text-decoration: none;
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   color: white;
   border: none;
   padding: 10px 25px;
@@ -105,7 +105,7 @@
 }
 
 .product-btn:hover {
-  background: #1b5e20;
+  background: var(--brand-green-deep);
   transform: scale(1.05);
 }
 
@@ -127,7 +127,7 @@
 }
 
 .slider-btn:hover {
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   transform: scale(1.1);
 }
 
@@ -158,12 +158,12 @@
 }
 
 .dot:hover {
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   transform: scale(1.2);
 }
 
 .dot.active {
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   width: 30px;
   border-radius: 6px;
 }
@@ -185,13 +185,13 @@
 }
 
 .progress-fill {
-  stroke: #2e7d32;
+  stroke: var(--brand-green-dark);
   transition: stroke-dashoffset 0.1s linear;
 }
 
 .progress-text {
   font-size: 14px;
-  fill: #2e7d32;
+  fill: var(--brand-green-dark);
   font-weight: bold;
   transform: rotate(90deg);
   dominant-baseline: middle;

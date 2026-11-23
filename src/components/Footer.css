@@ -1,6 +1,6 @@
 /* Footer Styles */
 .footer {
-  background: linear-gradient(135deg, #0a2e0a 0%, #1b4d1b 100%);
+  background: linear-gradient(135deg, #09274e 0%, #123d71 100%);
   color: #ffffff;
   position: relative;
   overflow: hidden;
@@ -39,7 +39,7 @@
   right: 0;
   width: 40px;
   height: 3px;
-  background: linear-gradient(90deg, #4caf50, #2e7d32);
+  background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark));
   border-radius: 2px;
 }
 
@@ -51,19 +51,14 @@
   margin-bottom: 20px;
 }
 
-.logo-icon {
-  font-size: 32px;
-  width: 50px;
-}
-
-.footer-logo h3 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 0;
-  background: linear-gradient(135deg, #ffffff, #4caf50);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.footer-logo img {
+  display: block;
+  width: 156px;
+  height: auto;
+  padding: 8px 10px;
+  box-sizing: content-box;
+  border-radius: 8px;
+  background: #fff;
 }
 
 /* Company Description */
@@ -91,12 +86,12 @@
 }
 
 .contact-item:hover {
-  color: #4caf50;
+  color: var(--brand-green-light);
 }
 
 .contact-item svg {
   width: 16px;
-  color: #4caf50;
+  color: var(--brand-green-light);
 }
 
 /* Footer Links */
@@ -119,7 +114,7 @@
 }
 
 .footer-links a:hover {
-  color: #4caf50;
+  color: var(--brand-green-light);
   transform: translateX(-5px);
 }
 
@@ -164,7 +159,7 @@
 }
 
 .newsletter-input-group button {
-  background: #4caf50;
+  background: var(--brand-green);
   border: none;
   padding: 0 15px;
   border-radius: 50px;
@@ -175,12 +170,12 @@
 }
 
 .newsletter-input-group button:hover {
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   transform: scale(1.05);
 }
 
 .newsletter-success {
-  color: #4caf50;
+  color: var(--brand-green-light);
   font-size: 0.8rem;
   margin-top: 8px;
 }
@@ -212,7 +207,7 @@
 }
 
 .social-links a:hover {
-  background: #4caf50;
+  background: var(--brand-green);
   transform: translateY(-3px);
 }
 
@@ -251,7 +246,7 @@
 }
 
 .legal-links a:hover {
-  color: #4caf50;
+  color: var(--brand-green-light);
 }
 
 .separator {

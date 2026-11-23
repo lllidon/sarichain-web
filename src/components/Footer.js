@@ -47,8 +47,7 @@ const Footer = () => {
           {/* Column 1: Company Info */}
           <div className="footer-col">
             <div className="footer-logo">
-              <img src="/logoWhite.png" className="logo-icon" />
-              <h3>سارچین</h3>
+              <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="156" height="52" />
             </div>
             <p className="company-desc">
               ارائه دهنده راهکارهای نوین بیواستی مولانت برای افزایش بهره‌وری و سلامت محصولات کشاورزی

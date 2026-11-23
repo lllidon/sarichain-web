@@ -33,9 +33,9 @@
 }
 
 .logo img {
-  height: 50px;
-  width: auto;
-  transition: all 0.3s ease;
+  display: block;
+  width: clamp(104px, 13vw, 142px);
+  height: auto;
 }
 
 /* Navigation Menu */
@@ -64,7 +64,7 @@
 }
 
 .nav-link:hover {
-  color: #2e7d32;
+  color: var(--brand-green-dark);
 }
 
 .dropdown-icon {
@@ -125,7 +125,7 @@
 }
 
 .mega-col h4 {
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   font-size: 18px;
   margin-bottom: 15px;
   font-weight: 600;
@@ -151,7 +151,7 @@
 }
 
 .mega-col ul li a:hover {
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   padding-left: 5px;
 }
 
@@ -169,7 +169,7 @@
 }
 
 .featured-product h4 {
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   margin-bottom: 10px;
 }
 
@@ -180,7 +180,7 @@
 }
 
 .featured-btn {
-  background: #2e7d32;
+  background: var(--brand-blue);
   color: white;
   border: none;
   padding: 8px 20px;
@@ -191,7 +191,7 @@
 }
 
 .featured-btn:hover {
-  background: #1b5e20;
+  background: var(--brand-blue-dark);
   transform: scale(1.05);
 }
 
@@ -218,7 +218,7 @@
 }
 
 .contact-btn {
-  background: #2e7d32;
+  background: var(--brand-blue);
   color: white;
   border: none;
   padding: 8px 20px;
@@ -229,7 +229,7 @@
 }
 
 .contact-btn:hover {
-  background: #1b5e20;
+  background: var(--brand-blue-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
@@ -323,10 +323,6 @@
 @media (max-width: 768px) {
   .nav-container {
     height: 70px;
-  }
-
-  .logo img {
-    height: 40px;
   }
 
   .nav-menu {
@@ -453,13 +449,13 @@
 
 .search-btn:hover,
 .cart-btn:hover {
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   transform: scale(1.1);
 }
 
 /* دکمه دریافت قیمت */
 .contact-btn {
-  background: #2e7d32;
+  background: var(--brand-blue);
   color: white;
   border: none;
   padding: 8px 20px;
@@ -471,7 +467,7 @@
 }
 
 .contact-btn:hover {
-  background: #1b5e20;
+  background: var(--brand-blue-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }

@@ -8,8 +8,8 @@ export const metadata = {
   },
   description: 'ساری چین، معرفی محصولات و راهکارهای کشاورزی',
   icons: {
-    icon: '/favicon.png',
-    apple: '/logo192.png',
+    icon: '/img/sarichain-icon.svg',
+    apple: '/img/sarichain-icon-180.png',
   },
   manifest: '/manifest.json',
 };

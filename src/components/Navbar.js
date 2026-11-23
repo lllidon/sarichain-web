@@ -56,7 +56,7 @@ const Navbar = ({ session }) => {
         {/* Logo */}
         <div className="logo">
           <a href="/">
-            <img src="/img/logoSite.png" alt="BioStimulant" />
+            <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="142" height="48" />
           </a>
         </div>
 

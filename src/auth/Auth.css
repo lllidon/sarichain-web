@@ -64,7 +64,7 @@
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
   color: white;
   box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
 }
@@ -115,7 +115,7 @@
 }
 
 .input-wrapper input:focus {
-  border-color: #2e7d32;
+  border-color: var(--brand-green-dark);
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
@@ -159,19 +159,19 @@
 }
 
 .forgot-password {
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .forgot-password:hover {
-  color: #1b5e20;
+  color: var(--brand-green-deep);
   text-decoration: underline;
 }
 
 /* Submit Button */
 .submit-btn {
-  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
   color: white;
   border: none;
   padding: 14px;
@@ -223,7 +223,7 @@
 .switch-btn {
   background: none;
   border: none;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   font-weight: 600;
   cursor: pointer;
   margin-right: 5px;
@@ -408,7 +408,7 @@
 }
 
 .method-btn.active {
-  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
   color: white;
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
 }
@@ -474,7 +474,7 @@
 }
 
 .method-btn.active {
-  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
   color: white;
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
 }

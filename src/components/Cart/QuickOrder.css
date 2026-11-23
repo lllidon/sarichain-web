@@ -18,7 +18,7 @@
 
 .order-header h1 {
   font-size: 2rem;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   margin-bottom: 10px;
 }
 
@@ -48,7 +48,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 20px;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
 }
 
 .input-title h3 {
@@ -90,13 +90,13 @@
 
 .product-input:focus {
   outline: none;
-  border-color: #2e7d32;
+  border-color: var(--brand-green-dark);
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
 .add-btn {
   padding: 15px 30px;
-  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
   color: white;
   border: none;
   border-radius: 12px;
@@ -132,7 +132,7 @@
 
 .quick-btn:hover {
   background: #e8f5e9;
-  border-color: #2e7d32;
+  border-color: var(--brand-green-dark);
 }
 
 .scan-animation {
@@ -140,7 +140,7 @@
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #4caf50;
+  color: var(--brand-green);
   animation: pulse 1s infinite;
 }
 
@@ -203,7 +203,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #2e7d32;
+  border-color: var(--brand-green-dark);
   box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
 }
 
@@ -237,7 +237,7 @@
 }
 
 .items-count {
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   color: white;
   padding: 2px 10px;
   border-radius: 20px;
@@ -296,7 +296,7 @@
 
 .code-cell {
   font-weight: 600;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   font-family: monospace;
   font-size: 1rem;
 }
@@ -309,7 +309,7 @@
 .price-cell,
 .total-cell {
   font-weight: 500;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
 }
 
 /* Quantity Control */
@@ -334,9 +334,9 @@
 }
 
 .quantity-control button:hover {
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   color: white;
-  border-color: #2e7d32;
+  border-color: var(--brand-green-dark);
 }
 
 .quantity-control span {
@@ -376,13 +376,13 @@
 
 .grand-total {
   font-size: 1.2rem;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   font-weight: bold;
 }
 
 .items-total {
   font-weight: bold;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
 }
 
 /* Cart Actions */
@@ -413,7 +413,7 @@
 
 .submit-btn {
   padding: 12px 30px;
-  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
   color: white;
   border: none;
   border-radius: 10px;
@@ -530,7 +530,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 20px;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   flex-wrap: wrap;
 }
 
@@ -547,7 +547,7 @@
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #2e7d32;
+  color: var(--brand-green-dark);
 }
 
 /* Search Results Dropdown */
@@ -642,7 +642,7 @@
   font-family: monospace;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   background: #e8f5e9;
   padding: 2px 6px;
   border-radius: 4px;
@@ -678,13 +678,13 @@
 
 .price-amount {
   font-weight: bold;
-  color: #2e7d32;
+  color: var(--brand-green-dark);
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
 .result-add {
-  background: #2e7d32;
+  background: var(--brand-green-dark);
   color: white;
   border: none;
   width: 28px;
@@ -698,7 +698,7 @@
 }
 
 .result-add:hover {
-  background: #1b5e20;
+  background: var(--brand-green-deep);
   transform: scale(1.05);
 }
 
