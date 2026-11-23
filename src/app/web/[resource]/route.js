@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { loginMessages, loginProblem } from '../../../lib/loginMessages';
 import { partnerBackend, partnerSessionCookie } from '../../../lib/partnerBackend';
 
 export const runtime = 'nodejs';
@@ -15,11 +16,15 @@ function response(data, status = 200) {
   return NextResponse.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } });
 }
 
-function loginRedirect(error) {
+function loginRedirect(error, returnToCart = false) {
+  const params = new URLSearchParams();
+  if (error) params.set('login', error);
+  if (returnToCart) params.set('returnTo', 'cart');
+  const location = error ? '/partners?' + params : returnToCart ? '/cart' : '/partners';
   return new NextResponse(null, {
     status: 303,
     headers: {
-      Location: error ? '/partners?login=' + error : '/partners',
+      Location: location,
       'Cache-Control': 'private, no-store',
     },
   });
@@ -30,8 +35,9 @@ async function forward(request, { params }) {
   const method = request.method;
   const contentType = request.headers.get('content-type')?.split(';')[0].trim();
   const formLogin = resource === 'login' && method === 'POST' && contentType === 'application/x-www-form-urlencoded';
-  const forbidden = () => formLogin ? loginRedirect('rejected') : response({}, 403);
+  const forbidden = () => formLogin ? loginRedirect('rejected') : response({ message: loginMessages.rejected }, 403);
   let caller;
+  let returnToCart = false;
   if (method !== 'GET') {
     const origin = request.headers.get('origin');
     try {
@@ -64,10 +70,11 @@ async function forward(request, { params }) {
     let body;
     if (formLogin) {
       const form = await request.formData();
+      returnToCart = form.get('returnTo') === 'cart';
       const phone = form.get('phone');
       const password = form.get('password');
       if (typeof phone !== 'string' || typeof password !== 'string' || !phone.trim() || !password ||
-          phone.length > 32 || password.length > 128) return loginRedirect('credentials');
+          phone.length > 32 || password.length > 128) return loginRedirect('invalid', returnToCart);
       body = JSON.stringify({ phone: phone.trim(), password });
     } else if (method !== 'GET') {
       body = await request.text();
@@ -77,13 +84,16 @@ async function forward(request, { params }) {
       token: requiresSession ? token : undefined,
       body,
     });
-    if (formLogin && !result.ok) {
-      return loginRedirect(result.status === 401 || result.status === 400 ? 'credentials'
-        : result.status === 429 ? 'rate-limit' : 'unavailable');
+    if (resource === 'login' && !result.ok) {
+      const code = loginProblem(result.status);
+      return formLogin ? loginRedirect(code, returnToCart) : response({ message: loginMessages[code] }, result.status);
     }
     const data = await result.json();
     if (resource === 'login' && result.ok) {
-      const session = formLogin ? loginRedirect() : response({ ok: true });
+      if (typeof data?.accessToken !== 'string' || !data.accessToken || !Number.isSafeInteger(data.expiresIn) || data.expiresIn <= 0) {
+        return formLogin ? loginRedirect('unavailable', returnToCart) : response({ message: loginMessages.unavailable }, 502);
+      }
+      const session = formLogin ? loginRedirect(undefined, returnToCart) : response({ ok: true });
       session.cookies.set(partnerSessionCookie, data.accessToken, {
         httpOnly: true, sameSite: 'lax', secure: (caller?.protocol ?? request.nextUrl.protocol) === 'https:',
         path: '/', maxAge: data.expiresIn,
@@ -93,7 +103,7 @@ async function forward(request, { params }) {
     }
     return response(data, result.status);
   } catch {
-    return formLogin ? loginRedirect('unavailable') : response({ message: 'ارتباط با بک‌اند برقرار نشد.' }, 502);
+    return formLogin ? loginRedirect('unavailable', returnToCart) : response({ message: 'ارتباط با بک‌اند برقرار نشد.' }, 502);
   }
 }
 

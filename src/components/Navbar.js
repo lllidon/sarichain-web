@@ -9,19 +9,12 @@ import SearchModal from './modals/SearchModal';
 import ProductMegaMenu from './Products/ProductMegaMenu';
 import { useCatalogCart } from './modals/cartStore';
 
-const Navbar = () => {
+const Navbar = ({ session }) => {
   const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const [isOpen, setIsOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [userPhone, setUserPhone] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem('isAuthenticated') === 'true') {
-      setUserPhone(localStorage.getItem('userPhone') || 'کاربر');
-    }
-  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -56,14 +49,6 @@ const Navbar = () => {
       setActiveMegaMenu(activeMegaMenu === menuName ? null : menuName);
     }
   };
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userPhone');
-    localStorage.removeItem('userEmail');
-    setUserPhone(null);
-    window.location.href = '/';
-  };
-
   return (
     <>
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
@@ -176,22 +161,9 @@ const Navbar = () => {
               {cartCount > 0 && <span className="cart-badge">{cartCount.toLocaleString('fa-IR')}</span>}
             </Link>
             
-            {userPhone ? (
-              <div className="user-menu">
-                <button className="user-btn">
-                  👤 {userPhone}
-                </button>
-                <button onClick={handleLogout} className="logout-btn">
-                  خروج
-                </button>
-              </div>
-            ) : (
-              <Link href="/login" className="login-link">
-                <button className="contact-btn">
-                  ورود / ثبت نام
-                </button>
-              </Link>
-            )}
+            <Link href={session ? '/partners' : '/login'} className="contact-btn login-link">
+              {session ? 'حساب کاربری' : 'ورود به حساب'}
+            </Link>
           </div>
         </div>
       </nav>

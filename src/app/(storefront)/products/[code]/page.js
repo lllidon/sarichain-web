@@ -39,10 +39,13 @@ export async function generateMetadata({ params }) {
   return { title: product.name, description: describe(product) };
 }
 
-export default async function ProductPage({ params }) {
+export default async function ProductPage({ params, searchParams }) {
   const [{ catalog, categories, product }, delivery] = await Promise.all([
     findProduct((await params).code), readDelivery(),
   ]);
+  const query = await searchParams;
+  const initialVariant = product.variants.find(item => item.code === query.variant)?.id;
+  const initialUnit = typeof query.unit === 'string' ? query.unit : undefined;
   const category = categories[product.category];
   const categoryHref = { pathname: '/categories', query: { category: product.category } };
   const related = catalog.filter(item => item.category === product.category && item.code !== product.code && item.orderable).slice(0, 3);
@@ -61,7 +64,7 @@ export default async function ProductPage({ params }) {
         </nav>
 
         <ProductMarketplace key={product.code} product={product} category={category}
-          categoryHref={categoryHref} description={describe(product)} delivery={delivery} />
+          categoryHref={categoryHref} description={describe(product)} delivery={delivery} initialVariant={initialVariant} initialUnit={initialUnit} />
 
         {related.length > 0 && (
           <section className="related-products" aria-labelledby="related-products">

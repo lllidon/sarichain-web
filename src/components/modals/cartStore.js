@@ -2,27 +2,48 @@
 
 import { useSyncExternalStore } from 'react';
 import { productImage, productPackages } from '../Products/catalog';
+import { useCatalog } from '../Products/CatalogProvider';
+import { cartCookie, cartLineId, cartLineLimit, catalogQuantityLimit, parseCart, serializeCart } from '../Products/cartData';
+
+export { catalogQuantityLimit };
 
 const storageKey = 'sarichain-catalog-cart';
 const empty = [];
 const listeners = new Set();
 let savedCart;
 
+function readCookie() {
+  const entry = document.cookie.split('; ').find(value => value.startsWith(cartCookie + '='));
+  return entry?.slice(cartCookie.length + 1);
+}
+
+function writeCookie(items) {
+  if (items.length > cartLineLimit) return;
+  const secure = location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = cartCookie + '=' + serializeCart(items) + '; Path=/; Max-Age=2592000; SameSite=Lax' + secure;
+}
+
 function getCart() {
   if (savedCart) return savedCart;
   try {
+    const cookie = readCookie();
+    if (cookie !== undefined) {
+      savedCart = parseCart(cookie);
+      return savedCart;
+    }
     const value = JSON.parse(window.localStorage.getItem(storageKey));
-    savedCart = Array.isArray(value) ? value.reduce((lines, item) => {
-      if (!item || typeof item.code !== 'string' || !Number.isSafeInteger(item.quantity) ||
-          !Number.isSafeInteger(item.amount) || item.quantity < 1 || item.amount < 1 || item.sellerId) return lines;
-      const packId = typeof item.unitId === 'string' ? item.unitId : 'unit';
-      const id = JSON.stringify([item.code, packId]);
-      const existing = lines.find(line => line.id === id);
-      const quantity = item.unitId ? item.quantity : item.amount * item.quantity;
-      if (existing) existing.quantity = Math.min(Number.MAX_SAFE_INTEGER, existing.quantity + quantity);
-      else lines.push({ ...item, id, unitId: packId, packId, amount: item.unitId ? item.amount : 1, quantity: Math.min(Number.MAX_SAFE_INTEGER, quantity) });
-      return lines;
-    }, []) : empty;
+    const legacy = Array.isArray(value) ? value : empty;
+    const lines = new Map();
+    for (const item of legacy) {
+      if (!item || typeof item.productId !== 'string' || !Number.isSafeInteger(item.quantity) || item.quantity < 1 || item.sellerId) continue;
+      const packId = item.unitId || 'unit';
+      const id = cartLineId(item.productId, packId);
+      const quantity = item.unitId ? item.quantity : (item.amount || 1) * item.quantity;
+      const accumulated = Math.min(Number.MAX_SAFE_INTEGER, (lines.get(id)?.quantity ?? 0) + quantity);
+      const [line] = parseCart(serializeCart([{ ...item, packId, quantity: accumulated }]));
+      if (line) lines.set(id, line);
+    }
+    savedCart = [...lines.values()];
   } catch {
     savedCart = empty;
   }
@@ -34,23 +55,32 @@ function notify() {
 }
 
 function syncCart(event) {
-  if (event.key === storageKey || event.key === null) {
+  if (event.type === 'focus' || event.key === storageKey || event.key === null) {
     savedCart = undefined;
     notify();
   }
 }
 
 function subscribe(listener) {
-  if (!listeners.size) window.addEventListener('storage', syncCart);
+  if (!listeners.size) {
+    const items = getCart();
+    if (items.length && readCookie() === undefined) writeCookie(items);
+    window.addEventListener('storage', syncCart);
+    window.addEventListener('focus', syncCart);
+  }
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
-    if (!listeners.size) window.removeEventListener('storage', syncCart);
+    if (!listeners.size) {
+      window.removeEventListener('storage', syncCart);
+      window.removeEventListener('focus', syncCart);
+    }
   };
 }
 
 function saveCart(items) {
   savedCart = items;
+  writeCookie(items);
   try {
     window.localStorage.setItem(storageKey, JSON.stringify(items));
   } catch {
@@ -60,35 +90,17 @@ function saveCart(items) {
 }
 
 export function useCatalogCart() {
-  return useSyncExternalStore(subscribe, getCart, () => empty);
-}
-
-export function catalogQuantityLimit(items, product, pack, catalog) {
-  const familyCode = product.parentCode ?? product.code;
-  const family = catalog.find(item => item.code === familyCode);
-  const products = family ? [family, ...family.variants] : [product];
-  let used = 0;
-  let familyUsed = 0;
-  for (const line of items) {
-    if (line.code === product.code && line.packId === pack.id) continue;
-    const match = products.find(item => item.code === line.code);
-    if (!match) continue;
-    const units = productPackages(match).find(option => option.id === line.packId)?.amount ?? 0;
-    const quantity = units * line.quantity;
-    familyUsed += quantity;
-    if (match.code === product.code) used += quantity;
-  }
-  const skuRemaining = (product.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER) - used;
-  const familyRemaining = (product.familyMaxOrderQuantity ?? Number.MAX_SAFE_INTEGER) - familyUsed;
-  return Math.max(0, Math.floor(Math.min(skuRemaining, familyRemaining) / pack.amount));
+  const { initialCart = empty } = useCatalog();
+  return useSyncExternalStore(subscribe, getCart, () => initialCart);
 }
 
 export function addCatalogItem(product, pack, catalog) {
   const items = getCart();
-  const id = JSON.stringify([product.code, pack.id]);
+  const id = cartLineId(product.id, pack.id);
   const existing = items.find(item => item.id === id);
   const line = {
     id,
+    productId: product.id,
     code: product.code,
     packId: pack.id,
     unitId: pack.id,
@@ -107,6 +119,7 @@ function updateCatalogItem(items, line, product, catalog) {
   if (!pack || !product.orderable) return false;
   if (line.sellerId) return false;
   const existing = items.find(item => item.id === line.id);
+  if (!existing && items.length >= cartLineLimit) return false;
   if (!Number.isSafeInteger(line.quantity) || line.quantity < 1 ||
       (line.quantity > (existing?.quantity ?? 0) && line.quantity > catalogQuantityLimit(items, product, pack, catalog))) return false;
 

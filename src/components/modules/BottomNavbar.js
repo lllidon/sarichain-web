@@ -18,20 +18,16 @@ import { useCatalog } from '../Products/CatalogProvider';
 import { useCatalogCart } from '../modals/cartStore';
 import './BottomNavbar.css';
 
-const BottomNavbar = () => {
+const BottomNavbar = ({ session }) => {
   const { categories } = useCatalog();
   const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const router = useRouter();
   const path = usePathname();
   const [activeTab, setActiveTab] = useState('home');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('isAuthenticated');
-    setIsLoggedIn(authStatus === 'true');
-    
     // تعیین تب فعال بر اساس مسیر فعلی
     if (path === '/') setActiveTab('home');
     else if (path === '/cart') setActiveTab('cart');
@@ -51,9 +47,6 @@ const BottomNavbar = () => {
         break;
       case 'search':
         setShowSearchModal(true);
-        break;
-      case 'profile':
-        router.push('/partners');
         break;
       default:
         break;
@@ -109,17 +102,10 @@ const BottomNavbar = () => {
           </div>
 
           {/* پروفایل من/ورود */}
-          <div 
-            className={`bottom-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => handleTabClick('profile')}
-          >
-            <div className="nav-icon">
-              <FontAwesomeIcon icon={isLoggedIn ? faUser : faSignInAlt} />
-            </div>
-            <span className="nav-label">
-              {isLoggedIn ? 'پروفایل' : 'ورود'}
-            </span>
-          </div>
+          <Link href={session ? '/partners' : '/login'} className="bottom-nav-item">
+            <span className="nav-icon"><FontAwesomeIcon icon={session ? faUser : faSignInAlt} /></span>
+            <span className="nav-label">{session ? 'حساب کاربری' : 'ورود'}</span>
+          </Link>
         </div>
       </div>
 

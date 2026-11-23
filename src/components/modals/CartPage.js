@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBasketShopping, faCalendarDays, faMinus, faPlus, faTrash, faTruck } from '@fortawesome/free-solid-svg-icons';
 import { formatPrice, scalePrice, sumPrices } from '../Products/price';
+import { isCartProduct } from '../Products/cartData';
 import { productHref, productImage, productPackages } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
 import { submitOrder } from '../Products/submitOrder';
@@ -21,7 +22,7 @@ function CartLines({ items, busy, update, add }) {
   return <ul className="checkout-lines">
     {items.map(item => {
       const { product, pack, quantity } = item;
-      const name = product?.name ?? item.name;
+      const name = product?.name ?? item.name ?? 'محصول ناموجود';
       return <li key={item.id} className="checkout-line">
         <Image src={product ? productImage(product) : item.image || '/img/catalog/field.webp'}
           alt="" width={80} height={80} unoptimized />
@@ -102,12 +103,12 @@ function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, 
   </div>;
 }
 
-export default function CartPage() {
+export default function CartPage({ initialMessage = '' }) {
   const { catalog } = useCatalog();
   const cart = useCatalogCart();
   const orderRequest = useRef(null);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(initialMessage);
   const [loginNeeded, setLoginNeeded] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [options, setOptions] = useState(null);
@@ -138,10 +139,10 @@ export default function CartPage() {
 
   const purchasable = catalog.flatMap(product => [product, ...product.variants]);
   const items = cart.map(item => {
-    const product = purchasable.find(product => product.code === item.code && product.orderable);
+    const product = purchasable.find(product => isCartProduct(item, product) && product.orderable);
     const packs = product ? productPackages(product) : [];
     const pack = packs.find(option => option.id === item.unitId);
-    const availableUnits = packs.filter(option => !cart.some(line => line.code === item.code && line.unitId === option.id) &&
+    const availableUnits = packs.filter(option => !cart.some(line => isCartProduct(line, product) && line.unitId === option.id) &&
       catalogQuantityLimit(cart, product, option, catalog) >= 1);
     const maxQuantity = pack ? catalogQuantityLimit(cart, product, pack, catalog) : 0;
     return { ...item, product, pack, availableUnits, maxQuantity };
@@ -221,7 +222,7 @@ export default function CartPage() {
         {window && <p className="checkout-date-note"><strong>تحویل برآوردی</strong><span>{showDate(window.deliveryDate)}</span></p>}
         {exceedsLimit && <p className="checkout-warning">تعداد بعضی اقلام بیشتر از سقف مجاز است. تعداد را کاهش دهید.</p>}
         {containsInactive && <p className="checkout-warning">برای ادامه، اقلام ناموجود را از سبد حذف کنید.</p>}
-        {loginNeeded ? <Link className="checkout-submit" href="/partners">ورود به حساب برای ثبت سفارش</Link> :
+        {loginNeeded ? <Link className="checkout-submit" href="/login?returnTo=cart">ورود به حساب برای ثبت سفارش</Link> :
           <button type="button" className="checkout-submit" disabled={busy || containsInactive || exceedsLimit || !selected || confirmClear} onClick={checkout}>
             {busy ? 'در حال ثبت…' : 'ثبت درخواست سفارش'}<FontAwesomeIcon icon={faArrowLeft} />
           </button>}

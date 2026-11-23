@@ -199,7 +199,7 @@ export function PartnerProfileEditor({ initialProfile }) {
   </>;
 }
 
-export default function PartnerProfile({ initialMessage = '' }) {
+export default function PartnerProfile({ initialMessage = '', returnToCart = false }) {
   return (
     <div className="catalog-page partners-page" dir="rtl">
       <div className="catalog-wrap">
@@ -208,7 +208,8 @@ export default function PartnerProfile({ initialMessage = '' }) {
           <h1>پنل همکاران ساری‌چین</h1>
         </header>
         <form className="partner-login" action="/web/login" method="post">
-          <h2>ورود به حساب همکاری</h2>
+          <h2>ورود به حساب مشتری و همکار</h2>
+          {returnToCart && <input type="hidden" name="returnTo" value="cart" />}
           <label>شماره موبایل<input name="phone" type="tel" dir="ltr" autoComplete="username" maxLength={32} required /></label>
           <label>رمز ورود<input name="password" type="password" dir="ltr" autoComplete="current-password" maxLength={128} required /></label>
           <p>برای دریافت رمز ورود اولیه، با شعبه ساری‌چین هماهنگ کنید.</p>

@@ -109,7 +109,7 @@ function ProductGallery({ product, showTab }) {
   );
 }
 
-function PurchaseCard({ seller, product, selected, delivery }) {
+function PurchaseCard({ seller, product, selected, delivery, initialUnit }) {
   return <aside className="market-purchase product-buy-card" id="product-buy-card" aria-label="خرید محصول">
     <div className="product-buy-title"><h2>خرید محصول</h2><span className="product-example">فروشندهٔ نمونه</span></div>
     <div className="product-card-seller">
@@ -122,7 +122,7 @@ function PurchaseCard({ seller, product, selected, delivery }) {
     </div>
     <div className="product-buy-action">
       <p>{selected.id === product.id ? 'محصول اصلی' : variantLabel(selected)}</p>
-      <ProductPurchase key={selected.id} product={selected} className="product-purchase" chooseUnit />
+      <ProductPurchase key={selected.id} product={selected} className="product-purchase" chooseUnit initialUnit={initialUnit} />
       <details className="product-price-history">
         <summary>سابقهٔ قیمت ۳۰ روزه <span className="product-example">نمونه</span></summary>
         <p>بازهٔ نمونه {formatPrice({ min: 3, max: 4.5 })}</p>
@@ -146,8 +146,8 @@ function variantLabel(variant) {
   return variant.options.length ? variant.options.map(option => option.value).join(' · ') : variant.name;
 }
 
-export default function ProductMarketplace({ product, category, categoryHref, description, delivery = [] }) {
-  const [variantId, setVariant] = useState(product.id);
+export default function ProductMarketplace({ product, category, categoryHref, description, delivery = [], initialVariant, initialUnit }) {
+  const [variantId, setVariant] = useState(initialVariant ?? product.id);
   const [tab, setTab] = useState('about');
   const [priority, setPriority] = useState('score');
   const [sellerId, selectSeller] = useState(null);
@@ -181,7 +181,7 @@ export default function ProductMarketplace({ product, category, categoryHref, de
             <div key={unit.id}><dt>واحد فرعی</dt><dd>{unit.name} <small>{unit.amount.toLocaleString('fa-IR')} {selected.unit} در هر {unit.name}</small></dd></div>)}
         </dl>
       </section>
-      <PurchaseCard seller={seller} product={product} selected={selected} delivery={delivery} />
+      <PurchaseCard seller={seller} product={product} selected={selected} delivery={delivery} initialUnit={selected.id === (initialVariant ?? product.id) ? initialUnit : undefined} />
     </article>
     <nav className="market-section-nav" aria-label="بخش‌های صفحه محصول">
       <button id="product-about-tab" type="button" aria-pressed={tab === 'about'} aria-controls="product-about" onClick={() => setTab('about')}>معرفی</button>
