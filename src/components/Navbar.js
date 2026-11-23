@@ -92,6 +92,7 @@ const Navbar = () => {
         {/* Navigation Menu */}
         <ul className={`nav-menu ${isOpen ? 'active' : ''}`}>
           <ProductMegaMenu />
+          <li className="nav-item"><Link href="/pilot" className="nav-link">پیش‌نمایش پایلوت</Link></li>
 
           {/* Solutions Mega Menu */}
           <li 

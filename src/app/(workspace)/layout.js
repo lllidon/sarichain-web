@@ -9,7 +9,7 @@ export default function WorkspaceLayout({ children }) {
         <Image src="/img/logoSite.png" width={98} height={42} alt="" unoptimized />
         <span>پنل همکاران</span>
       </Link>
-      <Link href="/">بازگشت به سایت</Link>
+      <div className="partner-workspace-links"><Link href="/pilot">پیش‌نمایش پایلوت</Link><Link href="/">بازگشت به سایت</Link></div>
     </header>
     <main>{children}</main>
   </div>;

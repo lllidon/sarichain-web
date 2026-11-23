@@ -126,3 +126,5 @@
 .partner-workspace-brand { display: flex; gap: 12px; align-items: center; }
 .partner-workspace-brand img { object-fit: contain; }
 .partner-workspace .partners-page { padding-block-start: clamp(16px, 3vw, 28px); }
+
+.partner-workspace-links { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: .85rem; }
