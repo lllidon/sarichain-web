@@ -103,8 +103,7 @@ function UpgradeForm({ kind, categories, onSubmitted }) {
   </form>;
 }
 
-export default function AccountUpgradeCenter({ profile }) {
-  const [categories, setCategories] = useState([]);
+export default function AccountUpgradeCenter({ profile, categories = [] }) {
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
@@ -112,10 +111,8 @@ export default function AccountUpgradeCenter({ profile }) {
     let active = true;
     async function load() {
       try {
-        const [categoryData, requestData] = await Promise.all([
-          api('categories?limit=100&page=1'), api('account-upgrades'),
-        ]);
-        if (active) { setCategories((categoryData.items || []).filter(category => category.parentId)); setRequests(requestData.items || []); }
+        const requestData = await api('account-upgrades');
+        if (active) setRequests(requestData.items || []);
       } catch (failure) { if (active) setError(failure.message); }
     }
     load();
