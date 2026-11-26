@@ -46,11 +46,11 @@ const transportStatusLabels = {
 };
 const transportCategoryLabels = { intracity: 'درون‌شهری', intercity: 'بین‌شهری', interprovincial: 'بین‌استانی' };
 
-function TransportBulletin({ items }) {
+function TransportBulletin({ items, profile }) {
   const own = items.filter(item => item.kind === 'own');
   const jobs = items.filter(item => item.kind === 'job');
   return <div className="transport-bulletin">
-    <TransportOrderForm />
+    {profile.customerType ? <TransportOrderForm /> : <div className="partner-empty"><p>برای ثبت درخواست حمل، ابتدا نوع مشتری را در پروفایل خود تکمیل کنید.</p><Link href={partnerHref('profile')}>تکمیل پروفایل</Link></div>}
     <section className="transport-bulletin-list">
       <div className="transport-bulletin-heading"><h2>درخواست‌های من و بارهای پیشنهادی</h2><p>بارهای تأییدشده متناسب با ظرفیت وسیله نقلیه شما در این بخش نمایش داده می‌شوند.</p></div>
       {!own.length && !jobs.length ? <div className="partner-empty"><p>هنوز درخواست یا بار پیشنهادی برای نمایش وجود ندارد.</p></div> :
@@ -172,7 +172,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           </div>}
           {section === 'profile' && children}
           {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
-          {data && (section === 'orders' ? <Orders items={data.items} /> : section === 'bulletin' ? <TransportBulletin items={data.items} /> :
+          {data && (section === 'orders' ? <Orders items={data.items} /> : section === 'bulletin' ? <TransportBulletin items={data.items} profile={profile} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
