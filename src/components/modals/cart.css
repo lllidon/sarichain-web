@@ -307,3 +307,112 @@
 @media(max-width:760px) {
   .weekly-bulk-toolbar > button { width:100%; }
 }
+
+/* Weekly basket: recommendations on the right, products on the left */
+.weekly-layout {
+  display:grid;
+  grid-template-columns:minmax(230px,270px) minmax(0,1fr);
+  align-items:start;
+  gap:22px;
+  margin-top:26px;
+}
+.weekly-suggestions-sidebar {
+  min-width:0;
+  padding:15px;
+  border:1px solid var(--weekly-line);
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 5px 18px #1a382208;
+}
+.weekly-suggestions-sidebar .weekly-suggestion-section { margin:0; }
+.weekly-suggestions-sidebar .weekly-section-heading {
+  display:block;
+  margin-bottom:13px;
+}
+.weekly-suggestions-sidebar .weekly-section-heading h2 { font-size:17px; }
+.weekly-suggestions-sidebar .weekly-section-heading > p {
+  margin-top:7px;
+  font-size:11px;
+  line-height:1.8;
+}
+.weekly-suggestions-sidebar .weekly-suggestion-grid {
+  grid-template-columns:minmax(0,1fr);
+  gap:10px;
+}
+.weekly-suggestions-sidebar .weekly-suggestion-card {
+  min-height:0;
+  grid-template-columns:38px minmax(0,1fr);
+  gap:9px;
+  padding:12px;
+  border-radius:11px;
+}
+.weekly-suggestions-sidebar .weekly-suggestion-icon {
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  font-size:15px;
+}
+.weekly-suggestions-sidebar .weekly-suggestion-card h3 { font-size:13px; }
+.weekly-suggestions-sidebar .weekly-suggestion-card p { font-size:10px; }
+.weekly-suggestions-sidebar .weekly-suggestion-card > a {
+  grid-column:2;
+  font-size:10px;
+}
+.weekly-suggestions-sidebar .weekly-coming-soon {
+  position:static;
+  grid-column:2;
+  justify-self:start;
+  margin-top:3px;
+}
+.weekly-products-main { min-width:0; }
+.weekly-products-main .weekly-products-section { margin-top:0; }
+.weekly-products-main .weekly-section-heading h2 { font-size:20px; }
+.weekly-products-main .weekly-product-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.weekly-product-media { height:158px; padding:12px; overflow:hidden; }
+.weekly-product-image {
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+}
+.weekly-product-image img {
+  display:block;
+  width:auto !important;
+  height:auto !important;
+  max-width:145px !important;
+  max-height:132px !important;
+  object-fit:contain;
+  mix-blend-mode:multiply;
+}
+@media(max-width:1120px) {
+  .weekly-layout { grid-template-columns:minmax(210px,240px) minmax(0,1fr); gap:15px; }
+  .weekly-products-main .weekly-product-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:760px) {
+  .weekly-layout { grid-template-columns:minmax(0,1fr); gap:17px; margin-top:18px; }
+  .weekly-suggestions-sidebar { order:0; }
+  .weekly-products-main { order:1; }
+  .weekly-suggestions-sidebar .weekly-suggestion-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .weekly-suggestions-sidebar .weekly-suggestion-card {
+    grid-template-columns:minmax(0,1fr);
+    align-content:start;
+    gap:7px;
+  }
+  .weekly-suggestions-sidebar .weekly-suggestion-card > a,
+  .weekly-suggestions-sidebar .weekly-coming-soon { grid-column:1; }
+  .weekly-products-main .weekly-product-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .weekly-product-media { height:145px; }
+  .weekly-product-image img { max-width:125px !important; max-height:118px !important; }
+}
+@media(max-width:560px) {
+  .weekly-suggestions-sidebar .weekly-suggestion-grid { grid-template-columns:minmax(0,1fr); }
+  .weekly-suggestions-sidebar .weekly-suggestion-card {
+    grid-template-columns:38px minmax(0,1fr);
+    align-items:start;
+  }
+  .weekly-suggestions-sidebar .weekly-suggestion-card > a,
+  .weekly-suggestions-sidebar .weekly-coming-soon { grid-column:2; }
+  .weekly-products-main .weekly-product-grid { grid-template-columns:minmax(0,1fr); }
+  .weekly-product-card { grid-template-columns:104px minmax(0,1fr); }
+  .weekly-product-media { min-height:165px; height:100%; }
+  .weekly-product-image img { max-width:88px !important; max-height:105px !important; }
+}
