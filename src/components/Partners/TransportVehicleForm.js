@@ -53,7 +53,7 @@ export default function TransportVehicleForm({ profile }) {
     const yearText = normalizeDigits(value('year'));
     const year = Number(yearText);
     const capacity = Number(value('capacityKg'));
-    if (!value('model') || !/^\d{4}$/.test(value('year')) || year < 1350 || year > 1500 ||
+    if (!value('model') || !/^\d{4}$/.test(yearText) || year < 1350 || year > 1500 ||
         !Number.isFinite(capacity) || capacity <= 0 || !value('plate') || !value('license')) {
       setError('مدل، سال ساخت، ظرفیت، پلاک و شماره گواهینامه را کامل و صحیح وارد کنید.');
       setBusy(false); return;
