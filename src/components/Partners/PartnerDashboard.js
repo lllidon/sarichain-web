@@ -6,6 +6,7 @@ import { leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partne
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
+import TransportVehicleForm from './TransportVehicleForm';
 
 const icons = {
   grid: faBorderAll, orders: faClipboardList, products: faBox, transport: faTruck,
@@ -39,9 +40,10 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
   const { entry, placeholder, help } = sections[section];
   const action = saveWorkspaceEntry.bind(null, section);
   const isLocation = section === 'orchards';
+  const isTransport = section === 'transport';
   const formKey = result === 'saved' ? items[0]?.id : undefined;
   return <div className={isLocation ? 'partner-entry-layout partner-location-layout' : 'partner-entry-layout'}>
-    {isLocation ? <WorkspaceLocationForm key={formKey} profile={profile} /> :
+    {isTransport ? <TransportVehicleForm profile={profile} /> : isLocation ? <WorkspaceLocationForm key={formKey} profile={profile} /> :
       section === 'products' ? offerCatalog && !offerCatalog.unavailable ?
       <ProductOfferForm key={formKey} locations={locations} categories={offerCatalog.categories} brands={offerCatalog.brands}
         products={offerCatalog.catalog.flatMap(product => [product, ...product.variants])
