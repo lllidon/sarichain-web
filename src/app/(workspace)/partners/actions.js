@@ -169,3 +169,46 @@ export async function acceptTransportOrder(formData) {
   if (response.status === 401) redirect('/partners');
   redirect(partnerHref('bulletin') + '&result=' + (response.ok ? 'accepted' : 'error'));
 }
+
+export async function importProductOffers(formData) {
+  const token = (await cookies()).get(partnerSessionCookie)?.value;
+  if (!token) redirect('/partners');
+  const file = formData.get('file');
+  const href = partnerHref('products');
+  if (!(file instanceof File) || !file.size || file.size > 2 * 1024 * 1024) redirect(href + '&result=invalid');
+  const text = (await file.text()).replace(/^\\uFEFF/, '');
+  const lines = text.split(/\\r?\\n/).filter(line => line.trim());
+  const parse = line => {
+    const values = []; let value = '', quoted = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (quoted && char === '"' && line[i + 1] === '"') { value += '"'; i++; }
+      else if (char === '"') quoted = !quoted;
+      else if (char === ',' && !quoted) { values.push(value); value = ''; }
+      else value += char;
+    }
+    values.push(value);
+    return values;
+  };
+  if (lines.length < 2 || lines.length > 1001) redirect(href + '&result=invalid');
+  const headers = parse(lines[0]).map(value => value.trim());
+  const idIndex = headers.indexOf('id'), priceIndex = headers.indexOf('price'), stockIndex = headers.indexOf('stock');
+  if ([idIndex, priceIndex, stockIndex].some(index => index < 0)) redirect(href + '&result=invalid');
+  const rows = lines.slice(1).map(line => {
+    const values = parse(line);
+    return { id: values[idIndex]?.trim(), price: decimal(values[priceIndex], 4), stock: decimal(values[stockIndex], 3) };
+  });
+  if (rows.some(row => !/^[a-f0-9]{24}$/i.test(row.id || '') || !Number.isFinite(row.price) || !Number.isFinite(row.stock))) {
+    redirect(href + '&result=invalid');
+  }
+  let response;
+  try {
+    response = await partnerBackend('/web/workspace/products/offers/import', {
+      token, method: 'POST', body: JSON.stringify({ rows }),
+    });
+  } catch { redirect(href + '&result=error'); }
+  if (response.status === 401) redirect('/partners');
+  if (!response.ok) redirect(href + '&result=error');
+  const result = await response.json();
+  redirect(href + '&result=' + (result.updated === result.total ? 'saved' : 'partial'));
+}
