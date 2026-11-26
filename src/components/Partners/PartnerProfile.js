@@ -9,7 +9,6 @@ import './PartnerProfile.css';
 import AccountUpgradeCenter from './AccountUpgradeCenter';
 
 const buyers = { consumer: 'خریدار نهایی', retailer: 'مغازه‌دار', wholesaler: 'خریدار عمده', other: 'سایر' };
-const statuses = { pending: 'در انتظار بررسی', approved: 'تأییدشده', rejected: 'ردشده' };
 
 async function request(path, options = {}) {
   const timeout = AbortSignal.timeout(12000);
@@ -26,10 +25,6 @@ async function request(path, options = {}) {
 
 function SelectOptions({ options }) {
   return Object.entries(options).map(([value, label]) => <option key={value} value={value}>{label}</option>);
-}
-
-function ReviewStatus({ status }) {
-  return <span className={status === 'approved' ? 'partner-status approved' : 'partner-status'}>{statuses[status] || 'نیازمند بررسی'}</span>;
 }
 
 export function ProfileLocation({ profile, required = false }) {
@@ -135,11 +130,6 @@ function ProfileForm({ profile, onSaved, onExpired }) {
       {error && <p className="partner-message partner-error" role="alert">{error}</p>}
       <button className="partner-primary" disabled={busy} type="submit">{busy ? 'در حال ذخیره…' : 'ذخیره پروفایل'}</button>
     </form>
-    {driver && <div className="partner-transport-optin partner-transport-optin-after-form">
-      <p>برای فعال‌سازی امکان حمل بار، مشخصات وسیله و مدارک را تکمیل کنید. پس از بررسی و تأیید مدیریت، بارهای متناسب برای شما نمایش داده می‌شود. اطلاعات وسیله جداگانه ذخیره و برای تأیید به مدیریت ارسال می‌شود.</p>
-      <TransportVehicleForm profile={profile} onVehicleLoaded={setVehicleDraft} onVehicleSaved={setVehicleDraft} />
-      <div><ReviewStatus status={profile.driverStatus} /></div>
-    </div>}
     </>
   );
 }
