@@ -105,3 +105,65 @@ export async function saveWorkspaceLocation(_state, formData) {
   if (!response.ok) return 'موقعیت ذخیره نشد. دوباره تلاش کنید.';
   redirect(partnerHref('orchards') + '&result=saved');
 }
+
+export async function saveTransportOrder(formData) {
+  const token = (await cookies()).get(partnerSessionCookie)?.value;
+  if (!token) redirect('/partners');
+  const invalid = partnerHref('bulletin') + '&result=invalid';
+  const rawStops = formData.get('stops');
+  const goodsType = formData.get('goodsType');
+  const weightKg = decimal(formData.get('weightKg'), 2);
+  const volumeM3 = decimal(formData.get('volumeM3'), 2);
+  const urgency = formData.get('urgency');
+  const deadlineText = formData.get('deadline');
+  const description = formData.get('description');
+  if (typeof rawStops !== 'string' || rawStops.length > 20000 ||
+      typeof goodsType !== 'string' || goodsType.trim().length < 2 || goodsType.length > 120 ||
+      !Number.isFinite(weightKg) || weightKg < 0.1 || weightKg > 100000 ||
+      !Number.isFinite(volumeM3) || volumeM3 < 0.01 || volumeM3 > 10000 ||
+      !['hourly', 'daily', 'multiday'].includes(urgency) ||
+      typeof deadlineText !== 'string' || !Number.isFinite(Date.parse(deadlineText)) ||
+      Date.parse(deadlineText) <= Date.now() ||
+      typeof description !== 'string' || description.length > 1000) redirect(invalid);
+  let stops;
+  try { stops = JSON.parse(rawStops); } catch { redirect(invalid); }
+  if (!Array.isArray(stops) || stops.length < 2 || stops.length > 20 ||
+      !stops.some(stop => stop?.kind === 'pickup') || !stops.some(stop => stop?.kind === 'dropoff')) redirect(invalid);
+  const normalized = stops.map(stop => {
+    const latitude = Number(stop.latitude);
+    const longitude = Number(stop.longitude);
+    if (!['pickup', 'dropoff'].includes(stop.kind) ||
+        ![stop.label, stop.province, stop.city, stop.address].every(value => typeof value === 'string' && value.trim()) ||
+        stop.label.length > 100 || stop.province.length > 100 || stop.city.length > 100 || stop.address.length > 240 ||
+        !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+        !Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
+    return { kind: stop.kind, label: stop.label.trim(), province: stop.province.trim(), city: stop.city.trim(),
+      address: stop.address.trim(), latitude, longitude };
+  });
+  if (normalized.some(stop => !stop)) redirect(invalid);
+  let response;
+  try {
+    response = await partnerBackend('/web/transport-orders', {
+      token, method: 'POST',
+      body: JSON.stringify({ stops: normalized, goodsType: goodsType.trim(), weightKg, volumeM3, urgency,
+        deadline: new Date(deadlineText).toISOString(), description: description.trim() }),
+    });
+  } catch { redirect(partnerHref('bulletin') + '&result=error'); }
+  if (response.status === 401) redirect('/partners');
+  if (response.status === 400) redirect(invalid);
+  if (!response.ok) redirect(partnerHref('bulletin') + '&result=error');
+  redirect(partnerHref('bulletin') + '&result=saved');
+}
+
+export async function acceptTransportOrder(formData) {
+  const token = (await cookies()).get(partnerSessionCookie)?.value;
+  if (!token) redirect('/partners');
+  const id = formData.get('id');
+  if (typeof id !== 'string' || !/^[a-f0-9]{24}$/i.test(id)) redirect(partnerHref('bulletin') + '&result=invalid');
+  let response;
+  try {
+    response = await partnerBackend('/web/transport-orders/' + id + '/accept', { token, method: 'PATCH' });
+  } catch { redirect(partnerHref('bulletin') + '&result=error'); }
+  if (response.status === 401) redirect('/partners');
+  redirect(partnerHref('bulletin') + '&result=' + (response.ok ? 'accepted' : 'error'));
+}
