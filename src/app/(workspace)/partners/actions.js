@@ -130,6 +130,7 @@ export async function saveTransportOrder(formData) {
   if (!Array.isArray(stops) || stops.length < 2 || stops.length > 20 ||
       !stops.some(stop => stop?.kind === 'pickup') || !stops.some(stop => stop?.kind === 'dropoff')) redirect(invalid);
   const normalized = stops.map(stop => {
+    if (!stop || typeof stop !== 'object' || Array.isArray(stop)) return null;
     const latitude = Number(stop.latitude);
     const longitude = Number(stop.longitude);
     if (!['pickup', 'dropoff'].includes(stop.kind) ||
