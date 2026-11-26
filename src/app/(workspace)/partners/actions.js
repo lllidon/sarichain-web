@@ -133,6 +133,7 @@ export async function saveTransportOrder(formData) {
     const latitude = Number(stop.latitude);
     const longitude = Number(stop.longitude);
     if (!['pickup', 'dropoff'].includes(stop.kind) ||
+        typeof stop.latitude !== 'string' || !stop.latitude.trim() || typeof stop.longitude !== 'string' || !stop.longitude.trim() ||
         ![stop.label, stop.province, stop.city, stop.address].every(value => typeof value === 'string' && value.trim()) ||
         stop.label.length > 100 || stop.province.length > 100 || stop.city.length > 100 || stop.address.length > 240 ||
         !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
