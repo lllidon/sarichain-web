@@ -6,9 +6,7 @@ import { leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partne
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
-import TransportVehicleForm from './TransportVehicleForm';
 import TransportBulletin from './TransportBulletin';
-import { acceptTransportOrder } from '../../app/(workspace)/partners/actions';
 
 const icons = {
   grid: faBorderAll, orders: faClipboardList, products: faBox, transport: faTruck,
