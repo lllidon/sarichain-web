@@ -203,7 +203,7 @@ export default function PartnerProfile({ initialMessage = '', returnToCart = fal
       <div className="catalog-wrap">
         <nav className="catalog-breadcrumb" aria-label="مسیر صفحه"><Link href="/">صفحه اصلی</Link><span aria-hidden="true">/</span><span aria-current="page">همکاران</span></nav>
         <header className="partner-header">
-          <h1>پنل همکاران ساری‌چین</h1>
+          <h1>پنل مشتریان و همکاران ساری‌چین</h1>
         </header>
         <form className="partner-login" action="/web/login" method="post">
           <h2>ورود به حساب مشتری و همکار</h2>
