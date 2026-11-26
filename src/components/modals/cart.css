@@ -297,3 +297,13 @@
   .weekly-list-actions { width:100%; }
   .weekly-list-actions > * { flex:1; justify-content:center; }
 }
+
+.weekly-bulk-toolbar > button.is-secondary {
+  border:1px solid #cbdccf;
+  background:#fff;
+  color:var(--weekly-green);
+}
+.weekly-bulk-toolbar > button.is-secondary:hover:not(:disabled) { background:#f0f6ed; }
+@media(max-width:760px) {
+  .weekly-bulk-toolbar > button { width:100%; }
+}
