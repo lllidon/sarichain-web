@@ -2,7 +2,7 @@ import { formatPrice } from '../Products/price';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen } from '@fortawesome/free-solid-svg-icons';
-import { leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
+import { importProductOffers, leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
@@ -120,6 +120,12 @@ export default function PartnerDashboard({ profile, section, result, data, unava
             </div>
           </header>
           {message && <p className="partner-dash-feedback" role={result === 'error' || result === 'invalid' ? 'alert' : 'status'}>{message}</p>}
+          {section === 'products' && profile.capabilities?.sell && <form className="partner-entry-form partner-offer-import" action={importProductOffers} encType="multipart/form-data">
+            <h3>به‌روزرسانی گروهی قیمت و موجودی</h3>
+            <p>فایل CSV خروجی محصولات خود را با ستون‌های id، price و stock بارگذاری کنید. فقط پیشنهادهای فروش متعلق به حساب شما به‌روزرسانی می‌شوند؛ محصول جدید یا مشخصات اصلی کالا قابل تغییر نیست.</p>
+            <label>فایل اکسل (CSV)<input type="file" name="file" accept=".csv,text/csv" required /></label>
+            <button className="partner-primary" type="submit">بررسی و ثبت قیمت و موجودی</button>
+          </form>}
           {section === 'overview' && <div className="partner-dash-grid">
             {visibleSections.filter(([key]) => key !== 'overview').map(([key, item]) => <Link key={key} href={partnerHref(key)} prefetch={false}>
               <span><FontAwesomeIcon icon={icons[item.icon]} /></span>
