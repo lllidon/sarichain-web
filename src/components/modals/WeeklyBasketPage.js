@@ -5,9 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faArrowLeft, faCalendarDays, faCheck, faChevronDown, faChevronUp,
-  faLeaf, faMinus, faPlus, faShoppingBasket, faSparkles, faStar,
-  faTag, faTrash, faWandMagicSparkles,
+  faArrowLeft, faCalendarDays, faCheck, faChevronDown, faChevronUp, faLeaf, faMinus, faPlus, faShoppingBasket, faStar, faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from '../Products/CatalogProvider';
 import { productHref, productImage, productPackages } from '../Products/catalog';
@@ -232,7 +230,7 @@ export default function WeeklyBasketPage() {
         <p>پیشنهادهای روز، فصل و محصولات ویژه را در این بخش دنبال کن.</p></div>
       <div className="weekly-suggestion-grid">
         <article className="weekly-suggestion-card daily">
-          <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faWandMagicSparkles}/></span>
+          <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faCalendarDays}/></span>
           <div><small>بر اساس موجودی فعلی</small><h3>پیشنهاد روز</h3><p>{number.format(readyCount)} محصول از فهرست شما در حال حاضر آماده سفارش است.</p></div>
           <a href="#weekly-products">مشاهده محصولات <FontAwesomeIcon icon={faArrowLeft}/></a>
         </article>
