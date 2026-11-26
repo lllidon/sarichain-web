@@ -43,7 +43,8 @@ function UpgradeForm({ kind, categories, onSubmitted }) {
   async function submit(event) {
     event.preventDefault();
     setBusy(true); setError(''); setMessage('');
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       const documents = [];
       for (const type of requiredDocs) {
@@ -69,7 +70,7 @@ function UpgradeForm({ kind, categories, onSubmitted }) {
       }
       await api('account-upgrades', { method: 'POST', body });
       setMessage('درخواست ارتقای حساب با موفقیت برای بررسی مدیریت ارسال شد.');
-      event.currentTarget.reset();
+      formElement.reset();
       onSubmitted();
     } catch (failure) { setError(failure.message || 'ثبت درخواست انجام نشد.'); }
     finally { setBusy(false); }
