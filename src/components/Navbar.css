@@ -759,3 +759,9 @@
 @media(max-width:992px) {
   .nav-mobile-toggle { display:inline-flex; align-items:center; justify-content:center; }
 }
+
+@media(max-width:992px) {
+  .nav-menu > .nav-solutions { display:block; }
+  .nav-solutions > .nav-mega-trigger { width:100%; justify-content:space-between; }
+  .nav-solutions-panel { width:100%; }
+}
