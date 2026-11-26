@@ -57,8 +57,8 @@ export default function ProductMegaMenu() {
   }
 
   return (
-    <li className="nav-item nav-products">
-      <details className="nav-products-disclosure" ref={menu} suppressHydrationWarning>
+    <li className="nav-item nav-products" onMouseEnter={openOnHover} onMouseLeave={closeOnLeave} onFocus={openOnHover}>
+      <details className="nav-products-disclosure" ref={menu} open={isOpen} onToggle={event => setIsOpen(event.currentTarget.open)} suppressHydrationWarning>
         <summary className="nav-link nav-products-toggle" aria-controls="nav-products-panel" onClick={event => { if (window.innerWidth > 992) { event.preventDefault(); menu.current.open = !menu.current.open; setIsOpen(menu.current.open); } }}>
           محصولات <FontAwesomeIcon icon={faChevronDown} />
         </summary>
