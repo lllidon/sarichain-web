@@ -22,10 +22,12 @@ export default function TransportStopsMap({ stops = [] }) {
         const position = [Number(point.latitude), Number(point.longitude)];
         bounds.push(position);
         const pickup = point.kind === 'pickup';
+        const popup = document.createElement('div');
+        popup.textContent = (pickup ? 'مبدأ ' : 'مقصد ') + (index + 1) + ': ' + point.label + ' · ' + point.city + '، ' + point.province;
         L.circleMarker(position, {
           radius: 8, color: '#fff', weight: 2,
           fillColor: pickup ? '#16845d' : '#3869bd', fillOpacity: 1,
-        }).addTo(map).bindPopup((pickup ? 'مبدأ ' : 'مقصد ') + (index + 1) + ': ' + point.label + '<br>' + point.city + '، ' + point.province);
+        }).addTo(map).bindPopup(popup);
       });
       if (bounds.length) map.fitBounds(L.latLngBounds(bounds), { padding: [24, 24], maxZoom: 12 });
       else map.setView([36.5633, 53.0601], 11);
