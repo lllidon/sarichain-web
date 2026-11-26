@@ -3,12 +3,15 @@
 import { useSyncExternalStore } from 'react';
 import { productImage, productPackages } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
+import { useAccountCart } from './AccountCartProvider';
 import { cartCookie, cartFitsCookie, cartLineId, catalogQuantityLimit, parseCart, serializeCart } from '../Products/cartData';
 
 export { catalogQuantityLimit };
 
 const storageKey = 'sarichain-catalog-cart';
 const empty = [];
+const neverSubscribe = () => () => {};
+const emptyCart = () => empty;
 const listeners = new Set();
 let savedCart;
 
@@ -91,7 +94,33 @@ function saveCart(items) {
 
 export function useCatalogCart() {
   const { initialCart = empty } = useCatalog();
-  return useSyncExternalStore(subscribe, getCart, () => initialCart);
+  const account = useAccountCart();
+  const guest = useSyncExternalStore(account ? neverSubscribe : subscribe, account ? emptyCart : getCart, () => initialCart);
+  return account ? account.items : guest;
+}
+
+export function useCartCommands() {
+  const account = useAccountCart();
+  const { catalog } = useCatalog();
+  return {
+    account,
+    add(product, pack) {
+      return account ? account.request('POST', 'items', {
+        operation: 'add', productId: product.id, offerId: product.offer?.id, unitId: pack.id,
+      }) : Promise.resolve(addCatalogItem(product, pack, catalog));
+    },
+    change(item, quantity, product) {
+      return account ? account.request('POST', 'items', {
+        operation: quantity === 0 ? 'set' : quantity > item.quantity ? 'add' : 'reduce',
+        key: item.key, productId: item.productId, unitId: item.unitId, ...(quantity === 0 && { quantity }),
+      }) : Promise.resolve(setCatalogQuantity(item, quantity, product, catalog));
+    },
+    clear() {
+      if (account) return account.request('DELETE');
+      clearCatalogCart();
+      return Promise.resolve();
+    },
+  };
 }
 
 export function addCatalogItem(product, pack, catalog) {
@@ -143,14 +172,6 @@ function updateCatalogItem(items, line, product, catalog) {
 
 export function setCatalogQuantity(item, quantity, product, catalog) {
   return updateCatalogItem(getCart(), { ...item, quantity }, product, catalog);
-}
-
-export function removeOrderedItems(ordered) {
-  const quantities = new Map(ordered.map(item => [item.id, item.quantity]));
-  saveCart(getCart().flatMap(item => {
-    const quantity = item.quantity - (quantities.get(item.id) ?? 0);
-    return quantity > 0 ? [{ ...item, quantity }] : [];
-  }));
 }
 
 export function clearCatalogCart() {

@@ -6,11 +6,12 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBasketShopping, faCalendarDays, faMinus, faPlus, faTrash, faTruck } from '@fortawesome/free-solid-svg-icons';
 import { formatPrice, scalePrice, sumPrices } from '../Products/price';
-import { isCartProduct } from '../Products/cartData';
-import { productHref, productImage, productPackages, withOffer } from '../Products/catalog';
+import { productHref, productImage } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
 import { submitOrder } from '../Products/submitOrder';
-import { addCatalogItem, catalogQuantityLimit, clearCatalogCart, removeOrderedItems, setCatalogQuantity, useCatalogCart } from './cartStore';
+import { useCartCommands, useCatalogCart } from './cartStore';
+import { displayCart } from './cartPresentation';
+import CartNotices from './CartNotices';
 import './cart.css';
 
 const number = new Intl.NumberFormat('fa-IR');
@@ -37,9 +38,9 @@ function CartLines({ items, busy, update, add }) {
           {pack ? <>
             <p className="checkout-unit">
               <strong>{pack.name}</strong>
-              {pack.amount > 1 && <span>هر {pack.name} = {number.format(pack.amount)} {product.unit}</span>}
+              {pack.amount > 1 && <span>هر {pack.name} = {number.format(pack.amount)} {product?.unit ?? 'واحد'}</span>}
               <span>{formatPrice(pack.price)} برای هر {pack.name}</span>
-              {product.offer && <span>فروشنده: {product.offer.name}</span>}
+              {(item.sellerName || product?.offer?.name) && <span>فروشنده: {item.sellerName || product.offer.name}</span>}
             </p>
             <div className="checkout-line-footer">
               <div className="checkout-quantity" aria-label={`تعداد ${pack.name} ${name}`}>
@@ -107,6 +108,8 @@ function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, 
 export default function CartPage({ initialMessage = '' }) {
   const { catalog } = useCatalog();
   const cart = useCatalogCart();
+  const commands = useCartCommands();
+  const { account } = commands;
   const orderRequest = useRef(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(initialMessage);
@@ -138,18 +141,10 @@ export default function CartPage({ initialMessage = '' }) {
     return () => controller.abort();
   }, [hasItems, revision]);
 
-  const purchasable = catalog.flatMap(product => [product, ...product.variants]);
-  const items = cart.map(item => {
-    const catalogItem = purchasable.find(product => isCartProduct(item, product));
-    const product = catalogItem && withOffer(catalogItem, item.offerId ? catalogItem.offers.find(offer => offer.id === item.offerId) : catalogItem.offer);
-    const packs = product?.orderable ? productPackages(product) : [];
-    const pack = packs.find(option => option.id === item.unitId);
-    const availableUnits = packs.filter(option => !cart.some(line => isCartProduct(line, product) &&
-      (line.offerId ?? catalogItem.offer?.id) === product.offer?.id && line.unitId === option.id) &&
-      catalogQuantityLimit(cart, product, option, catalog) >= 1);
-    const maxQuantity = pack ? catalogQuantityLimit(cart, product, pack, catalog, item.offerId ?? null) : 0;
-    return { ...item, product, pack, availableUnits, maxQuantity };
-  });
+  const items = displayCart(cart, catalog, account);
+  const changes = cart.filter(item => item.notice);
+  const loadingCart = account?.revision === -1;
+  const cartBusy = busy || account?.pending;
   const subtotal = sumPrices(items.map(item => scalePrice(item.pack?.price, item.quantity)));
   const containsInactive = items.some(item => !item.pack);
   const exceedsLimit = items.some(item => item.pack && item.quantity > item.maxQuantity);
@@ -159,28 +154,43 @@ export default function CartPage({ initialMessage = '' }) {
   const slot = selected?.slots.some(time => time.id === requestedSlot) ? requestedSlot : selected?.slots[0]?.id;
   const total = selected ? sumPrices([subtotal, cost(selected.fee)]) : subtotal;
 
-  function update(item, quantity) {
-    setMessage(setCatalogQuantity(item, quantity, item.product, catalog) ? '' : 'این تعداد برای محصول قابل سفارش نیست.');
+  async function update(item, quantity) {
+    try { setMessage(await commands.change(item, quantity, item.product) ? '' : 'این تعداد برای محصول قابل سفارش نیست.'); }
+    catch (error) { setMessage(error.message); }
   }
 
-  function add(product, unit) {
-    setMessage(addCatalogItem(product, unit, catalog) ? '' : 'این تعداد برای محصول قابل سفارش نیست.');
+  async function add(product, unit) {
+    try { setMessage(await commands.add(product, unit) ? '' : 'این تعداد برای محصول قابل سفارش نیست.'); }
+    catch (error) { setMessage(error.message); }
+  }
+
+  async function clear() {
+    try {
+      await commands.clear();
+      setConfirmClear(false);
+      setMessage('سبد خرید خالی شد.');
+    } catch (error) { setMessage(error.message); }
+  }
+
+  async function acknowledge(ids) {
+    try { await account.request('POST', 'acknowledge', { ids }); }
+    catch (error) { setMessage(error.message); }
   }
 
   async function checkout() {
-    if (busy || containsInactive || exceedsLimit || !items.length || !selected || !date || !slot) return;
+    if (!account || cartBusy || changes.length || containsInactive || exceedsLimit || !items.length || !selected || !date || !slot) return;
     setBusy(true);
     setMessage('');
     setLoginNeeded(false);
     try {
       const result = await submitOrder(items.map(item => ({
-        productId: item.product.id, quantity: item.quantity, unitId: item.pack.id, offerId: item.product.offer.id,
-      })), orderRequest, { method: selected.id, dispatchDate: date, slot });
-      removeOrderedItems(items);
+        productId: item.productId, quantity: item.quantity, unitId: item.pack.id, offerId: item.offerId,
+      })), orderRequest, { method: selected.id, dispatchDate: date, slot }, account.revision);
       setMessage('درخواست ثبت شد. کد پیگیری ' + result.id);
+      await account.request().catch(() => {});
     } catch (error) {
       setLoginNeeded(error.status === 401);
-      if (error.status === 400) retry(value => value + 1);
+      if (error.status === 400 || error.status === 409) { retry(value => value + 1); await account.request().catch(() => {}); }
       setMessage(error.message);
     } finally {
       setBusy(false);
@@ -195,21 +205,24 @@ export default function CartPage({ initialMessage = '' }) {
       <Link className="checkout-continue" href="/categories">ادامهٔ خرید <FontAwesomeIcon icon={faArrowLeft} /></Link>
     </header>
     {message && <p className="checkout-message" role="status">{message}</p>}
-    {hasItems ? <div className="checkout-grid">
+    <CartNotices changes={changes} busy={cartBusy} acknowledge={acknowledge} />
+    {loadingCart ? <p className="checkout-warning" role="status">{account.failed ? 'دریافت سبد حساب انجام نشد.' : 'در حال دریافت سبد حساب…'}
+      {account.failed && <button type="button" disabled={cartBusy} onClick={() => account.request().catch(() => {})}>تلاش دوباره</button>}
+    </p> : hasItems ? <div className="checkout-grid">
       <section className="checkout-card" aria-labelledby="checkout-items-title">
         <div className="checkout-card-heading">
           <h3 id="checkout-items-title">اقلام سبد</h3>
-          <button type="button" className="checkout-text-button" disabled={busy || confirmClear} onClick={() => setConfirmClear(true)}>
+          <button type="button" className="checkout-text-button" disabled={cartBusy || confirmClear} onClick={() => setConfirmClear(true)}>
             <FontAwesomeIcon icon={faTrash} /> حذف کل سبد
           </button>
         </div>
         {confirmClear && <div className="checkout-confirm">
           <span>همهٔ اقلام از سبد حذف شوند؟</span>
-          <button type="button" className="checkout-danger" disabled={busy}
-            onClick={() => { clearCatalogCart(); setConfirmClear(false); setMessage('سبد خرید خالی شد.'); }}>تأیید حذف</button>
+          <button type="button" className="checkout-danger" disabled={cartBusy}
+            onClick={clear}>تأیید حذف</button>
           <button type="button" onClick={() => setConfirmClear(false)}>انصراف</button>
         </div>}
-        <CartLines items={items} busy={busy} update={update} add={add} />
+        <CartLines items={items} busy={cartBusy} update={update} add={add} />
       </section>
       <aside className="checkout-card checkout-summary" aria-labelledby="checkout-summary-title">
         <h3 id="checkout-summary-title">خلاصهٔ سبد و ارسال</h3>
@@ -225,8 +238,8 @@ export default function CartPage({ initialMessage = '' }) {
         {window && <p className="checkout-date-note"><strong>تحویل برآوردی</strong><span>{showDate(window.deliveryDate)}</span></p>}
         {exceedsLimit && <p className="checkout-warning">تعداد بعضی اقلام بیشتر از سقف مجاز است. تعداد را کاهش دهید.</p>}
         {containsInactive && <p className="checkout-warning">برای ادامه، اقلام ناموجود را از سبد حذف کنید.</p>}
-        {loginNeeded ? <Link className="checkout-submit" href="/login?returnTo=cart">ورود به حساب برای ثبت سفارش</Link> :
-          <button type="button" className="checkout-submit" disabled={busy || containsInactive || exceedsLimit || !selected || confirmClear} onClick={checkout}>
+        {(!account || loginNeeded) ? <Link className="checkout-submit" href="/login?returnTo=cart">ورود به حساب برای ثبت سفارش</Link> :
+          <button type="button" className="checkout-submit" disabled={cartBusy || changes.length > 0 || containsInactive || exceedsLimit || !selected || confirmClear} onClick={checkout}>
             {busy ? 'در حال ثبت…' : 'ثبت درخواست سفارش'}<FontAwesomeIcon icon={faArrowLeft} />
           </button>}
       </aside>

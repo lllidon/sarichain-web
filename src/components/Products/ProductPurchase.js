@@ -8,13 +8,14 @@ import { productPackages } from './catalog';
 import { formatPrice } from './price';
 import { cartLineLimit, isCartProduct } from './cartData';
 import { useCatalog } from './CatalogProvider';
-import { addCatalogItem, catalogQuantityLimit, setCatalogQuantity, useCatalogCart } from '../modals/cartStore';
+import { catalogQuantityLimit, useCartCommands, useCatalogCart } from '../modals/cartStore';
 
 const number = new Intl.NumberFormat('fa-IR');
 const limitMessage = 'تعداد از سقف خرید این محصول بیشتر است.';
 
 export default function ProductPurchase({ product, className, children, onMessage, chooseUnit = false, initialUnit = '' }) {
   const cart = useCatalogCart();
+  const commands = useCartCommands();
   const { catalog } = useCatalog();
   const [message, setMessage] = useState('');
   const [unit, setUnit] = useState(initialUnit);
@@ -27,24 +28,24 @@ export default function ProductPurchase({ product, className, children, onMessag
   const max = catalogQuantityLimit(cart, product, pack, catalog);
   const quantity = line?.quantity ?? 0;
   const cartFull = !line && cart.length >= cartLineLimit;
-  const canIncrease = quantity < max && !cartFull;
+  const canIncrease = quantity < max && !cartFull && !commands.account?.pending;
 
   function report(value) {
     if (onMessage) onMessage(value);
     else setMessage(value);
   }
 
-  function addToCart(event) {
+  async function addToCart(event) {
     event.preventDefault();
-    report(addCatalogItem(product, pack, catalog)
+    try { report(await commands.add(product, pack)
       ? `${pack.name} ${product.name} به سبد خرید اضافه شد.`
-      : limitMessage);
+      : limitMessage); } catch (error) { report(error.message); }
   }
 
-  function changeQuantity(next) {
-    report(setCatalogQuantity(line, next, product, catalog)
+  async function changeQuantity(next) {
+    try { report(await commands.change(line, next, product)
       ? next === 0 ? `${pack.name} ${product.name} از سبد خرید حذف شد.` : ''
-      : limitMessage);
+      : limitMessage); } catch (error) { report(error.message); }
   }
 
   return (
@@ -76,7 +77,7 @@ export default function ProductPurchase({ product, className, children, onMessag
                   <output aria-live="polite">{number.format(quantity)}</output>
                   {!canIncrease && <small>حداکثر</small>}
                 </div>
-                <button type="submit" name="operation" value="reduce" aria-label={quantity === 1 ? `حذف ${product.name} از سبد خرید` : `کاهش تعداد ${product.name}`}
+                <button type="submit" name="operation" value="reduce" disabled={commands.account?.pending} aria-label={quantity === 1 ? `حذف ${product.name} از سبد خرید` : `کاهش تعداد ${product.name}`}
                   onClick={event => { event.preventDefault(); changeQuantity(quantity - 1); }}>
                   <FontAwesomeIcon icon={quantity === 1 ? faTrash : faMinus} />
                 </button>

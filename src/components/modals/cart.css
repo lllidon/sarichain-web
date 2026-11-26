@@ -89,3 +89,8 @@
 }
 
 @media (min-width: 761px) and (max-width: 1300px) { .checkout-page { margin-inline: 14px; } }
+
+.checkout-notices { display: grid; justify-items: start; gap: 10px; margin-block: 12px; }
+.checkout-notices h2 { font-size: 1rem; }
+.checkout-notices ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.checkout-notices li { display: flex; gap: 4px 12px; flex-wrap: wrap; }

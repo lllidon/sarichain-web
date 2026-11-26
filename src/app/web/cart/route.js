@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { readCatalog } from '../../../components/Products/catalog-data';
 import { cartCookie, cartFitsCookie, cartLineId, catalogQuantityLimit, parseCart, serializeCart } from '../../../components/Products/cartData';
 import { productHref, productPackages, withOffer } from '../../../components/Products/catalog';
+import { partnerBackend, partnerSessionCookie } from '../../../lib/partnerBackend';
 
 function redirect(location) {
   return new NextResponse(null, { status: 303, headers: { Location: location, 'Cache-Control': 'no-store' } });
@@ -32,6 +33,21 @@ export async function POST(request) {
   const pack = productPackages(product).find(item => item.id === (input.get('unitId') || 'unit'));
   const operation = input.get('operation');
   if (!pack || !['add', 'reduce'].includes(operation)) return redirect('/cart?notice=rejected');
+  const params = new URLSearchParams({ unit: pack.id, offer: offer.id });
+  if (product.parentCode) params.set('variant', product.code);
+  const destination = productHref(product) + '?' + params;
+  const token = request.cookies.get(partnerSessionCookie)?.value;
+  if (token) {
+    try {
+      const result = await partnerBackend('/web/cart/items', {
+        token, method: 'POST', body: JSON.stringify({ operation, productId: product.id, offerId: offer.id, unitId: pack.id }),
+      });
+      if (result.status === 401) return redirect('/login?returnTo=cart');
+      return redirect(result.ok ? destination : '/cart?notice=limit');
+    } catch {
+      return redirect('/cart?notice=unavailable');
+    }
+  }
 
   const items = parseCart(request.cookies.get(cartCookie)?.value);
   const key = cartLineId(product.id, pack.id, offer.id);
@@ -42,9 +58,7 @@ export async function POST(request) {
   const updated = items.filter(item => item.id !== key);
   if (quantity) updated.push({ productId: product.id, packId: pack.id, quantity, offerId: offer.id });
   if (!cartFitsCookie(updated)) return redirect('/cart?notice=limit');
-  const params = new URLSearchParams({ unit: pack.id, offer: offer.id });
-  if (product.parentCode) params.set('variant', product.code);
-  const result = redirect(productHref(product) + '?' + params);
+  const result = redirect(destination);
   result.cookies.set(cartCookie, serializeCart(updated), {
     path: '/', sameSite: 'lax', maxAge: 2592000, secure: origin ? origin.startsWith('https://') : request.nextUrl.protocol === 'https:',
   });

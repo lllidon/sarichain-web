@@ -7,8 +7,8 @@ function orderId() {
   return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
 }
 
-export async function submitOrder(items, request, delivery) {
-  const payload = { items, ...(delivery && { delivery }) };
+export async function submitOrder(items, request, delivery, cartRevision) {
+  const payload = { items, ...(delivery && { delivery }), ...(cartRevision !== undefined && { cartRevision }) };
   const signature = JSON.stringify(payload);
   if (request.current?.signature !== signature) request.current = { signature, id: orderId() };
   const response = await fetch('/web/orders', {

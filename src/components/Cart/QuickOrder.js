@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -14,9 +15,10 @@ import {
   faBox
 } from '@fortawesome/free-solid-svg-icons';
 import { formatPrice, scalePrice, sumPrices } from '../Products/price';
-import { productImage } from '../Products/catalog';
+import { productImage, productPackages } from '../Products/catalog';
 import { useCatalog } from '../Products/CatalogProvider';
-import { submitOrder } from '../Products/submitOrder';
+import { useCartCommands, useCatalogCart } from '../modals/cartStore';
+import { displayCart } from '../modals/cartPresentation';
 import './QuickOrder.css';
 
 const QuickOrder = ({ initialCode = '' }) => {
@@ -24,11 +26,12 @@ const QuickOrder = ({ initialCode = '' }) => {
   const productsDatabase = useMemo(() => catalog.filter(product => product.orderable).map(product => ({
     ...product, category: categories[product.category].name, image: productImage(product),
   })), [catalog, categories]);
-  const [busy, setBusy] = useState(false);
+  const commands = useCartCommands();
+  const busy = commands.account?.pending;
   const [message, setMessage] = useState('');
-  const orderRequest = useRef(null);
   const [productCode, setProductCode] = useState(initialCode);
-  const [cartItems, setCartItems] = useState([]);
+  const cartItems = displayCart(useCatalogCart(), catalog, commands.account);
+
   const [scanMode, setScanMode] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
@@ -81,25 +84,9 @@ const QuickOrder = ({ initialCode = '' }) => {
   };
 
   // افزودن به سبد خرید با محصول
-  const addToCartByProduct = (product) => {
-    const existingItem = cartItems.find(item => item.code === product.code);
-    
-    if (existingItem) {
-      if (existingItem.quantity + 1 > Math.min(product.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER, product.offer.stock)) {
-        alert('تعداد از سقف خرید این محصول بیشتر است.');
-        return;
-      }
-      setCartItems(cartItems.map(item =>
-        item.code === product.code
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCartItems([...cartItems, {
-        ...product,
-        quantity: 1,
-      }]);
-    }
+  const addToCartByProduct = async product => {
+    try { setMessage(await commands.add(product, productPackages(product)[0]) ? '' : 'این تعداد قابل سفارش نیست.'); }
+    catch (error) { setMessage(error.message); }
   };
 
   // افزودن با دکمه (کد محصول)
@@ -123,58 +110,18 @@ const QuickOrder = ({ initialCode = '' }) => {
     inputRef.current.focus();
   };
 
-  // حذف از سبد خرید
-  const removeFromCart = (code) => {
-    setCartItems(cartItems.filter(item => item.code !== code));
+  const updateQuantity = async (item, quantity) => {
+    try { setMessage(await commands.change(item, quantity, item.product) ? '' : 'این تعداد قابل سفارش نیست.'); }
+    catch (error) { setMessage(error.message); }
   };
 
-  // تغییر تعداد محصول
-  const updateQuantity = (code, newQuantity) => {
-    if (newQuantity < 1) return;
-    const item = cartItems.find(item => item.code === code);
-    if (!item) return;
-    if (newQuantity > Math.min(item.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER, item.offer.stock) && newQuantity > item.quantity) {
-      alert('تعداد از سقف خرید این محصول بیشتر است.');
-      return;
-    }
-    
-    setCartItems(cartItems.map(item =>
-      item.code === code
-        ? { ...item, quantity: newQuantity }
-        : item
-    ));
-  };
+  const calculateTotal = () => sumPrices(cartItems.map(item => scalePrice(item.pack?.price, item.quantity)));
+  const calculateTotalItems = () => cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  // محاسبه جمع کل
-  const calculateTotal = () => {
-    return sumPrices(cartItems.map(item => scalePrice(item.price, item.quantity)));
-  };
-
-  // محاسبه تعداد کل اقلام
-  const calculateTotalItems = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  };
-
-  // خالی کردن سبد خرید
-  const clearCart = () => {
-    if (window.confirm('آیا از خالی کردن سبد خرید اطمینان دارید؟')) {
-      setCartItems([]);
-    }
-  };
-
-  // ثبت نهایی سفارش
-  async function checkout() {
-    if (busy || !cartItems.length) return;
-    setBusy(true);
-    try {
-      const order = await submitOrder(cartItems.map(item => ({ productId: item.id, quantity: item.quantity, offerId: item.offer.id })), orderRequest);
-      setCartItems([]);
-      setMessage('درخواست ثبت شد. کد پیگیری ' + order.id);
-    } catch (error) {
-      setMessage(error.message);
-    } finally {
-      setBusy(false);
-    }
+  async function clearCart() {
+    if (!window.confirm('آیا از خالی کردن سبد خرید اطمینان دارید؟')) return;
+    try { await commands.clear(); setMessage('سبد خرید خالی شد.'); }
+    catch (error) { setMessage(error.message); }
   }
 
   // هندل کردن کلیدهای صفحه کلید برای نتایج جستجو
@@ -325,7 +272,7 @@ const QuickOrder = ({ initialCode = '' }) => {
                   <span className="items-count">{calculateTotalItems()} قلم</span>
                 </h3>
                 {cartItems.length > 0 && (
-                  <button onClick={clearCart} className="clear-cart-btn">
+                  <button onClick={clearCart} disabled={busy} className="clear-cart-btn">
                     <FontAwesomeIcon icon={faTrash} />
                     خالی کردن سبد
                   </button>
@@ -358,31 +305,31 @@ const QuickOrder = ({ initialCode = '' }) => {
                       </thead>
                       <tbody>
                         {cartItems.map((item, index) => (
-                          <tr key={item.code}>
+                          <tr key={item.id}>
                             <td>{index + 1}</td>
                             <td className="cart-item-image">
-                              <img src={item.image} alt={item.name} />
+                              <img src={item.product ? productImage(item.product) : item.image || '/img/catalog/field.webp'} alt="" />
                             </td>
-                            <td className="code-cell">{item.code}</td>
-                            <td className="name-cell">{item.name}</td>
-                            <td>{item.category}</td>
-                            <td>{item.unit}</td>
-                            <td className="price-cell">{formatPrice(item.price)}</td>
+                            <td className="code-cell">{item.product?.code || '—'}</td>
+                            <td className="name-cell">{item.product?.name || item.name || 'محصول ناموجود'}</td>
+                            <td>{categories[item.product?.category]?.name || '—'}</td>
+                            <td>{item.pack?.name || item.unitName || '—'}</td>
+                            <td className="price-cell">{item.pack ? formatPrice(item.pack.price) : 'ناموجود'}</td>
                             <td>
                               <div className="quantity-control">
-                                <button onClick={() => updateQuantity(item.code, item.quantity - 1)}>
+                                <button disabled={busy || item.quantity <= 1} onClick={() => updateQuantity(item, item.quantity - 1)}>
                                   <FontAwesomeIcon icon={faMinus} />
                                 </button>
                                 <span>{item.quantity}</span>
-                                <button onClick={() => updateQuantity(item.code, item.quantity + 1)}>
+                                <button disabled={busy || !item.pack || item.quantity >= item.maxQuantity} onClick={() => updateQuantity(item, item.quantity + 1)}>
                                   <FontAwesomeIcon icon={faPlus} />
                                 </button>
                               </div>
                             </td>
-                            <td className="total-cell">{formatPrice(scalePrice(item.price, item.quantity))}</td>
+                            <td className="total-cell">{item.pack ? formatPrice(scalePrice(item.pack.price, item.quantity)) : '—'}</td>
                             <td>
                               <button 
-                                onClick={() => removeFromCart(item.code)}
+                                disabled={busy} onClick={() => updateQuantity(item, 0)}
                                 className="remove-btn"
                               >
                                 <FontAwesomeIcon icon={faTimes} />
@@ -407,14 +354,14 @@ const QuickOrder = ({ initialCode = '' }) => {
                   </div>
 
                   <div className="cart-actions">
-                    <button onClick={clearCart} className="secondary-btn">
+                    <button onClick={clearCart} disabled={busy} className="secondary-btn">
                       <FontAwesomeIcon icon={faTrash} />
                       پاک کردن سبد
                     </button>
-                    <button onClick={checkout} disabled={busy} className="submit-btn">
+                    <Link href="/cart" className="submit-btn">
                       <FontAwesomeIcon icon={faSave} />
-                      ثبت نهایی سفارش
-                    </button>
+                      مرور سبد و ثبت سفارش
+                    </Link>
                   </div>
                 </>
               )}

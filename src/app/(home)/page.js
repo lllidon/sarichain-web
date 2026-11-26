@@ -1,4 +1,5 @@
 import { cache, Suspense } from 'react';
+import { readAccountCart } from '../../lib/accountCart';
 import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -43,7 +44,9 @@ function AccountLink({ profile }) {
 
 async function HomeActions() {
   const jar = await cookies();
-  const items = parseCart(jar.get(cartCookie)?.value).reduce((total, item) => total + item.quantity, 0);
+  const token = jar.get(partnerSessionCookie)?.value;
+  const cart = token ? await readAccountCart(token) : null;
+  const items = (cart?.items ?? parseCart(jar.get(cartCookie)?.value)).reduce((total, item) => total + item.quantity, 0);
   return <div className="market-home-actions">
     <Link href="/cart" prefetch={false} aria-label={items ? `سبد خرید، ${number.format(items)} قلم` : 'سبد خرید'}>
       <FontAwesomeIcon icon={faBasketShopping} />{items > 0 && <span className="market-home-count">{number.format(items)}</span>}

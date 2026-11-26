@@ -1,3 +1,5 @@
+import { cartCookie } from '../../../components/Products/cartData';
+import { mergeGuestCart } from '../../../lib/accountCart';
 import { NextResponse } from 'next/server';
 import { loginMessages, loginProblem } from '../../../lib/loginMessages';
 import { partnerBackend, partnerSessionCookie } from '../../../lib/partnerBackend';
@@ -98,6 +100,15 @@ async function forward(request, { params }) {
         httpOnly: true, sameSite: 'lax', secure: (caller?.protocol ?? request.nextUrl.protocol) === 'https:',
         path: '/', maxAge: data.expiresIn,
       });
+      const guest = request.cookies.get(cartCookie)?.value;
+      if (guest) {
+        try {
+          const merged = await mergeGuestCart(data.accessToken, guest);
+          if (merged.ok) session.cookies.delete(cartCookie);
+        } catch {
+          // Keep the guest cart for a later merge if the cart service is unavailable.
+        }
+      }
       session.headers.append('Set-Cookie', `${partnerSessionCookie}=; Path=/web; Max-Age=0; HttpOnly; SameSite=Lax`);
       return session;
     }
