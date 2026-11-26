@@ -10,6 +10,7 @@ const routes = {
   orders: { POST: '/web/orders' },
   'delivery-options': { GET: '/web/delivery-options' },
   profile: { GET: '/web/profile', PATCH: '/web/profile' },
+  'account-upgrades': { GET: '/web/account-upgrades', POST: '/web/account-upgrades' },
   vehicle: { GET: '/web/workspace/transport/vehicle', PATCH: '/web/workspace/transport/vehicle' },
   provinces: { GET: '/web/locations/provinces' },
   cities: { GET: '/web/locations/cities' },
@@ -66,9 +67,9 @@ async function forward(request, { params }) {
   const route = Object.hasOwn(routes, resource) && routes[resource][method];
   if (!route) return response({}, 404);
   const token = request.cookies.get(partnerSessionCookie)?.value;
-  const requiresSession = resource === 'profile' || resource === 'orders' || resource === 'vehicle';
+  const requiresSession = resource === 'profile' || resource === 'orders' || resource === 'vehicle' || resource === 'account-upgrades';
   if (requiresSession && !token) return response({}, 401);
-  if (method !== 'GET' && contentType !== 'application/json' && !formLogin) return response({}, 415);
+  if (method !== 'GET' && contentType !== 'application/json' && contentType !== 'multipart/form-data' && !formLogin) return response({}, 415);
   try {
     let body;
     if (formLogin) {
@@ -80,7 +81,7 @@ async function forward(request, { params }) {
           phone.length > 32 || password.length > 128) return loginRedirect('invalid', returnToCart);
       body = JSON.stringify({ phone: phone.trim(), password });
     } else if (method !== 'GET') {
-      body = await request.text();
+      body = contentType === 'multipart/form-data' ? await request.formData() : await request.text();
     }
     const result = await partnerBackend(route, {
       method, query: request.nextUrl.search,
