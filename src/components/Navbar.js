@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass, faBasketShopping, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faBasketShopping } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
 import SearchModal from './modals/SearchModal';
 import ProductMegaMenu from './Products/ProductMegaMenu';
@@ -36,8 +36,6 @@ const Navbar = ({ session }) => {
           </a>
         </div>
 
-        <Link href="/partners" className="partner-link">همکاران</Link>
-
         {/* Mobile Menu Button */}
         <div className={`menu-icon `} >
           <Link href="/quick-order" className="login-link">
@@ -53,12 +51,15 @@ const Navbar = ({ session }) => {
           <ProductMegaMenu />
           <li className="nav-item"><Link href="/pilot" className="nav-link">پیش‌نمایش پایلوت</Link></li>
 
-          <SolutionsMegaMenu />\n\n          <li className="nav-item">
-            <a href="#" className="nav-link">وبلاگ</a>
+          <li className="nav-item"><Link href="/weekly-basket" className="nav-link">سبد هفتگی</Link></li>
+          <li className="nav-item"><Link href="/quick-order" className="nav-link">سفارش سریع</Link></li>
+          <SolutionsMegaMenu />
+          <li className="nav-item">
+            <Link href="/blog" className="nav-link">وبلاگ</Link>
           </li>
           
           <li className="nav-item">
-            <a href="#" className="nav-link">پشتیبانی</a>
+            <Link href="/support" className="nav-link">پشتیبانی</Link>
           </li>
         </ul>
 
