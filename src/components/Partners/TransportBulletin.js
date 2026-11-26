@@ -71,12 +71,12 @@ export default function TransportBulletin({ items = [] }) {
         <p>مبدأها و مقصدهای چندگانه را روی نقشه ببینید و بار مناسب مسیر خود را انتخاب کنید.</p></div>
       <Link href={partnerHref('profile')}>تنظیم فعالیت حمل‌ونقل</Link>
     </header>
+    {isDemo && <div className="transport-demo-notice" role="status"><b>داده تستی</b><span>{realCount ? 'برای این دسته مسیر هنوز سفارش واقعی ثبت نشده است؛ نمونه‌ها فقط جهت نمایش رابط کاربری هستند.' : 'در حال حاضر سفارش حمل واقعی برای نمایش وجود ندارد؛ نمونه‌های زیر صرفاً داده نمایشی هستند و قابل پذیرش یا واگذاری نیستند.'}</span></div>}
     <nav className="transport-route-tabs" aria-label="دسته‌بندی مسیرها">
       {tabs.map(tab => <button key={tab.id} type="button" className={active === tab.id ? 'active' : ''} aria-pressed={active === tab.id} onClick={() => setActive(tab.id)}>
         {tab.label}<span>{number.format(realByCategory[tab.id].length || demoTransportOrders[tab.id].length)}</span>
       </button>)}
     </nav>
-    {isDemo && <div className="transport-demo-notice" role="status"><b>داده تستی</b><span>{realCount ? 'برای این دسته مسیر هنوز سفارش واقعی ثبت نشده است؛ نمونه‌ها فقط جهت نمایش رابط کاربری هستند.' : 'در حال حاضر سفارش حمل واقعی برای نمایش وجود ندارد؛ نمونه‌های زیر صرفاً داده نمایشی هستند و قابل پذیرش یا واگذاری نیستند.'}</span></div>}
     <section className="transport-demo-map-section">
       <div><h3>نقشه مسیرها</h3><p>سبز: مبدأ بارگیری · آبی: مقصد تخلیه</p></div>
       <TransportStopsMap stops={allStops} routes={visible.map(order => order.stops || [])} />
