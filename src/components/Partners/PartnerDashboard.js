@@ -22,6 +22,7 @@ const statuses = { pending: 'در انتظار بررسی', confirmed: 'تأیی
 const number = new Intl.NumberFormat('fa-IR');
 const offerPrice = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 4 });
 const date = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeZone: 'Asia/Tehran' });
+const dateTime = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tehran' });
 
 function Orders({ items }) {
   if (!items.length) return <div className="partner-empty"><p>سفارش جاری ندارید.</p><Link href="/quick-order">ثبت سفارش</Link></div>;
@@ -64,7 +65,8 @@ function TransportBulletin({ items, profile }) {
             <div><dt>نوع بار</dt><dd>{order.goodsType}</dd></div>
             <div><dt>وزن</dt><dd>{number.format(order.weightKg)} کیلوگرم</dd></div>
             <div><dt>حجم</dt><dd>{number.format(order.volumeM3)} مترمکعب</dd></div>
-            <div><dt>تحویل</dt><dd>{{ hourly: 'ساعتی', daily: 'روزانه', multiday: 'چندروزه' }[order.urgency] || '—'}</dd></div>
+            <div><dt>نوع تحویل</dt><dd>{{ hourly: 'ساعتی', daily: 'روزانه', multiday: 'چندروزه' }[order.urgency] || '—'}</dd></div>
+            <div><dt>مهلت نهایی</dt><dd>{order.deadline ? dateTime.format(new Date(order.deadline)) : '—'}</dd></div>
             <div><dt>مسافت مستقیم تخمینی</dt><dd>{number.format(order.quote?.distanceKm || 0)} کیلومتر</dd></div>
             <div><dt>کارسا</dt><dd>{number.format(order.acceptedRateKar ?? (order.kind === 'job' && order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0))}</dd></div>
           </dl>
