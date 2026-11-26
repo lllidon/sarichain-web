@@ -126,12 +126,6 @@ function ProfileForm({ profile, onSaved, onExpired }) {
 
   return (
     <>
-    {driver && <div className="partner-transport-optin partner-transport-optin-before-form">
-      <p>برای فعال‌سازی امکان حمل بار، مشخصات وسیله و مدارک را تکمیل کنید. پس از بررسی و تأیید مدیریت، بارهای متناسب برای شما نمایش داده می‌شود.</p>
-      <TransportVehicleForm profile={profile} onVehicleLoaded={setVehicleDraft} onVehicleSaved={setVehicleDraft} />
-      <div><ReviewStatus status={profile.driverStatus} /></div>
-      {!vehicleDraft && <p className="partner-error" role="status">ابتدا مشخصات وسیله را در فرم بالا ذخیره کنید؛ سپس پروفایل را ذخیره کنید.</p>}
-    </div>}
     <form className="partner-form" onSubmit={submit}>
       <fieldset disabled={busy} className="partner-fields">
         <legend>اطلاعات پایه</legend>
@@ -180,6 +174,11 @@ function ProfileForm({ profile, onSaved, onExpired }) {
       {error && <p className="partner-message partner-error" role="alert">{error}</p>}
       <button className="partner-primary" disabled={busy} type="submit">{busy ? 'در حال ذخیره…' : 'ذخیره پروفایل'}</button>
     </form>
+    {driver && <div className="partner-transport-optin partner-transport-optin-after-form">
+      <p>برای فعال‌سازی امکان حمل بار، مشخصات وسیله و مدارک را تکمیل کنید. پس از بررسی و تأیید مدیریت، بارهای متناسب برای شما نمایش داده می‌شود. اطلاعات وسیله جداگانه ذخیره و برای تأیید به مدیریت ارسال می‌شود.</p>
+      <TransportVehicleForm profile={profile} onVehicleLoaded={setVehicleDraft} onVehicleSaved={setVehicleDraft} />
+      <div><ReviewStatus status={profile.driverStatus} /></div>
+    </div>}
     </>
   );
 }
