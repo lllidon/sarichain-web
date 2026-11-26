@@ -37,6 +37,10 @@ export default async function PartnersPage({ searchParams }) {
   if (section === 'bulletin' && !profile.capabilities?.drive) redirect('/partners?section=profile');
   if (section === 'products' && !profile.capabilities?.sell) redirect('/partners?section=profile');
   const offerCatalog = canOffer ? await readCatalog() : null;
+  const upgradeCatalog = section === 'profile' ? await readCatalog() : null;
+  const upgradeCategories = upgradeCatalog ? Object.entries(upgradeCatalog.categories)
+    .filter(([, category]) => category.parentId)
+    .map(([id, category]) => ({ _id: id, name: category.name, parentId: category.parentId })) : [];
   const allowedCategoryIds = new Set(profile.allowedProductCategoryIds || []);
   const producerCategories = offerCatalog ? Object.fromEntries(Object.entries(offerCatalog.categories)
     .filter(([id]) => allowedCategoryIds.has(id))) : {};
@@ -58,6 +62,6 @@ export default async function PartnersPage({ searchParams }) {
   }
   return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback}
     offerCatalog={offerCatalog} locations={await locations} unavailable={isList && !data}>
-    {section === 'profile' && <PartnerProfileEditor initialProfile={profile} />}
+    {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
