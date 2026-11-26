@@ -425,3 +425,20 @@
 .product-cart-state { display: grid; gap: 1px; font-size: .79rem; color: var(--catalog-muted); }
 .product-cart-state a { color: var(--catalog-green); font-weight: 700; }
 .product-cart-limit { color: #824838; font-size: .75rem; }
+
+.catalog-card-media { position: relative; }
+.product-weekly-toggle {
+  display: inline-grid; place-items: center;
+  width: 42px; height: 42px; padding: 0;
+  border: 0; border-radius: 50%;
+  background: #fff; color: #202124;
+  box-shadow: 0 2px 10px rgba(0,0,0,.16);
+  font-size: 19px; line-height: 1;
+  cursor: pointer; transition: transform .16s ease, color .16s ease, background .16s ease;
+}
+.product-weekly-toggle:hover { transform: scale(1.05); }
+.product-weekly-toggle.is-selected { color: #111; }
+.product-weekly-toggle:disabled { opacity: .6; cursor: wait; }
+.catalog-card-media > .product-weekly-toggle {
+  position: absolute; z-index: 3; top: 9px; inset-inline-end: 9px;
+}
