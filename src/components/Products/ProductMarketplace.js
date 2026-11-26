@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faEllipsis, faHeart, faImage, faList, faMagnifyingGlassPlus, faShareNodes, faShieldHalved, faStar, faStore, faTruck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faEllipsis, faImage, faList, faMagnifyingGlassPlus, faShareNodes, faShieldHalved, faStar, faStore, faTruck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import ProductPurchase from './ProductPurchase';
+import ProductWeeklyToggle from './ProductWeeklyToggle';
 import { cheapestVariant, productImage, productPackages, withOffer } from './catalog';
 import { formatPrice } from './price';
 import ProductSellers from './ProductSellers';
@@ -19,10 +20,8 @@ const displayDate = day => date.format(new Date(day + 'T12:00:00Z'));
 
 function ProductGallery({ product, showTab }) {
   const [activeImage, setActiveImage] = useState(0);
-  const [favorite, setFavorite] = useState(false);
   const [message, setMessage] = useState('');
   const dialog = useRef(null);
-  const favoriteKey = `sarichain-favorite-${product.code}`;
   const gallery = product.gallery.length ? product.gallery : [product.fullImage || product.image].filter(Boolean);
   const isExample = gallery.length === 0;
   const images = (isExample ? [''] : gallery).map(url => productImage({ image: url }));
@@ -42,21 +41,6 @@ function ProductGallery({ product, showTab }) {
     </button>);
   }
 
-  useEffect(() => {
-    try { setFavorite(localStorage.getItem(favoriteKey) === '1'); }
-    catch { setFavorite(false); }
-  }, [favoriteKey]);
-
-  function toggleFavorite() {
-    const next = !favorite;
-    setFavorite(next);
-    try {
-      if (next) localStorage.setItem(favoriteKey, '1');
-      else localStorage.removeItem(favoriteKey);
-    } catch {
-      setMessage('علاقه‌مندی فقط تا زمانی که این صفحه باز است حفظ می‌شود.');
-    }
-  }
 
   async function share() {
     try {
@@ -73,17 +57,19 @@ function ProductGallery({ product, showTab }) {
   return (
     <div className="market-gallery">
       <div className="market-gallery-tools" aria-label="ابزارهای محصول">
-        <button type="button" aria-label="علاقه‌مندی" title="علاقه‌مندی" aria-pressed={favorite} onClick={toggleFavorite}><FontAwesomeIcon icon={faHeart} /></button>
         <button type="button" aria-label="اشتراک‌گذاری" title="اشتراک‌گذاری" onClick={share}><FontAwesomeIcon icon={faShareNodes} /></button>
         <button type="button" aria-label="بزرگ‌نمایی تصویر" title="بزرگ‌نمایی تصویر" onClick={() => dialog.current.showModal()}><FontAwesomeIcon icon={faMagnifyingGlassPlus} /></button>
         <a href="#product-sellers-tab" aria-label="فروشندگان" title="فروشندگان" onClick={() => showTab('sellers')}><FontAwesomeIcon icon={faStore} /></a>
         <a href="#product-spec-tab" aria-label="مشخصات محصول" title="مشخصات محصول" onClick={() => showTab('specs')}><FontAwesomeIcon icon={faList} /></a>
       </div>
       <div className="market-gallery-content">
-        <button type="button" className="product-packshot" aria-label={`بزرگ‌نمایی ${product.name}`} onClick={() => dialog.current.showModal()}>
-          <Image src={image} alt={isExample ? 'تصویر نمونه' : product.name} width={400} height={400} loading="eager" unoptimized />
-          {isExample && <span className="product-example gallery-example">تصویر نمونه</span>}
-        </button>
+        <div className="market-packshot-wrap">
+          <button type="button" className="product-packshot" aria-label={`بزرگ‌نمایی ${product.name}`} onClick={() => dialog.current.showModal()}>
+            <Image src={image} alt={isExample ? 'تصویر نمونه' : product.name} width={400} height={400} loading="eager" unoptimized />
+            {isExample && <span className="product-example gallery-example">تصویر نمونه</span>}
+          </button>
+          <ProductWeeklyToggle productId={product.id} productName={product.name} />
+        </div>
         <div className="market-gallery-thumbs" aria-label="گالری محصول">
           {thumbnails(images.slice(0, previewLength))}
           {placeholders.map(text => <span key={text} className="gallery-placeholder" title={text}>
