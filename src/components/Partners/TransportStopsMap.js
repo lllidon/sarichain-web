@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 
-export default function TransportStopsMap({ stops = [] }) {
+export default function TransportStopsMap({ stops = [], routes = [] }) {
   const host = useRef(null);
 
   useEffect(() => {
@@ -18,6 +18,12 @@ export default function TransportStopsMap({ stops = [] }) {
       }).addTo(map);
       const valid = stops.filter(point => Number.isFinite(Number(point.latitude)) && Number.isFinite(Number(point.longitude)));
       const bounds = [];
+      const routeColors = ['#167d59', '#3869bd', '#a36a22', '#8056a8', '#b34e56'];
+      routes.forEach((route, routeIndex) => {
+        const coordinates = route.filter(point => Number.isFinite(Number(point.latitude)) && Number.isFinite(Number(point.longitude)))
+          .map(point => [Number(point.latitude), Number(point.longitude)]);
+        if (coordinates.length > 1) L.polyline(coordinates, { color: routeColors[routeIndex % routeColors.length], weight: 3, opacity: .7 }).addTo(map);
+      });
       valid.forEach((point, index) => {
         const position = [Number(point.latitude), Number(point.longitude)];
         bounds.push(position);
@@ -33,7 +39,7 @@ export default function TransportStopsMap({ stops = [] }) {
       else map.setView([36.5633, 53.0601], 11);
     }).catch(() => {});
     return () => { disposed = true; map?.remove(); };
-  }, [stops]);
+  }, [stops, routes]);
 
   return <div className="transport-demo-map" ref={host} dir="ltr" aria-label="نقشه نقاط بارگیری و تخلیه" />;
 }
