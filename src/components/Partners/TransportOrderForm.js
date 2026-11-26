@@ -33,6 +33,7 @@ export default function TransportOrderForm() {
   const [origins, setOrigins] = useState([blankStop('pickup')]);
   const [destinations, setDestinations] = useState([blankStop('dropoff')]);
   const [active, setActive] = useState({ kind: 'pickup', index: 0 });
+  const [deadlineLocal, setDeadlineLocal] = useState('');
   const selected = active.kind === 'pickup' ? origins[active.index] : destinations[active.index];
   const stops = useMemo(() => [
     ...origins.map(stop => ({ ...stop, kind: 'pickup' })),
@@ -86,7 +87,8 @@ export default function TransportOrderForm() {
         <label>وزن بار (کیلوگرم)<input name="weightKg" type="number" min="0.1" max="100000" step="0.01" required /></label>
         <label>حجم بار (متر مکعب)<input name="volumeM3" type="number" min="0.01" max="10000" step="0.01" required /></label>
         <label>سرعت تحویل<select name="urgency" defaultValue="daily"><option value="hourly">ساعتی – فوری</option><option value="daily">روزانه</option><option value="multiday">چندروزه</option></select></label>
-        <label>مهلت نهایی تحویل<input name="deadline" type="datetime-local" required /></label>
+        <label>مهلت نهایی تحویل<input name="deadlineLocal" type="datetime-local" value={deadlineLocal} onChange={event => setDeadlineLocal(event.target.value)} required /></label>
+        <input type="hidden" name="deadline" value={deadlineLocal && Number.isFinite(new Date(deadlineLocal).getTime()) ? new Date(deadlineLocal).toISOString() : ''} />
         <label className="transport-order-wide">توضیحات تکمیلی<textarea name="description" rows={3} maxLength={1000} placeholder="شرایط بارگیری، نوع بسته‌بندی، محدودیت‌های مسیر و..." /></label>
       </div>
     </div>
