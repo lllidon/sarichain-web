@@ -11,7 +11,6 @@ import TransportVehicleForm from './TransportVehicleForm';
 const buyers = { consumer: 'خریدار نهایی', retailer: 'مغازه‌دار', wholesaler: 'خریدار عمده', other: 'سایر' };
 const producers = { orchard: 'باغدار', farm: 'کشاورز', dairy: 'دامداری / گاوداری', greenhouse: 'گلخانه‌دار', other: 'سایر' };
 const services = { driver: 'حمل‌ونقل', warehouse: 'انبارداری', harvest: 'برداشت محصول', labor: 'نیروی کار', supervisor: 'نظارت', quality: 'کنترل کیفیت', other: 'سایر خدمات' };
-const vehicles = { motorcycle: 'موتورسیکلت', car: 'خودرو', pickup: 'وانت', van: 'ون', truck: 'کامیون' };
 const statuses = { pending: 'در انتظار بررسی', approved: 'تأییدشده', rejected: 'ردشده' };
 
 async function request(path, options = {}) {
@@ -126,6 +125,13 @@ function ProfileForm({ profile, onSaved, onExpired }) {
   }
 
   return (
+    <>
+    {driver && <div className="partner-transport-optin partner-transport-optin-before-form">
+      <p>برای فعال‌سازی امکان حمل بار، مشخصات وسیله و مدارک را تکمیل کنید. پس از بررسی و تأیید مدیریت، بارهای متناسب برای شما نمایش داده می‌شود.</p>
+      <TransportVehicleForm profile={profile} onVehicleLoaded={setVehicleDraft} onVehicleSaved={setVehicleDraft} />
+      <div><ReviewStatus status={profile.driverStatus} /></div>
+      {!vehicleDraft && <p className="partner-error" role="status">ابتدا مشخصات وسیله را در فرم بالا ذخیره کنید؛ سپس پروفایل را ذخیره کنید.</p>}
+    </div>}
     <form className="partner-form" onSubmit={submit}>
       <fieldset disabled={busy} className="partner-fields">
         <legend>اطلاعات پایه</legend>
@@ -164,12 +170,7 @@ function ProfileForm({ profile, onSaved, onExpired }) {
         </div>
         {selected.length > 0 && <label className="partner-wide">محدوده خدمت<input name="serviceArea" defaultValue={profile.serviceArea} maxLength={180} /></label>}
         {driver && (
-          <div className="partner-wide partner-transport-optin">
-            <p>برای فعال‌سازی امکان حمل بار، مشخصات وسیله و مدارک را تکمیل کنید. پس از بررسی و تأیید مدیریت، بارهای متناسب برای شما نمایش داده می‌شود.</p>
-            <TransportVehicleForm profile={profile} onVehicleLoaded={setVehicleDraft} onVehicleSaved={setVehicleDraft} />
-            <div><ReviewStatus status={profile.driverStatus} /></div>
-            {!vehicleDraft && <p className="partner-error" role="status">ابتدا مشخصات وسیله را در فرم بالا ذخیره کنید؛ سپس پروفایل را ذخیره کنید.</p>}
-          </div>
+
         )}
         {specialist && <>
           <label>شماره یا مرجع مدرک تخصصی<input name="serviceCredential" defaultValue={profile.serviceCredential} maxLength={120} required /></label>
@@ -179,6 +180,7 @@ function ProfileForm({ profile, onSaved, onExpired }) {
       {error && <p className="partner-message partner-error" role="alert">{error}</p>}
       <button className="partner-primary" disabled={busy} type="submit">{busy ? 'در حال ذخیره…' : 'ذخیره پروفایل'}</button>
     </form>
+    </>
   );
 }
 
