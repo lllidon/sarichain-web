@@ -746,3 +746,16 @@
   .nav-solutions-visual-image { width:72px; height:58px; }
   .nav-solutions-grid { grid-template-columns:1fr; }
 }
+
+.nav-mobile-toggle {
+  display:none;
+  border:0;
+  background:transparent;
+  color:#28553e;
+  font-size:21px;
+  padding:9px;
+  cursor:pointer;
+}
+@media(max-width:992px) {
+  .nav-mobile-toggle { display:inline-flex; align-items:center; justify-content:center; }
+}
