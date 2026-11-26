@@ -206,3 +206,47 @@
 .partner-location-photo { margin-block-end: 12px; }
 .partner-location-address { color: var(--dash-muted); font-size: .85rem; }
 .partner-location-link { font-size: .85rem; color: var(--brand-blue); font-weight: 700; }
+
+
+/* Transport vehicle profile */
+.transport-vehicle { display: grid; gap: 16px; }
+.transport-intro {
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid var(--dash-line);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #e7f3eb, #f7faf8 72%);
+}
+.transport-kicker { color: var(--dash-brand); font-size: .76rem; font-weight: 800; letter-spacing: .02em; }
+.transport-intro h2 { margin: 7px 0; font-size: clamp(1.35rem, 3vw, 1.9rem); }
+.transport-intro p { max-width: 650px; margin: 0; color: var(--dash-muted); line-height: 1.9; font-size: .9rem; }
+.transport-steps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.transport-steps span { border: 1px solid #cbded2; border-radius: 999px; padding: 5px 11px; color: #315b49; background: #ffffffa8; font-size: .75rem; }
+.transport-form { display: grid; gap: 13px; }
+.transport-panel { padding: clamp(14px, 2.5vw, 22px); border: 1px solid var(--dash-line); border-radius: 14px; background: #fff; min-width: 0; }
+.transport-panel-title { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 17px; }
+.transport-panel-title > span { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; background: #e5f2ea; color: var(--dash-brand); font-weight: 800; font-size: .78rem; }
+.transport-panel-title h3 { margin: 0 0 4px; font-size: 1rem; }
+.transport-panel-title p { margin: 0; color: var(--dash-muted); font-size: .8rem; }
+.transport-kind-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.transport-kind { display: grid !important; justify-items: start; gap: 6px !important; padding: 12px; border: 1px solid var(--dash-line); border-radius: 12px; cursor: pointer; background: #fff; transition: border-color .15s, background .15s; }
+.transport-kind.selected { border-color: var(--dash-brand); background: #eff7f1; box-shadow: inset 0 0 0 1px var(--dash-brand); }
+.transport-kind input { accent-color: var(--dash-brand); }
+.transport-kind-icon { font-size: 1.6rem; }
+.transport-kind strong { font-size: .86rem; }
+.transport-kind small { color: var(--dash-muted); font-size: .72rem; }
+.transport-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.transport-field { display: grid; gap: 6px; font-size: .82rem; font-weight: 650; min-width: 0; }
+.transport-field input, .transport-field select, .transport-field textarea {
+  width: 100%; min-width: 0; border: 1px solid var(--dash-line); border-radius: 9px; padding: 10px 11px;
+  color: var(--dash-text); background: #fbfcfb; font: inherit; font-weight: 400; font-size: .86rem;
+}
+.transport-field input:focus, .transport-field select:focus, .transport-field textarea:focus { outline: 2px solid #8eb6a0; outline-offset: 1px; }
+.transport-feedback { padding: 10px 12px; border-radius: 9px; font-size: .84rem; }
+.transport-feedback.error { color: #873c32; background: #fbefed; }
+.transport-feedback.success { color: #28553e; background: #e9f4ec; }
+.transport-submit { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px; border-radius: 12px; background: #f3f7f4; }
+.transport-submit p { margin: 0; color: var(--dash-muted); font-size: .78rem; }
+@media (max-width: 620px) {
+  .transport-kind-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .transport-fields { grid-template-columns: minmax(0, 1fr); }
+}
