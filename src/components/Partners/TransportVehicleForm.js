@@ -23,7 +23,7 @@ async function saveVehicle(payload) {
   return data;
 }
 
-export default function TransportVehicleForm({ profile }) {
+export default function TransportVehicleForm({ profile, onVehicleLoaded, onVehicleSaved }) {
   const [saved, setSaved] = useState(profile.vehicle || {});
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function TransportVehicleForm({ profile }) {
     fetch('/web/vehicle', { cache: 'no-store' }).then(response => {
       if (!response.ok) throw new Error('دریافت مشخصات خودرو ناموفق بود.');
       return response.json();
-    }).then(data => { if (active) { const vehicle = data.vehicle || {}; setSaved(vehicle); setKind(vehicle.type || 'pickup'); setClassName(vehicle.className || ''); } })
+    }).then(data => { if (active) { const vehicle = data.vehicle || {}; setSaved(vehicle); setKind(vehicle.type || 'pickup'); setClassName(vehicle.className || ''); onVehicleLoaded?.(vehicle); } })
       .catch(failure => { if (active) setError(failure.message); })
       .finally(() => { if (active) setLoaded(true); });
     return () => { active = false; };
@@ -78,6 +78,7 @@ export default function TransportVehicleForm({ profile }) {
     try {
       const result = await saveVehicle({ vehicle });
       setSaved(result.vehicle || vehicle);
+      onVehicleSaved?.(result.vehicle || vehicle);
       setMessage('مشخصات وسیله نقلیه با موفقیت ذخیره شد.');
     } catch (failure) {
       setError(failure.message || 'ارتباط با سرور برقرار نشد.');
