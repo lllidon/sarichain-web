@@ -1,18 +1,20 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import Link from 'next/link';
 import { saveProductOffer } from '../../app/(workspace)/partners/actions';
 import { categoryContains, normalizeCatalogSearch } from '../Products/catalog';
+import { partnerHref } from './workspaceSections';
 
 const resultPageSize = 8;
 
-export default function ProductOfferForm({ products, categories, brands }) {
+export default function ProductOfferForm({ products, categories, brands, locations }) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [brand, setBrand] = useState('');
   const [limit, setLimit] = useState(resultPageSize);
   const [selected, setSelected] = useState(null);
-  const [fields, setFields] = useState({ price: '', stock: '', harvestDate: '', notes: '' });
+  const [fields, setFields] = useState({ price: '', stock: '', harvestDate: '', notes: '', locationId: '' });
   const [error, action, pending] = useActionState(saveProductOffer, null);
   const query = normalizeCatalogSearch(search);
   const matches = products.filter(product =>
@@ -71,6 +73,13 @@ export default function ProductOfferForm({ products, categories, brands }) {
           <input type="date" name="harvestDate" lang="fa-IR" value={fields.harvestDate} onChange={changeField} />
         </label>
       </div>
+      <label>موقعیت مکانی عرضه (اختیاری)
+        <select name="locationId" value={fields.locationId} onChange={changeField} disabled={!locations?.length}>
+          <option value="">{locations === null ? 'دریافت موقعیت‌ها ممکن نبود' : 'انتخاب موقعیت'}</option>
+          {locations?.map(item => <option key={item.id} value={item.id}>{item.title}{item.city ? ' · ' + item.city : ''}</option>)}
+        </select>
+      </label>
+      <Link className="partner-location-link" href={partnerHref('orchards')}>مدیریت موقعیت‌های مکانی</Link>
       <label>یادداشت (اختیاری)
         <textarea name="notes" maxLength={1000} rows={3} value={fields.notes} onChange={changeField} placeholder="مثلاً رقم یا شرایط تحویل" />
       </label>

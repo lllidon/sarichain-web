@@ -10,7 +10,7 @@ export function partnerBackend(path, { method, token, body, query } = {}) {
     signal: AbortSignal.timeout(10000),
     headers: {
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...(body !== undefined && { 'Content-Type': 'application/json' }),
+      ...(typeof body === 'string' && { 'Content-Type': 'application/json' }),
     },
     body,
   });

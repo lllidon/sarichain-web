@@ -33,7 +33,10 @@ export default async function PartnersPage({ searchParams }) {
   if (returnToCart) redirect('/cart');
 
   let data;
-  const offerCatalog = section === 'products' && profile.producerType ? readCatalog() : null;
+  const canOffer = section === 'products' && profile.producerType;
+  const offerCatalog = canOffer ? readCatalog() : null;
+  const locations = canOffer ? partnerBackend('/web/workspace/orchards/options', { token })
+    .then(response => response.ok ? response.json() : null).catch(() => null) : null;
   const isList = section !== 'overview' && section !== 'profile';
   if (isList) {
     try {
@@ -46,7 +49,7 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback}
-    offerCatalog={await offerCatalog} unavailable={isList && !data}>
+    offerCatalog={await offerCatalog} locations={await locations} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} />}
   </PartnerDashboard>;
 }

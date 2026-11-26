@@ -52,16 +52,18 @@ export async function saveProductOffer(_state, formData) {
   const stock = decimal(formData.get('stock'), 3);
   const harvestDate = formData.get('harvestDate');
   const notes = formData.get('notes');
+  const locationId = formData.get('locationId');
   const invalid = 'محصول، قیمت، موجودی و تاریخ برداشت را بررسی کنید.';
   if (typeof productId !== 'string' || !/^[a-f0-9]{24}$/.test(productId) ||
       !Number.isFinite(price) || price < 0.0001 || price > 1_000_000 ||
       !Number.isFinite(stock) || stock < 0 || stock > 1_000_000_000 ||
       typeof harvestDate !== 'string' || (harvestDate && !/^\d{4}-\d{2}-\d{2}$/.test(harvestDate)) ||
-      typeof notes !== 'string' || notes.length > 1000) return invalid;
+      typeof notes !== 'string' || notes.length > 1000 ||
+      (locationId && (typeof locationId !== 'string' || !/^[a-f0-9]{24}$/.test(locationId)))) return invalid;
   let result;
   try {
     result = await partnerBackend('/web/workspace/products/offers', {
-      token, method: 'POST', body: JSON.stringify({ productId, price, stock, harvestDate: harvestDate || undefined, notes }),
+      token, method: 'POST', body: JSON.stringify({ productId, price, stock, harvestDate: harvestDate || undefined, notes, locationId: locationId || undefined }),
     });
   } catch {
     return 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.';
@@ -71,4 +73,35 @@ export async function saveProductOffer(_state, formData) {
   if (result.status === 400) return invalid;
   if (!result.ok) return 'ثبت عرضه انجام نشد. دوباره تلاش کنید.';
   redirect(partnerHref('products') + '&result=saved');
+}
+
+export async function saveWorkspaceLocation(_state, formData) {
+  const token = (await cookies()).get(partnerSessionCookie)?.value;
+  if (!token) redirect('/partners');
+  const body = new FormData();
+  for (const field of ['title', 'type', 'provinceCode', 'cityCode', 'latitude', 'longitude', 'details']) {
+    const value = formData.get(field);
+    if (typeof value !== 'string') return 'اطلاعات موقعیت را بررسی کنید.';
+    body.set(field, value);
+  }
+  if (!body.get('provinceCode') || !body.get('cityCode')) return 'استان و شهر را انتخاب کنید.';
+  if (!body.get('latitude') || !body.get('longitude')) return 'نقطه را روی نقشه انتخاب کنید یا مختصات را وارد کنید.';
+  const image = formData.get('image');
+  if (image instanceof File && image.size) {
+    if (image.size > 2 * 1024 * 1024) return 'حجم تصویر باید حداکثر ۲ مگابایت باشد.';
+    body.set('image', image);
+  }
+  let response;
+  try {
+    response = await partnerBackend('/web/workspace/orchards/locations', { token, method: 'POST', body });
+  } catch {
+    return 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.';
+  }
+  if (response.status === 401) redirect('/partners');
+  if (response.status === 400) {
+    const problem = await response.json().catch(() => null);
+    return typeof problem?.message === 'string' ? problem.message : 'نام، نوع، شهر و مختصات موقعیت را بررسی کنید.';
+  }
+  if (!response.ok) return 'موقعیت ذخیره نشد. دوباره تلاش کنید.';
+  redirect(partnerHref('orchards') + '&result=saved');
 }

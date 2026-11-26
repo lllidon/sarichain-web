@@ -34,7 +34,7 @@ function ReviewStatus({ status }) {
   return <span className={status === 'approved' ? 'partner-status approved' : 'partner-status'}>{statuses[status] || 'نیازمند بررسی'}</span>;
 }
 
-function ProfileLocation({ profile }) {
+export function ProfileLocation({ profile, required = false }) {
   const [provinces, setProvinces] = useState([]);
   const [province, setProvince] = useState(profile.provinceCode || '');
   const [city, setCity] = useState(profile.cityCode || '');
@@ -75,18 +75,18 @@ function ProfileLocation({ profile }) {
 
   return (
     <>
-      <label>استان<select aria-label="استان" value={province} onChange={event => {
+      <label>استان<select aria-label="استان" value={province} required={required} onChange={event => {
         setProvince(event.target.value); setCity(''); setEdited(true);
       }}>
         <option value="">{profile.province && !profile.provinceCode ? `${profile.province} (ثبت قبلی)` : 'انتخاب استان'}</option>
         {provinces.map(row => <option value={row.code} key={row.code}>{row.name}</option>)}
       </select></label>
-      <label>شهر<select aria-label="شهر" value={city} disabled={!province || !cities} onChange={event => { setCity(event.target.value); setEdited(true); }}>
+      <label>شهر<select aria-label="شهر" value={city} required={required} disabled={!province || !cities} onChange={event => { setCity(event.target.value); setEdited(true); }}>
         <option value="">{profile.city && !profile.cityCode && !edited ? `${profile.city} (ثبت قبلی)`
           : province && !cities && !error ? 'در حال دریافت…' : 'انتخاب شهر'}</option>
         {cities?.map(row => <option key={row.code} value={row.code}>{row.name}</option>)}
       </select></label>
-      {edited && <><input type="hidden" name="provinceCode" value={province} /><input type="hidden" name="cityCode" value={city} /></>}
+      {(required || edited) && <><input type="hidden" name="provinceCode" value={province} /><input type="hidden" name="cityCode" value={city} /></>}
       {error && <p className="partner-wide" role="status">دریافت فهرست موقعیت انجام نشد.</p>}
     </>
   );

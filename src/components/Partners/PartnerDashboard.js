@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faTruck, faUserPen } from '@fortawesome/free-solid-svg-icons';
 import { leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
-import { partnerHref, sections } from './workspaceSections';
+import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
+import WorkspaceLocationForm from './WorkspaceLocationForm';
 
 const icons = {
   grid: faBorderAll, orders: faClipboardList, products: faBox, transport: faTruck,
@@ -34,12 +35,15 @@ function Orders({ items }) {
   </ul>;
 }
 
-function WorkspaceEntries({ section, items, offerCatalog, result }) {
+function WorkspaceEntries({ section, items, offerCatalog, locations, profile, result }) {
   const { entry, placeholder, help } = sections[section];
   const action = saveWorkspaceEntry.bind(null, section);
-  return <div className="partner-entry-layout">
-    {section === 'products' ? offerCatalog && !offerCatalog.unavailable ?
-      <ProductOfferForm key={result === 'saved' ? items[0]?.id : undefined} categories={offerCatalog.categories} brands={offerCatalog.brands}
+  const isLocation = section === 'orchards';
+  const formKey = result === 'saved' ? items[0]?.id : undefined;
+  return <div className={isLocation ? 'partner-entry-layout partner-location-layout' : 'partner-entry-layout'}>
+    {isLocation ? <WorkspaceLocationForm key={formKey} profile={profile} /> :
+      section === 'products' ? offerCatalog && !offerCatalog.unavailable ?
+      <ProductOfferForm key={formKey} locations={locations} categories={offerCatalog.categories} brands={offerCatalog.brands}
         products={offerCatalog.catalog.flatMap(product => [product, ...product.variants])
           .map(({ id, name, code, brand, brandId, category, unit }) => ({ id, name, code, brand, brandId, category, unit }))} /> :
       <div className="partner-empty"><p>{offerCatalog ? 'کاتالوگ موقتاً در دسترس نیست.' : 'برای ثبت عرضه باید نقش تولیدکننده در پروفایل شما فعال باشد.'}</p>
@@ -53,10 +57,12 @@ function WorkspaceEntries({ section, items, offerCatalog, result }) {
     </form>}
     <div>
       {!items.length ? <div className="partner-empty"><p>هنوز موردی در این بخش ثبت نشده است.</p></div> :
-        <ul className="partner-records">
+        <ul className={isLocation ? 'partner-records partner-location-records' : 'partner-records'}>
           {items.map(item => <li key={item.id}>
+            {isLocation && item.hasPhoto && <img className="partner-location-photo" src={'/api/partner-locations/' + item.id + '/image'}
+              alt={item.title} loading="lazy" />}
             <div className="partner-record-heading">
-              <div><strong>{item.title}</strong><small>{date.format(new Date(item.createdAt))}</small></div>
+              <div><strong>{item.title}</strong><small>{item.location ? locationTypes[item.location.type] : date.format(new Date(item.createdAt))}</small></div>
               {item.owned && <form action={action}>
                 <input type="hidden" name="id" value={item.id} />
                 <button className="partner-remove" aria-label={`حذف ${item.title}`}>حذف</button>
@@ -67,7 +73,13 @@ function WorkspaceEntries({ section, items, offerCatalog, result }) {
               <div><dt>موجودی تقریبی</dt><dd>{number.format(item.offer.stock)} {item.offer.unit}</dd></div>
               {item.offer.harvestDate && <div><dt>برداشت تقریبی</dt><dd>{date.format(new Date(item.offer.harvestDate + 'T12:00:00Z'))}</dd></div>}
               <div><dt>کد محصول</dt><dd><bdi>{item.offer.sku}</bdi></dd></div>
+              {item.offer.locationTitle && <div><dt>موقعیت مکانی</dt><dd>{item.offer.locationTitle}</dd></div>}
             </dl>}
+            {item.location && <div className="partner-location-address">
+              <span>{[item.location.province, item.location.city].join('، ')}</span>
+              <a className="partner-location-link" href={`https://www.openstreetmap.org/?mlat=${item.location.latitude}&mlon=${item.location.longitude}#map=15/${item.location.latitude}/${item.location.longitude}`}
+                target="_blank" rel="noopener noreferrer">مشاهده روی نقشه</a>
+            </div>}
             {item.details && <p>{item.details}</p>}
           </li>)}
         </ul>}
@@ -75,7 +87,7 @@ function WorkspaceEntries({ section, items, offerCatalog, result }) {
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, children }) {
+export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, children }) {
   const info = sections[section];
   const message = typeof result === 'string' && Object.hasOwn(feedback, result) ? feedback[result] : '';
   return <div className="catalog-page partners-page partner-dashboard" dir="rtl">
@@ -110,7 +122,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           {section === 'profile' && children}
           {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
           {data && (section === 'orders' ? <Orders items={data.items} /> :
-            <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} result={result} />)}
+            <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
               {page > 1 && <Link href={partnerHref(section) + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
