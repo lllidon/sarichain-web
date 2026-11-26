@@ -14,6 +14,10 @@ import { cartCookie, parseCart } from '../../components/Products/cartData';
 import { formatPrice } from '../../components/Products/price';
 import { partnerBackend, partnerSessionCookie } from '../../lib/partnerBackend';
 import './home.css';
+import '../../components/Navbar.css';
+import ProductMegaMenu from '../../components/Products/ProductMegaMenu';
+import SolutionsMegaMenu from '../../components/SolutionsMegaMenu';
+import { CatalogProvider } from '../../components/Products/CatalogProvider';
 
 const number = new Intl.NumberFormat('fa-IR');
 const catalogIcons = [faAppleWhole, faWheatAwn, faSeedling, faLeaf, faBox, faStore];
@@ -59,23 +63,30 @@ async function PersonalizedAccount() {
   return <AccountLink profile={await getProfile()} />;
 }
 
-function HomeHeader() {
-  return <header className="market-home-header">
-    <div className="market-home-shell market-home-header-grid">
-      <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
-        <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="132" height="44" />
-      </Link>
-      <nav aria-label="منوی اصلی" className="market-home-nav">
-        <Link href="/categories" prefetch={false}>محصولات</Link>
-        <Link href="#weekly-basket">سبد هفتگی</Link>
-        <Link href="/quick-order" prefetch={false}>سفارش سریع</Link>
-        <Link href="/partners" prefetch={false}>همکاران</Link>
-      </nav>
-      <Suspense fallback={<div className="market-home-actions"><Link href="/cart" aria-label="سبد خرید"><FontAwesomeIcon icon={faBasketShopping} /></Link><AccountLink /></div>}>
-        <HomeActions />
-      </Suspense>
-    </div>
-  </header>;
+function HomeHeader({ catalogData }) {
+  return <CatalogProvider value={{ ...catalogData, brands: [], unavailable: false }}>
+    <header className="market-home-header">
+      <div className="market-home-shell market-home-header-grid">
+        <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
+          <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="132" height="44" />
+        </Link>
+        <nav aria-label="منوی اصلی" className="market-home-nav">
+          <ul className="nav-menu">
+            <ProductMegaMenu />
+            <li className="nav-item"><Link href="/weekly-basket" className="nav-link">سبد هفتگی</Link></li>
+            <li className="nav-item"><Link href="/quick-order" className="nav-link">سفارش سریع</Link></li>
+            <li className="nav-item"><Link href="/pilot" className="nav-link">پیش‌نمایش پایلوت</Link></li>
+            <SolutionsMegaMenu />
+            <li className="nav-item"><Link href="/blog" className="nav-link">وبلاگ</Link></li>
+            <li className="nav-item"><Link href="/support" className="nav-link">پشتیبانی</Link></li>
+          </ul>
+        </nav>
+        <Suspense fallback={<div className="market-home-actions"><Link href="/cart" aria-label="سبد خرید"><FontAwesomeIcon icon={faBasketShopping} /></Link><AccountLink /></div>}>
+          <HomeActions />
+        </Suspense>
+      </div>
+    </header>
+  </CatalogProvider>;
 }
 
 function HomeHero() {
@@ -172,8 +183,8 @@ function CatalogCard({ product, category, sample }) {
   </li>;
 }
 
-async function HomeCatalog() {
-  const { catalog, categories } = await readCatalog('home');
+async function HomeCatalog({ catalogData }) {
+  const { catalog, categories } = catalogData;
   const live = catalog.length > 0;
   const products = live ? [...catalog].sort((a, b) => Number(cheapestVariant(b).orderable) - Number(cheapestVariant(a).orderable)).slice(0, 4) : examples;
   return <>
@@ -209,16 +220,17 @@ function HomeFooter() {
 
 export const metadata = { description: 'بازار چندفروشندگی ساری‌چین برای خرید محصولات و نهاده‌های کشاورزی از تولیدکنندگان.' };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const catalogData = await readCatalog('home');
   return <div className="market-home">
-    <HomeHeader />
+    <HomeHeader catalogData={catalogData} />
     <main className="market-home-shell">
       <HomeHero />
       <div className="market-home-paths">
         <WeeklyBasket />
         <Suspense fallback={<div className="market-home-member" aria-busy="true" />}><AccountSection /></Suspense>
       </div>
-      <Suspense fallback={<p className="market-home-catalog-loading" role="status">در حال دریافت کاتالوگ…</p>}><HomeCatalog /></Suspense>
+      <Suspense fallback={<p className="market-home-catalog-loading" role="status">در حال دریافت کاتالوگ…</p>}><HomeCatalog catalogData={catalogData} /></Suspense>
     </main>
     <HomeFooter />
   </div>;
