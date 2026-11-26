@@ -108,3 +108,55 @@
   .market-home-categories a > svg { display: none; }
   .market-home-product-info { padding: 8px; }
 }
+
+/* Keep the homepage header identical to the shared storefront navigation */
+.market-home-header {
+  position:relative;
+  z-index:1000;
+  isolation:isolate;
+}
+.market-home-header-grid { grid-template-columns:auto minmax(0,1fr) auto; }
+.market-home-nav { min-width:0; display:flex; justify-content:center; }
+.market-home-nav .nav-menu {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:nowrap;
+  gap:clamp(10px,1.65vw,24px);
+  min-width:0;
+}
+.market-home-nav .nav-item { display:flex; align-items:center; }
+.market-home-nav .nav-link {
+  color:#333;
+  font-size:clamp(11px,.9vw,14px);
+  font-weight:600;
+  white-space:nowrap;
+  padding:12px 0;
+}
+.market-home-nav .nav-link:hover { color:#28553e; }
+.market-home-nav .nav-products-panel,
+.market-home-nav .nav-solutions-panel {
+  position:absolute;
+  top:100%;
+  inset-inline:0;
+  width:100%;
+}
+.market-home-nav .nav-products-inner { max-width:1260px; }
+.market-home-nav .nav-products-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.market-home-nav .nav-solutions-grid { grid-template-columns:repeat(3,minmax(0,1fr)) minmax(190px,.9fr); }
+.market-home-nav .nav-products-toggle { display:flex; }
+@media(max-width:920px) {
+  .market-home-header-grid { grid-template-columns:auto minmax(0,1fr) auto; }
+  .market-home-nav .nav-menu { gap:9px; }
+  .market-home-nav .nav-link { font-size:11px; }
+}
+@media(max-width:640px) {
+  .market-home-header-grid { grid-template-columns:1fr auto; }
+  .market-home-nav { grid-column:1 / -1; grid-row:2; justify-content:stretch; overflow-x:auto; }
+  .market-home-nav .nav-menu { justify-content:flex-start; gap:15px; width:max-content; }
+  .market-home-nav .nav-link { font-size:12px; }
+  .market-home-nav .nav-products-panel,
+  .market-home-nav .nav-solutions-panel { position:static; }
+  .market-home-nav .nav-products-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .market-home-nav .nav-solutions-grid { grid-template-columns:1fr; }
+}
