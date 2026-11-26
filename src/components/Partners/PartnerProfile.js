@@ -163,9 +163,6 @@ function ProfileForm({ profile, onSaved, onExpired }) {
           ))}
         </div>
         {selected.length > 0 && <label className="partner-wide">محدوده خدمت<input name="serviceArea" defaultValue={profile.serviceArea} maxLength={180} /></label>}
-        {driver && (
-
-        )}
         {specialist && <>
           <label>شماره یا مرجع مدرک تخصصی<input name="serviceCredential" defaultValue={profile.serviceCredential} maxLength={120} required /></label>
           <div><ReviewStatus status={profile.specialistStatus} /></div>
