@@ -25,8 +25,8 @@ const intraSpecs = [
 export const demoTransportOrders = {
   intracity: intraSpecs.map(([goodsType, weightKg, volumeM3, urgency, pickupCount, dropoffCount], index) => ({
     _id: 'demo-intra-' + (index + 1), kind: 'job', isDemo: true, status: 'approved',
-    goodsType, weightKg, volumeM3, urgency, deadline: new Date(Date.now() + (index + 2) * 3600000).toISOString(),
-    createdAt: new Date(Date.now() - (index + 1) * 1800000).toISOString(),
+    goodsType, weightKg, volumeM3, urgency, deadline: new Date('2026-11-27T' + String(8 + index).padStart(2, '0') + ':00:00+03:30').toISOString(),
+    createdAt: new Date('2026-11-25T' + String(10 + index).padStart(2, '0') + ':00:00+03:30').toISOString(),
     quote: { category: 'intracity', distanceKm: 4 + index * 1.7, standardKar: 2 + index * .1, specialKar: 3 + index * .15 },
     stops: [
       ...Array.from({ length: pickupCount }, (_, i) => sariStop('pickup', 'مبدأ ' + (i + 1), index + i)),
@@ -36,8 +36,8 @@ export const demoTransportOrders = {
   intercity: [
     {
       _id: 'demo-intercity-1', kind: 'job', isDemo: true, status: 'approved', goodsType: 'محصولات بسته‌بندی‌شده',
-      weightKg: 680, volumeM3: 4.1, urgency: 'daily', deadline: new Date(Date.now() + 86400000).toISOString(),
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      weightKg: 680, volumeM3: 4.1, urgency: 'daily', deadline: new Date('2026-11-27T18:00:00+03:30').toISOString(),
+      createdAt: new Date('2026-11-25T12:00:00+03:30').toISOString(),
       quote: { category: 'intercity', distanceKm: 19.4, standardKar: 2.8, specialKar: 4.2 },
       stops: [
         stop('pickup','انبار ساری','ساری','محدوده نمونه انبار',36.5633,53.0601),
@@ -48,8 +48,8 @@ export const demoTransportOrders = {
     },
     {
       _id: 'demo-intercity-2', kind: 'job', isDemo: true, status: 'approved', goodsType: 'بار کشاورزی',
-      weightKg: 920, volumeM3: 5.7, urgency: 'hourly', deadline: new Date(Date.now() + 5 * 3600000).toISOString(),
-      createdAt: new Date(Date.now() - 7200000).toISOString(),
+      weightKg: 920, volumeM3: 5.7, urgency: 'hourly', deadline: new Date('2026-11-27T14:00:00+03:30').toISOString(),
+      createdAt: new Date('2026-11-25T13:00:00+03:30').toISOString(),
       quote: { category: 'intercity', distanceKm: 21.8, standardKar: 3, specialKar: 4.5 },
       stops: [
         stop('pickup','بارگیری ساری','ساری','محدوده نمونه بارگیری',36.5512,53.0731),
@@ -60,8 +60,8 @@ export const demoTransportOrders = {
   ],
   interprovincial: [{
     _id: 'demo-interprovincial-1', kind: 'job', isDemo: true, status: 'approved', goodsType: 'بار تجاری بین‌استانی',
-    weightKg: 1450, volumeM3: 8.2, urgency: 'multiday', deadline: new Date(Date.now() + 3 * 86400000).toISOString(),
-    createdAt: new Date(Date.now() - 5400000).toISOString(),
+    weightKg: 1450, volumeM3: 8.2, urgency: 'multiday', deadline: new Date('2026-11-29T18:00:00+03:30').toISOString(),
+    createdAt: new Date('2026-11-25T14:00:00+03:30').toISOString(),
     quote: { category: 'interprovincial', distanceKm: 126, standardKar: 5.5, specialKar: 8.25 },
     stops: [
       stop('pickup','مرکز بارگیری','ساری','محدوده نمونه بارگیری',36.5633,53.0601),
