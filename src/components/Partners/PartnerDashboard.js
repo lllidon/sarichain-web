@@ -101,7 +101,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
         <aside className="partner-dash-sidebar">
           <div className="partner-dash-identity">
             <span className="partner-avatar" aria-hidden="true">{profile.fullName?.trim().slice(0, 1) || 'س'}</span>
-            <div><strong>{profile.fullName || 'همکار ساری‌چین'}</strong><small>حساب همکاری ساری‌چین</small></div>
+            <div><strong>{profile.fullName || 'همکار ساری‌چین'}</strong><small>حساب ساری‌چین</small></div>
           </div>
           <nav aria-label="منوی پنل همکاران">
             {Object.entries(sections).map(([key, item]) => <Link key={key} href={partnerHref(key)}
