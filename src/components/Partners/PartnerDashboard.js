@@ -13,7 +13,7 @@ const icons = {
   bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
 };
 const feedback = {
-  saved: 'رکورد ثبت شد.', accepted: 'سفارش حمل با موفقیت پذیرفته شد.', removed: 'رکورد حذف شد.',
+  saved: 'رکورد ثبت شد.', partial: 'بخشی از ردیف‌ها به‌روزرسانی شد؛ ردیف‌های نامعتبر را بررسی کنید.', accepted: 'سفارش حمل با موفقیت پذیرفته شد.', removed: 'رکورد حذف شد.',
   invalid: 'لطفاً اطلاعات فرم را بررسی کنید.', error: 'عملیات انجام نشد. دوباره تلاش کنید.',
 };
 const statuses = { pending: 'در انتظار بررسی', confirmed: 'تأیید شده', processing: 'در حال آماده‌سازی', shipped: 'ارسال شده' };
@@ -121,7 +121,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           </header>
           {message && <p className="partner-dash-feedback" role={result === 'error' || result === 'invalid' ? 'alert' : 'status'}>{message}</p>}
           {section === 'products' && profile.capabilities?.sell && <form className="partner-entry-form partner-offer-import" action={importProductOffers} encType="multipart/form-data">
-            <h3>به‌روزرسانی گروهی قیمت و موجودی</h3>
+            <h3>به‌روزرسانی گروهی قیمت و موجودی</h3>\n            <p><a href="/api/partner-offers/export">دریافت فایل محصولات و موجودی‌های من (CSV)</a></p>
             <p>فایل CSV خروجی محصولات خود را با ستون‌های id، price و stock بارگذاری کنید. فقط پیشنهادهای فروش متعلق به حساب شما به‌روزرسانی می‌شوند؛ محصول جدید یا مشخصات اصلی کالا قابل تغییر نیست.</p>
             <label>فایل اکسل (CSV)<input type="file" name="file" accept=".csv,text/csv" required /></label>
             <button className="partner-primary" type="submit">بررسی و ثبت قیمت و موجودی</button>
