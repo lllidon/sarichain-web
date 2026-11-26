@@ -79,7 +79,7 @@ export default function TransportBulletin({ items = [] }) {
     {isDemo && <div className="transport-demo-notice" role="status"><b>داده تستی</b><span>{realCount ? 'برای این دسته مسیر هنوز سفارش واقعی ثبت نشده است؛ نمونه‌ها فقط جهت نمایش رابط کاربری هستند.' : 'در حال حاضر سفارش حمل واقعی برای نمایش وجود ندارد؛ نمونه‌های زیر صرفاً داده نمایشی هستند و قابل پذیرش یا واگذاری نیستند.'}</span></div>}
     <section className="transport-demo-map-section">
       <div><h3>نقشه مسیرها</h3><p>سبز: مبدأ بارگیری · آبی: مقصد تخلیه</p></div>
-      <TransportStopsMap stops={allStops} />
+      <TransportStopsMap stops={allStops} routes={visible.map(order => order.stops || [])} />
     </section>
     <div className="transport-bulletin-heading"><h2>{tabs.find(tab => tab.id === active)?.label}</h2><p>{number.format(visible.length)} سفارش {isDemo ? 'نمونه' : 'واقعی'}</p></div>
     <div className="transport-bulletin-cards">{visible.map(order => <OrderCard key={String(order._id)} order={order} />)}</div>
