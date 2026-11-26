@@ -15,7 +15,7 @@ const icons = {
   bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
 };
 const feedback = {
-  saved: 'رکورد ثبت شد.', removed: 'رکورد حذف شد.',
+  saved: 'رکورد ثبت شد.', accepted: 'سفارش حمل با موفقیت پذیرفته شد.', removed: 'رکورد حذف شد.',
   invalid: 'لطفاً اطلاعات فرم را بررسی کنید.', error: 'عملیات انجام نشد. دوباره تلاش کنید.',
 };
 const statuses = { pending: 'در انتظار بررسی', confirmed: 'تأیید شده', processing: 'در حال آماده‌سازی', shipped: 'ارسال شده' };
@@ -46,7 +46,7 @@ const transportStatusLabels = {
 };
 const transportCategoryLabels = { intracity: 'درون‌شهری', intercity: 'بین‌شهری', interprovincial: 'بین‌استانی' };
 
-function TransportBulletin({ items, profile }) {
+function TransportBulletin({ items }) {
   const own = items.filter(item => item.kind === 'own');
   const jobs = items.filter(item => item.kind === 'job');
   return <div className="transport-bulletin">
@@ -172,7 +172,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           </div>}
           {section === 'profile' && children}
           {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
-          {data && (section === 'orders' ? <Orders items={data.items} /> : section === 'bulletin' ? <TransportBulletin items={data.items} profile={profile} /> :
+          {data && (section === 'orders' ? <Orders items={data.items} /> : section === 'bulletin' ? <TransportBulletin items={data.items} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
