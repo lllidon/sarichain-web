@@ -3,14 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBasketShopping, faSeedling, faTruck } from '@fortawesome/free-solid-svg-icons';
+import { faBasketShopping } from '@fortawesome/free-solid-svg-icons';
 import '../Products/CategoriesPage.css';
 import './PartnerProfile.css';
-import TransportVehicleForm from './TransportVehicleForm';
+import AccountUpgradeCenter from './AccountUpgradeCenter';
 
 const buyers = { consumer: 'خریدار نهایی', retailer: 'مغازه‌دار', wholesaler: 'خریدار عمده', other: 'سایر' };
-const producers = { orchard: 'باغدار', farm: 'کشاورز', dairy: 'دامداری / گاوداری', greenhouse: 'گلخانه‌دار', other: 'سایر' };
-const services = { driver: 'حمل بار و دریافت کارسای حمل‌ونقل', warehouse: 'انبارداری', harvest: 'برداشت محصول', labor: 'نیروی کار', supervisor: 'نظارت', quality: 'کنترل کیفیت', other: 'سایر خدمات' };
 const statuses = { pending: 'در انتظار بررسی', approved: 'تأییدشده', rejected: 'ردشده' };
 
 async function request(path, options = {}) {
@@ -93,13 +91,8 @@ export function ProfileLocation({ profile, required = false }) {
 }
 
 function ProfileForm({ profile, onSaved, onExpired }) {
-  const [producer, setProducer] = useState(profile.producerType ?? '');
-  const [selected, setSelected] = useState(profile.serviceTypes ?? []);
-  const [vehicleDraft, setVehicleDraft] = useState(profile.vehicle ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const driver = selected.includes('driver');
-  const specialist = selected.some(type => type === 'supervisor' || type === 'quality');
 
   async function submit(event) {
     event.preventDefault();
@@ -111,10 +104,6 @@ function ProfileForm({ profile, onSaved, onExpired }) {
       ...Object.fromEntries(['fullName', 'email', 'organization', 'address', 'customerType', 'productionActivity', 'serviceArea']
         .filter(key => fields.has(key) && (key !== 'customerType' || value(key))).map(key => [key, value(key)])),
       ...(fields.has('provinceCode') && { provinceCode: value('provinceCode'), cityCode: value('cityCode') }),
-      producerType: producer,
-      serviceTypes: selected,
-      ...(driver && vehicleDraft && { vehicle: { type: vehicleDraft.type, plate: vehicleDraft.plate, license: vehicleDraft.license } }),
-      ...(specialist && { serviceCredential: value('serviceCredential') }),
     };
     try {
       onSaved(await request('profile', { method: 'PATCH', body: data }));
@@ -143,31 +132,6 @@ function ProfileForm({ profile, onSaved, onExpired }) {
         <Link href="/categories" className="partner-text-link">مشاهده محصولات</Link>
       </fieldset>
 
-      <fieldset disabled={busy} className="partner-fields">
-        <legend><FontAwesomeIcon icon={faSeedling} /> تولید و فروش</legend>
-        <label>نوع فعالیت تولیدی<select name="producerType" value={producer} onChange={event => setProducer(event.target.value)}>
-          <option value="">درخواست فروشندگی ندارم</option><SelectOptions options={producers} />
-        </select></label>
-        {producer && <>
-          <label>محصولات یا زمینه فعالیت<input name="productionActivity" defaultValue={profile.productionActivity} maxLength={180} /></label>
-          <div className="partner-wide"><ReviewStatus status={profile.sellerStatus} /></div>
-        </>}
-      </fieldset>
-
-      <fieldset disabled={busy} className="partner-fields">
-        <legend><FontAwesomeIcon icon={faTruck} /> خدمات و حمل‌ونقل</legend>
-        <div className="partner-options partner-wide">
-          {Object.entries(services).map(([type, title]) => (
-            <label key={type}><input type="checkbox" checked={selected.includes(type)} onChange={event => setSelected(values =>
-              event.target.checked ? [...values, type] : values.filter(item => item !== type))} /> {title}</label>
-          ))}
-        </div>
-        {selected.length > 0 && <label className="partner-wide">محدوده خدمت<input name="serviceArea" defaultValue={profile.serviceArea} maxLength={180} /></label>}
-        {specialist && <>
-          <label>شماره یا مرجع مدرک تخصصی<input name="serviceCredential" defaultValue={profile.serviceCredential} maxLength={120} required /></label>
-          <div><ReviewStatus status={profile.specialistStatus} /></div>
-        </>}
-      </fieldset>
       {error && <p className="partner-message partner-error" role="alert">{error}</p>}
       <button className="partner-primary" disabled={busy} type="submit">{busy ? 'در حال ذخیره…' : 'ذخیره پروفایل'}</button>
     </form>
