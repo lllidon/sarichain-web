@@ -66,7 +66,7 @@ function TransportBulletin({ items, profile }) {
             <div><dt>حجم</dt><dd>{number.format(order.volumeM3)} مترمکعب</dd></div>
             <div><dt>تحویل</dt><dd>{{ hourly: 'ساعتی', daily: 'روزانه', multiday: 'چندروزه' }[order.urgency] || '—'}</dd></div>
             <div><dt>مسافت تخمینی</dt><dd>{number.format(order.quote?.distanceKm || 0)} کیلومتر</dd></div>
-            <div><dt>کارسا</dt><dd>{number.format(order.acceptedRateKar ?? (order.kind === 'job' && order.acceptedRateKar ?? (order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0)))}</dd></div>
+            <div><dt>کارسا</dt><dd>{number.format(order.acceptedRateKar ?? (order.kind === 'job' && order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0))}</dd></div>
           </dl>
           <div className="transport-order-stops">
             {order.stops?.map((stop, index) => <div key={index}>
