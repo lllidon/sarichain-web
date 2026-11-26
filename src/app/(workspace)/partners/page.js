@@ -36,7 +36,13 @@ export default async function PartnersPage({ searchParams }) {
   const canOffer = section === 'products' && profile.capabilities?.sell === true;
   if (section === 'bulletin' && !profile.capabilities?.drive) redirect('/partners?section=profile');
   if (section === 'products' && !profile.capabilities?.sell) redirect('/partners?section=profile');
-  const offerCatalog = canOffer ? readCatalog() : null;
+  const offerCatalog = canOffer ? await readCatalog() : null;
+  const allowedCategoryIds = new Set(profile.allowedProductCategoryIds || []);
+  const producerCategories = offerCatalog ? Object.fromEntries(Object.entries(offerCatalog.categories)
+    .filter(([id]) => allowedCategoryIds.has(id))) : {};
+  const producerProducts = offerCatalog ? offerCatalog.catalog.flatMap(product => [product, ...product.variants])
+    .filter(product => allowedCategoryIds.has(product.category))
+    .map(({ id, name, code, brand, brandId, category, unit }) => ({ id, name, code, brand, brandId, category, unit })) : [];
   const locations = canOffer ? partnerBackend('/web/workspace/orchards/options', { token })
     .then(response => response.ok ? response.json() : null).catch(() => null) : null;
   const isList = section !== 'overview' && section !== 'profile';
@@ -51,7 +57,7 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback}
-    offerCatalog={await offerCatalog} locations={await locations} unavailable={isList && !data}>
+    offerCatalog={offerCatalog} locations={await locations} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} />}
   </PartnerDashboard>;
 }
