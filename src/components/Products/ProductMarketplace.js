@@ -18,7 +18,7 @@ const percent = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 });
 const date = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeZone: 'Asia/Tehran' });
 const displayDate = day => date.format(new Date(day + 'T12:00:00Z'));
 
-function ProductGallery({ product, showTab }) {
+function ProductGallery({ product, weeklyProductId, showTab }) {
   const [activeImage, setActiveImage] = useState(0);
   const [message, setMessage] = useState('');
   const dialog = useRef(null);
@@ -68,7 +68,7 @@ function ProductGallery({ product, showTab }) {
             <Image src={image} alt={isExample ? 'تصویر نمونه' : product.name} width={400} height={400} loading="eager" unoptimized />
             {isExample && <span className="product-example gallery-example">تصویر نمونه</span>}
           </button>
-          <ProductWeeklyToggle productId={product.id} productName={product.name} />
+          <ProductWeeklyToggle productId={weeklyProductId} productName={product.name} />
         </div>
         <div className="market-gallery-thumbs" aria-label="گالری محصول">
           {thumbnails(images.slice(0, previewLength))}
@@ -154,7 +154,7 @@ export default function ProductMarketplace({ product, category, categoryHref, de
 
   return <div className="product-marketplace">
     <article className="product-overview" aria-labelledby="product-title">
-      <ProductGallery product={galleryProduct} key={galleryProduct.id} showTab={setTab} />
+      <ProductGallery product={galleryProduct} weeklyProductId={selected.id} key={galleryProduct.id} showTab={setTab} />
       <section className="product-overview-info">
         <Link className="product-category" href={categoryHref}>{category.name}</Link>
         <h1 id="product-title">{product.name}</h1>
