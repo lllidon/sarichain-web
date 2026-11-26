@@ -73,11 +73,7 @@ function HomeHeader({ catalogData }) {
         <nav aria-label="منوی اصلی" className="market-home-nav">
           <ul className="nav-menu">
             <ProductMegaMenu />
-            <li className="nav-item"><Link href="/weekly-basket" className="nav-link">سبد هفتگی</Link></li>
-            <li className="nav-item"><Link href="/quick-order" className="nav-link">سفارش سریع</Link></li>
-            <li className="nav-item"><Link href="/pilot" className="nav-link">پیش‌نمایش پایلوت</Link></li>
             <SolutionsMegaMenu />
-            <li className="nav-item"><Link href="/blog" className="nav-link">وبلاگ</Link></li>
             <li className="nav-item"><Link href="/support" className="nav-link">پشتیبانی</Link></li>
           </ul>
         </nav>
