@@ -142,7 +142,8 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
 
 export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, children }) {
   const info = sections[section];
-  const message = typeof result === 'string' && Object.hasOwn(feedback, result) ? feedback[result] : '';
+  const message = result === 'saved' && section === 'bulletin' ? 'درخواست حمل برای بررسی مدیریت ثبت شد.'
+    : typeof result === 'string' && Object.hasOwn(feedback, result) ? feedback[result] : '';
   return <div className="catalog-page partners-page partner-dashboard" dir="rtl">
     <div className="catalog-wrap">
       <div className="partner-dash-shell">
