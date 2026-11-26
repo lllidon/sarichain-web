@@ -1,7 +1,7 @@
 import { formatPrice } from '../Products/price';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faTruck, faUserPen } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen } from '@fortawesome/free-solid-svg-icons';
 import { leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
@@ -9,7 +9,7 @@ import WorkspaceLocationForm from './WorkspaceLocationForm';
 import TransportBulletin from './TransportBulletin';
 
 const icons = {
-  grid: faBorderAll, orders: faClipboardList, products: faBox, transport: faTruck,
+  grid: faBorderAll, orders: faClipboardList, products: faBox,
   bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
 };
 const feedback = {
@@ -43,10 +43,9 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
   const { entry, placeholder, help } = sections[section];
   const action = saveWorkspaceEntry.bind(null, section);
   const isLocation = section === 'orchards';
-  const isTransport = section === 'transport';
   const formKey = result === 'saved' ? items[0]?.id : undefined;
   return <div className={isLocation ? 'partner-entry-layout partner-location-layout' : 'partner-entry-layout'}>
-    {isTransport ? <TransportVehicleForm profile={profile} /> : isLocation ? <WorkspaceLocationForm key={formKey} profile={profile} /> :
+    {isLocation ? <WorkspaceLocationForm key={formKey} profile={profile} /> :
       section === 'products' ? offerCatalog && !offerCatalog.unavailable ?
       <ProductOfferForm key={formKey} locations={locations} categories={offerCatalog.categories} brands={offerCatalog.brands}
         products={offerCatalog.catalog.flatMap(product => [product, ...product.variants])
