@@ -10,7 +10,7 @@ import TransportVehicleForm from './TransportVehicleForm';
 
 const buyers = { consumer: 'خریدار نهایی', retailer: 'مغازه‌دار', wholesaler: 'خریدار عمده', other: 'سایر' };
 const producers = { orchard: 'باغدار', farm: 'کشاورز', dairy: 'دامداری / گاوداری', greenhouse: 'گلخانه‌دار', other: 'سایر' };
-const services = { driver: 'حمل‌ونقل', warehouse: 'انبارداری', harvest: 'برداشت محصول', labor: 'نیروی کار', supervisor: 'نظارت', quality: 'کنترل کیفیت', other: 'سایر خدمات' };
+const services = { driver: 'حمل بار و دریافت کارسای حمل‌ونقل', warehouse: 'انبارداری', harvest: 'برداشت محصول', labor: 'نیروی کار', supervisor: 'نظارت', quality: 'کنترل کیفیت', other: 'سایر خدمات' };
 const statuses = { pending: 'در انتظار بررسی', approved: 'تأییدشده', rejected: 'ردشده' };
 
 async function request(path, options = {}) {
