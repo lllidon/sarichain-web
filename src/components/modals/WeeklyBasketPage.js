@@ -196,6 +196,28 @@ export default function WeeklyBasketPage() {
     }
   }
 
+  async function addAll() {
+    if (!orderableItems.length) return;
+    setBusy('all-selected');
+    setMessage('');
+    let added = 0;
+    try {
+      for (const item of orderableItems) {
+        const pack = productPackages(item.product)[0];
+        for (let i = 0; i < item.quantity; i++) {
+          const result = await commands.add(item.product, pack);
+          if (result === false) throw new Error(`افزودن ${item.product.name} به دلیل محدودیت موجودی متوقف شد.`);
+        }
+        added++;
+      }
+      setMessage(`همه محصولات قابل سفارش (${number.format(added)} قلم) به سبد خرید اضافه شدند.`);
+    } catch (error) {
+      setMessage(error.message || 'انتقال همه محصولات کامل نشد.');
+    } finally {
+      setBusy('');
+    }
+  }
+
   if (!weekly) return <div className="weekly-page" dir="rtl">
     <header className="weekly-header"><div><h1><FontAwesomeIcon icon={faCalendarDays}/> سبد هفتگی من</h1>
       <p>فهرست هوشمند خریدهای هفتگی شما</p></div></header>
@@ -266,7 +288,10 @@ export default function WeeklyBasketPage() {
           onChange={event => selectAll(event.target.checked)}/> انتخاب همه محصولات قابل سفارش</label>
         <span>{number.format(selectedIds.length)} محصول انتخاب شده</span>
         <button type="button" disabled={!selectedOrderable.length || !!busy || weekly.pending} onClick={addSelected}>
-          <FontAwesomeIcon icon={faShoppingBasket}/> افزودن انتخاب‌شده‌ها به سبد خرید
+          <FontAwesomeIcon icon={faShoppingBasket}/> افزودن انتخاب‌شده‌ها
+        </button>
+        <button type="button" className="is-secondary" disabled={!orderableItems.length || !!busy || weekly.pending} onClick={addAll}>
+          <FontAwesomeIcon icon={faPlus}/> افزودن همه محصولات
         </button>
       </div>}
 
