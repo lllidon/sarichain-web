@@ -130,12 +130,12 @@ function ProfileForm({ profile, onSaved, onExpired }) {
       {error && <p className="partner-message partner-error" role="alert">{error}</p>}
       <button className="partner-primary" disabled={busy} type="submit">{busy ? 'در حال ذخیره…' : 'ذخیره پروفایل'}</button>
     </form>
-    <AccountUpgradeCenter profile={profile} />
+    <AccountUpgradeCenter profile={profile} categories={categories} />
     </>
   );
 }
 
-export function PartnerProfileEditor({ initialProfile }) {
+export function PartnerProfileEditor({ initialProfile, categories = [] }) {
   const [profile, setProfile] = useState(initialProfile);
   const [message, setMessage] = useState('');
   const [revision, setRevision] = useState(0);
