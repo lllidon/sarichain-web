@@ -42,3 +42,15 @@ body {
     padding-top: 70px;
   }
 }
+
+/* Weekly basket shortcut shared by product cards and product detail pages */
+.catalog-order-actions { display:flex; align-items:stretch; gap:7px; }
+.catalog-order-actions .catalog-order { flex:1; }
+.weekly-add-button {
+  display:inline-grid; place-items:center; flex:0 0 40px; width:40px; min-height:40px;
+  border:1px solid #d8e2d9; border-radius:9px; background:#fff; color:#155440;
+  cursor:pointer; font-size:1rem; transition:background .15s ease,border-color .15s ease;
+}
+.weekly-add-button:hover { background:#edf5eb; border-color:#769f85; }
+.weekly-add-button:disabled { opacity:.5; cursor:wait; }
+.product-cart-state .weekly-add-button { width:32px; min-height:32px; flex-basis:32px; }
