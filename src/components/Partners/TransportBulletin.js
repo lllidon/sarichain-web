@@ -29,7 +29,7 @@ function OrderCard({ order }) {
       <span><FontAwesomeIcon icon={faWeightHanging}/> {number.format(order.weightKg)} کیلوگرم</span>
       <span><FontAwesomeIcon icon={faPackage}/> {number.format(order.volumeM3)} مترمکعب</span>
       <span><FontAwesomeIcon icon={faClock}/> {urgency[order.urgency] || '—'}</span>
-      <span><FontAwesomeIcon icon={faRoute}/> {number.format(order.quote?.distanceKm || 0)} کیلومتر تخمینی</span>
+      <span><FontAwesomeIcon icon={faRoute}/> {number.format(order.quote?.distanceKm || 0)} کیلومتر مستقیم تخمینی</span>
     </div>
     <div className="transport-bulletin-stops">
       <span>{number.format(order.stops?.filter(stop => stop.kind === 'pickup').length || 0)} مبدأ</span>
@@ -68,7 +68,7 @@ export default function TransportBulletin({ items = [] }) {
   return <div className="transport-bulletin">
     <header className="transport-bulletin-intro">
       <div><span>بازار فرصت‌های حمل ساری‌چین</span><h2>بارهای پیشنهادی متناسب با مسیر و ظرفیت شما</h2>
-        <p>مبدأها و مقصدهای چندگانه را روی نقشه ببینید و بار مناسب مسیر خود را انتخاب کنید.</p></div>
+        <p>مبدأها و مقصدهای چندگانه را روی نقشه ببینید و بار مناسب مسیر خود را انتخاب کنید. مسافت‌ها تخمینی و مستقیم‌اند، نه مسافت جاده‌ای.</p></div>
       <Link href={partnerHref('profile')}>تنظیم فعالیت حمل‌ونقل</Link>
     </header>
     {isDemo && <div className="transport-demo-notice" role="status"><b>داده تستی</b><span>{realCount ? 'برای این دسته مسیر هنوز سفارش واقعی ثبت نشده است؛ نمونه‌ها فقط جهت نمایش رابط کاربری هستند.' : 'در حال حاضر سفارش حمل واقعی برای نمایش وجود ندارد؛ نمونه‌های زیر صرفاً داده نمایشی هستند و قابل پذیرش یا واگذاری نیستند.'}</span></div>}
