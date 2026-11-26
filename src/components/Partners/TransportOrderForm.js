@@ -8,13 +8,31 @@ import { saveTransportOrder } from '../../app/(workspace)/partners/actions';
 
 const blankStop = kind => ({ label: kind === 'pickup' ? 'مبدأ جدید' : 'مقصد جدید', province: '', city: '', address: '', latitude: '', longitude: '' });
 const digits = new Intl.NumberFormat('fa-IR');
-const urgencyLabels = { hourly: 'تحویل ساعتی', daily: 'تحویل روزانه', multiday: 'تحویل چندروزه' };
+
+function StopGroup({ kind, items, title, active, onSelect, onAdd, onRemove, onChange }) {
+  return <section className="transport-stop-group">
+    <div className="transport-stop-heading"><h4>{title}</h4><button type="button" className="transport-add-stop" onClick={() => onAdd(kind)} disabled={items.length >= 10}><FontAwesomeIcon icon={faPlus} /> افزودن {kind === 'pickup' ? 'مبدأ' : 'مقصد'}</button></div>
+    {items.map((stop, index) => <div className={active.kind === kind && active.index === index ? 'transport-stop-card active' : 'transport-stop-card'} key={kind + index}>
+      <div className="transport-stop-card-heading"><strong>{title} {digits.format(index + 1)}</strong><div>
+        <button type="button" onClick={() => onSelect({ kind, index })}><FontAwesomeIcon icon={faMapMarkerAlt} /> انتخاب روی نقشه</button>
+        {items.length > 1 && <button type="button" className="transport-icon-danger" aria-label="حذف نقطه" onClick={() => onRemove(kind, index)}><FontAwesomeIcon icon={faTrash} /></button>}
+      </div></div>
+      <div className="transport-stop-fields">
+        <label>عنوان نقطه<input value={stop.label} maxLength={100} onChange={e => onChange(kind, index, 'label', e.target.value)} required /></label>
+        <label>استان<input value={stop.province} maxLength={100} onChange={e => onChange(kind, index, 'province', e.target.value)} placeholder="مثلاً گیلان" required /></label>
+        <label>شهر<input value={stop.city} maxLength={100} onChange={e => onChange(kind, index, 'city', e.target.value)} placeholder="مثلاً رشت" required /></label>
+        <label className="transport-stop-wide">نشانی بارگیری / تخلیه<input value={stop.address} maxLength={240} onChange={e => onChange(kind, index, 'address', e.target.value)} required /></label>
+        <label>عرض جغرافیایی<input value={stop.latitude} readOnly placeholder="از نقشه انتخاب کنید" required /></label>
+        <label>طول جغرافیایی<input value={stop.longitude} readOnly placeholder="از نقشه انتخاب کنید" required /></label>
+      </div>
+    </div>)}
+  </section>;
+}
 
 export default function TransportOrderForm() {
   const [origins, setOrigins] = useState([blankStop('pickup')]);
   const [destinations, setDestinations] = useState([blankStop('dropoff')]);
   const [active, setActive] = useState({ kind: 'pickup', index: 0 });
-  const [revision, setRevision] = useState(0);
   const selected = active.kind === 'pickup' ? origins[active.index] : destinations[active.index];
   const stops = useMemo(() => [
     ...origins.map(stop => ({ ...stop, kind: 'pickup' })),
@@ -29,36 +47,21 @@ export default function TransportOrderForm() {
     setter(current => current.map((stop, i) => i === index ? { ...stop, [field]: value } : stop));
   };
   const addStop = kind => {
-    const setter = kind === 'pickup' ? setOrigins : setDestinations;
-    setter(current => current.length >= 10 ? current : [...current, blankStop(kind)]);
     const currentLength = kind === 'pickup' ? origins.length : destinations.length;
-    setActive({ kind, index: Math.min(currentLength, 9) });
+    if (currentLength >= 10) return;
+    const setter = kind === 'pickup' ? setOrigins : setDestinations;
+    setter(current => [...current, blankStop(kind)]);
+    setActive({ kind, index: currentLength });
   };
   const removeStop = (kind, index) => {
+    const currentLength = kind === 'pickup' ? origins.length : destinations.length;
+    if (currentLength <= 1) return;
     const setter = kind === 'pickup' ? setOrigins : setDestinations;
-    setter(current => current.length <= 1 ? current : current.filter((_, i) => i !== index));
-    setActive(current => current.kind === kind ? { kind, index: Math.max(0, current.index > index ? current.index - 1 : Math.min(current.index, (kind === 'pickup' ? origins.length : destinations.length) - 2)) } : current);
+    setter(current => current.filter((_, i) => i !== index));
+    setActive(current => current.kind === kind
+      ? { kind, index: Math.max(0, current.index > index ? current.index - 1 : Math.min(current.index, currentLength - 2)) }
+      : current);
   };
-
-  function StopFields({ kind, items, title }) {
-    return <section className="transport-stop-group">
-      <div className="transport-stop-heading"><h4>{title}</h4><button type="button" className="transport-add-stop" onClick={() => addStop(kind)} disabled={items.length >= 10}><FontAwesomeIcon icon={faPlus} /> افزودن {kind === 'pickup' ? 'مبدأ' : 'مقصد'}</button></div>
-      {items.map((stop, index) => <div className={active.kind === kind && active.index === index ? 'transport-stop-card active' : 'transport-stop-card'} key={kind + index}>
-        <div className="transport-stop-card-heading"><strong>{title} {digits.format(index + 1)}</strong><div>
-          <button type="button" onClick={() => setActive({ kind, index })}><FontAwesomeIcon icon={faMapMarkerAlt} /> انتخاب روی نقشه</button>
-          {items.length > 1 && <button type="button" className="transport-icon-danger" aria-label="حذف نقطه" onClick={() => removeStop(kind, index)}><FontAwesomeIcon icon={faTrash} /></button>}
-        </div></div>
-        <div className="transport-stop-fields">
-          <label>عنوان نقطه<input value={stop.label} maxLength={100} onChange={e => changeStop(kind, index, 'label', e.target.value)} required /></label>
-          <label>استان<input value={stop.province} maxLength={100} onChange={e => changeStop(kind, index, 'province', e.target.value)} placeholder="مثلاً گیلان" required /></label>
-          <label>شهر<input value={stop.city} maxLength={100} onChange={e => changeStop(kind, index, 'city', e.target.value)} placeholder="مثلاً رشت" required /></label>
-          <label className="transport-stop-wide">نشانی بارگیری / تخلیه<input value={stop.address} maxLength={240} onChange={e => changeStop(kind, index, 'address', e.target.value)} required /></label>
-          <label>عرض جغرافیایی<input inputMode="decimal" value={stop.latitude} readOnly placeholder="از نقشه انتخاب کنید" required /></label>
-          <label>طول جغرافیایی<input inputMode="decimal" value={stop.longitude} readOnly placeholder="از نقشه انتخاب کنید" required /></label>
-        </div>
-      </div>)}
-    </section>;
-  }
 
   return <form className="transport-order-form" action={saveTransportOrder}>
     <header className="transport-order-intro">
@@ -69,8 +72,8 @@ export default function TransportOrderForm() {
     <input type="hidden" name="stops" value={JSON.stringify(stops)} />
     <div className="transport-order-panel">
       <div className="transport-order-section-title"><span>۱</span><div><h3>مسیر و نقاط بارگیری</h3><p>می‌توانید چند مبدأ و چند مقصد ثبت کنید.</p></div></div>
-      <StopFields kind="pickup" items={origins} title="مبدأ" />
-      <StopFields kind="dropoff" items={destinations} title="مقصد" />
+      <StopGroup kind="pickup" items={origins} title="مبدأ" active={active} onSelect={setActive} onAdd={addStop} onRemove={removeStop} onChange={changeStop} />
+      <StopGroup kind="dropoff" items={destinations} title="مقصد" active={active} onSelect={setActive} onAdd={addStop} onRemove={removeStop} onChange={changeStop} />
       <div className="transport-order-map">
         <div className="transport-order-map-heading"><strong>نقشه انتخاب موقعیت</strong><small>{selected?.label || 'نقطه انتخابی'}</small></div>
         <LocationMap point={selected || blankStop(active.kind)} onPick={onPick} />
