@@ -31,7 +31,7 @@ export default function TransportVehicleForm({ profile, onVehicleLoaded, onVehic
     fetch('/web/vehicle', { cache: 'no-store' }).then(response => {
       if (!response.ok) throw new Error('دریافت مشخصات خودرو ناموفق بود.');
       return response.json();
-    }).then(data => { if (active) { const vehicle = data.vehicle || {}; setSaved(vehicle); setKind(vehicle.type || 'pickup'); setClassName(vehicle.className || ''); onVehicleLoaded?.(vehicle); } })
+    }).then(data => { if (active) { const vehicle = data.vehicle || {}; setSaved(vehicle); setKind(vehicle.type || 'pickup'); setClassName(vehicle.className || ''); onVehicleLoaded?.(data.vehicle || null); } })
       .catch(failure => { if (active) setError(failure.message); })
       .finally(() => { if (active) setLoaded(true); });
     return () => { active = false; };
