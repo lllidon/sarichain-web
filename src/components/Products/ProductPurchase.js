@@ -3,13 +3,12 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBasketShopping, faCalendarDays, faMinus, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faBasketShopping, faMinus, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { productPackages } from './catalog';
 import { formatPrice } from './price';
 import { cartLineLimit, isCartProduct } from './cartData';
 import { useCatalog } from './CatalogProvider';
 import { catalogQuantityLimit, useCartCommands, useCatalogCart } from '../modals/cartStore';
-import { useAccountWeeklyBasket } from '../modals/AccountWeeklyBasketProvider';
 
 const number = new Intl.NumberFormat('fa-IR');
 const limitMessage = 'تعداد از سقف خرید این محصول بیشتر است.';
@@ -17,7 +16,6 @@ const limitMessage = 'تعداد از سقف خرید این محصول بیشت
 export default function ProductPurchase({ product, className, children, onMessage, chooseUnit = false, initialUnit = '' }) {
   const cart = useCatalogCart();
   const commands = useCartCommands();
-  const weeklyBasket = useAccountWeeklyBasket();
   const { catalog } = useCatalog();
   const [message, setMessage] = useState('');
   const [unit, setUnit] = useState(initialUnit);
@@ -44,19 +42,6 @@ export default function ProductPurchase({ product, className, children, onMessag
       : limitMessage); } catch (error) { report(error.message); }
   }
 
-  async function addToWeeklyBasket() {
-    if (!weeklyBasket) {
-      const returnTo = window.location.pathname + window.location.search;
-      window.location.assign('/login?returnTo=' + encodeURIComponent(returnTo));
-      return;
-    }
-    try {
-      await weeklyBasket.add(product.id, 1);
-      report(`${product.name} به سبد هفتگی اضافه شد.`);
-    } catch (error) {
-      report(error.message);
-    }
-  }
 
   async function changeQuantity(next) {
     try { report(await commands.change(line, next, product)
@@ -98,11 +83,11 @@ export default function ProductPurchase({ product, className, children, onMessag
                   <FontAwesomeIcon icon={quantity === 1 ? faTrash : faMinus} />
                 </button>
               </div>
-              <div className="product-cart-state"><span>در سبد شما</span><Link href="/cart">مشاهدهٔ سبد خرید</Link><button type="button" className="weekly-add-button" title="افزودن به سبد هفتگی" aria-label={`افزودن ${product.name} به سبد هفتگی`} disabled={weeklyBasket?.pending} onClick={addToWeeklyBasket}><FontAwesomeIcon icon={faCalendarDays} /></button></div>
+              <div className="product-cart-state"><span>در سبد شما</span><Link href="/cart">مشاهدهٔ سبد خرید</Link></div>
             </div> : <>
               <div className="catalog-order-actions"><button className="catalog-order" type="submit" name="operation" value="add" disabled={!canIncrease} aria-label={`افزودن به سبد خرید ${product.name}`}>
                 افزودن به سبد خرید <FontAwesomeIcon icon={faBasketShopping} />
-              </button><button type="button" className="weekly-add-button" title="افزودن به سبد هفتگی" aria-label={`افزودن ${product.name} به سبد هفتگی`} disabled={weeklyBasket?.pending} onClick={addToWeeklyBasket}><FontAwesomeIcon icon={faCalendarDays} /></button></div>
+              </button></div>
               {!canIncrease && <small className="product-cart-limit">{cartFull ? 'ظرفیت سبد برای اقلام جدید تکمیل شده است.' : 'این واحد با سقف خرید فعلی قابل افزودن نیست.'}</small>}
             </>}
           </>
@@ -110,7 +95,7 @@ export default function ProductPurchase({ product, className, children, onMessag
           <div className="catalog-card-price">
             <strong>{offerId ? formatPrice(product.price) : 'قیمت هنوز اعلام نشده'}</strong>
             {offerId && <small> · موجودی قابل سفارش نیست</small>}
-            <button type="button" className="weekly-add-button" title="افزودن به سبد هفتگی" aria-label={`افزودن ${product.name} به سبد هفتگی`} disabled={weeklyBasket?.pending} onClick={addToWeeklyBasket}><FontAwesomeIcon icon={faCalendarDays} /></button>
+            
           </div>
         )}
       </form>
