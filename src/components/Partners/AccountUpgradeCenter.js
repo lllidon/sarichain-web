@@ -15,21 +15,12 @@ const vehicleTypes = { motorcycle: 'موتورسیکلت', car: 'خودروی ش
 async function api(path, options = {}) {
   const response = await fetch('/web/' + path, {
     method: options.method || 'GET', cache: 'no-store',
-    headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    headers: options.body && !(options.body instanceof FormData) ? { 'Content-Type': 'application/json' } : undefined,
+    body: options.body ? (options.body instanceof FormData ? options.body : JSON.stringify(options.body)) : undefined,
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(typeof data.message === 'string' ? data.message : 'درخواست انجام نشد.');
   return data;
-}
-
-function fileData(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }
 
 function UpgradeForm({ kind, categories, onSubmitted }) {
@@ -46,26 +37,26 @@ function UpgradeForm({ kind, categories, onSubmitted }) {
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     try {
-      const documents = [];
+      const body = new FormData();
+      body.append('kind', kind);
       for (const type of requiredDocs) {
         const file = form.get(type);
         if (!(file instanceof File) || !file.size) throw new Error('همه مدارک الزامی را انتخاب کنید.');
         if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type) || file.size > 2 * 1024 * 1024) {
           throw new Error('هر مدرک باید JPG، PNG، WEBP یا PDF و حداکثر ۲ مگابایت باشد.');
         }
-        documents.push({ type, fileName: file.name, mimeType: file.type, data: await fileData(file) });
+        body.append(type, file, file.name);
       }
-      const body = { kind, documents };
       if (kind === 'transport') {
-        body.vehicle = {
+        body.append('vehicle', JSON.stringify({
           type: form.get('vehicleType'), model: String(form.get('model') || '').trim(),
           year: Number(form.get('year')), capacityKg: Number(form.get('capacityKg')),
           capacityM3: Number(form.get('capacityM3')) || undefined,
           plate: String(form.get('plate') || '').trim(), license: String(form.get('license') || '').trim(),
-        };
+        }));
       } else {
-        body.producerType = producerType;
-        body.requestedCategoryIds = selectedCategories;
+        body.append('producerType', producerType);
+        body.append('requestedCategoryIds', JSON.stringify(selectedCategories));
         if (!selectedCategories.length) throw new Error('حداقل یک دسته‌بندی محصول را انتخاب کنید.');
       }
       await api('account-upgrades', { method: 'POST', body });
@@ -124,7 +115,7 @@ export default function AccountUpgradeCenter({ profile }) {
         const [categoryData, requestData] = await Promise.all([
           api('categories?limit=100&page=1'), api('account-upgrades'),
         ]);
-        if (active) { setCategories(categoryData.items || []); setRequests(requestData.items || []); }
+        if (active) { setCategories((categoryData.items || []).filter(category => category.parentId)); setRequests(requestData.items || []); }
       } catch (failure) { if (active) setError(failure.message); }
     }
     load();
