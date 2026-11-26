@@ -172,7 +172,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           </div>}
           {section === 'profile' && children}
           {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
-          {data && (section === 'orders' ? <Orders items={data.items} /> : section === 'bulletin' ? <TransportBulletin items={data.items} profile={profile} /> :
+          {section === 'bulletin' ? <TransportBulletin items={data?.items || []} profile={profile} /> : data && (section === 'orders' ? <Orders items={data.items} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
