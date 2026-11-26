@@ -45,3 +45,25 @@
 .partner-transport-optin .transport-intro h2 { font-size:18px; }
 .partner-transport-optin .transport-steps { display:none; }
 .partner-transport-optin .transport-submit { align-items:flex-start; }
+
+
+.account-upgrade-center { display:grid; gap:16px; margin-top:22px; padding-top:20px; border-top:1px solid var(--catalog-line); }
+.account-upgrade-center > header h3 { margin:0 0 5px; }
+.account-upgrade-center > header p,.account-upgrade-form > p { margin:0; color:var(--catalog-muted); font-size:12px; line-height:1.9; }
+.account-upgrade-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.account-upgrade-card { min-width:0; padding:14px; border:1px solid var(--catalog-line); border-radius:12px; background:#fff; }
+.account-upgrade-form { display:grid; gap:11px; }
+.account-upgrade-form h4 { margin:0; }
+.account-upgrade-form label { display:grid; gap:5px; font-size:12px; }
+.account-upgrade-form input:not([type=checkbox]),.account-upgrade-form select { width:100%; min-width:0; padding:9px; border:1px solid var(--catalog-line); border-radius:8px; background:var(--catalog-card); color:inherit; }
+.account-upgrade-form input[type=file] { font-size:11px; }
+.account-upgrade-form .account-upgrade-grid { gap:9px; }
+.account-upgrade-docs { display:grid; gap:9px; padding:10px; border-radius:9px; background:var(--catalog-soft); }
+.account-upgrade-docs small { color:var(--catalog-muted); line-height:1.8; }
+.account-upgrade-categories { display:flex; flex-wrap:wrap; gap:8px 12px; border:1px solid var(--catalog-line); border-radius:8px; padding:10px; }
+.account-upgrade-categories legend { font-size:12px; }
+.account-upgrade-categories label { display:flex; align-items:center; gap:5px; }
+.account-upgrade-history { display:grid; gap:8px; }
+.account-upgrade-history article { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:10px; border:1px solid var(--catalog-line); border-radius:9px; }
+.account-upgrade-history p { width:100%; margin:0; font-size:12px; }
+@media(max-width:700px) { .account-upgrade-grid { grid-template-columns:1fr; } }
