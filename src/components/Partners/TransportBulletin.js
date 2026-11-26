@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faMapMarkerAlt, faPackage, faRoute, faWeightHanging } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faMapMarkerAlt, faBox, faRoute, faWeightHanging } from '@fortawesome/free-solid-svg-icons';
 import { acceptTransportOrder } from '../../app/(workspace)/partners/actions';
 import { partnerHref } from './workspaceSections';
 import { demoTransportOrders } from './demoTransportOrders';
@@ -27,7 +27,7 @@ function OrderCard({ order }) {
     </header>
     <div className="transport-bulletin-facts">
       <span><FontAwesomeIcon icon={faWeightHanging}/> {number.format(order.weightKg)} کیلوگرم</span>
-      <span><FontAwesomeIcon icon={faPackage}/> {number.format(order.volumeM3)} مترمکعب</span>
+      <span><FontAwesomeIcon icon={faBox}/> {number.format(order.volumeM3)} مترمکعب</span>
       <span><FontAwesomeIcon icon={faClock}/> {urgency[order.urgency] || '—'}</span>
       <span><FontAwesomeIcon icon={faRoute}/> {number.format(order.quote?.distanceKm || 0)} کیلومتر مستقیم تخمینی</span>
     </div>
