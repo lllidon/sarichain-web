@@ -95,8 +95,8 @@ export default function TransportVehicleForm({ profile }) {
           <div className="transport-panel-title"><span>01</span><div><h3>نوع وسیله نقلیه</h3><p>دسته وسیله‌ای را که در اختیار دارید انتخاب کنید.</p></div></div>
           <div className="transport-kind-grid">
             {vehicleKinds.map((item, index) => (
-              <label className={kind === item.value && (!isTruck || className === item.label) ? 'transport-kind selected' : 'transport-kind'} key={item.label}>
-                <input type="radio" name="vehicleKind" checked={kind === item.value && (!isTruck || className === item.label)} onChange={() => { setKind(item.value); if (item.value === 'truck') setClassName(item.label); }} />
+              <label className={kind === item.value ? 'transport-kind selected' : 'transport-kind'} key={item.label}>
+                <input type="radio" name="vehicleKind" checked={kind === item.value} onChange={() => { setKind(item.value); if (item.value === 'truck' || item.value === 'truckette') setClassName(item.label); }} />
                 <span className="transport-kind-icon">{['🏍️','🚙','🛻','🚐','🚚','🚛'][index]}</span>
                 <strong>{item.label}</strong><small>{item.group}</small>
               </label>
