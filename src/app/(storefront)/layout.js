@@ -1,7 +1,9 @@
 import { cookies } from 'next/headers';
 import { cartCookie, parseCart } from '../../components/Products/cartData';
 import { readAccountCart } from '../../lib/accountCart';
+import { readAccountWeeklyBasket } from '../../lib/accountWeeklyBasket';
 import { AccountCartProvider } from '../../components/modals/AccountCartProvider';
+import { AccountWeeklyBasketProvider } from '../../components/modals/AccountWeeklyBasketProvider';
 import { partnerSessionCookie } from '../../lib/partnerBackend';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -13,17 +15,21 @@ import { CatalogProvider } from '../../components/Products/CatalogProvider';
 export default async function StorefrontLayout({ children }) {
   const jar = await cookies();
   const token = jar.get(partnerSessionCookie)?.value;
-  const [catalog, accountCart] = await Promise.all([readCatalog(), token ? readAccountCart(token) : null]);
+  const [catalog, accountCart, weeklyBasket] = await Promise.all([
+    readCatalog(), token ? readAccountCart(token) : null, token ? readAccountWeeklyBasket(token) : null,
+  ]);
   const session = Boolean(accountCart);
   const initialCart = parseCart(jar.get(cartCookie)?.value);
   return (
     <AccountCartProvider initial={accountCart}>
+      <AccountWeeklyBasketProvider initial={weeklyBasket}>
       <CatalogProvider value={{ ...catalog, initialCart }}>
         <Navbar session={session} />
         <main>{children}</main>
         <Footer />
         <BottomNavbar session={session} />
       </CatalogProvider>
+      </AccountWeeklyBasketProvider>
     </AccountCartProvider>
   );
 }
