@@ -12,6 +12,7 @@ import { submitOrder } from '../Products/submitOrder';
 import { useCartCommands, useCatalogCart } from './cartStore';
 import { displayCart } from './cartPresentation';
 import CartNotices from './CartNotices';
+import { useAccountWeeklyBasket } from './AccountWeeklyBasketProvider';
 import './cart.css';
 
 const number = new Intl.NumberFormat('fa-IR');
@@ -109,6 +110,7 @@ export default function CartPage({ initialMessage = '' }) {
   const { catalog } = useCatalog();
   const cart = useCatalogCart();
   const commands = useCartCommands();
+  const weeklyBasket = useAccountWeeklyBasket();
   const { account } = commands;
   const orderRequest = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -202,7 +204,7 @@ export default function CartPage({ initialMessage = '' }) {
       <div><FontAwesomeIcon icon={faBasketShopping} /><h1 id="checkout-title">سبد خرید</h1>
         {hasItems && <span>{number.format(cart.length)} قلم</span>}
       </div>
-      <Link className="checkout-continue" href="/categories">ادامهٔ خرید <FontAwesomeIcon icon={faArrowLeft} /></Link>
+      <div className="checkout-header-actions"><Link className="checkout-weekly-link" href="/weekly-basket"><FontAwesomeIcon icon={faCalendarDays} /> نمایش سبد هفتگی {weeklyBasket?.items?.length ? <b>{number.format(weeklyBasket.items.length)}</b> : null}</Link><Link className="checkout-continue" href="/categories">ادامهٔ خرید <FontAwesomeIcon icon={faArrowLeft} /></Link></div>
     </header>
     {message && <p className="checkout-message" role="status">{message}</p>}
     <CartNotices changes={changes} busy={cartBusy} acknowledge={acknowledge} />
