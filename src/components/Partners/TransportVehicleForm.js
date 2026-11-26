@@ -32,14 +32,15 @@ export default function TransportVehicleForm({ profile }) {
   const [error, setError] = useState('');
 
   const isTruck = kind === 'truck';
-  const capacityLabel = vehicleKinds.find(item => item.value === kind)?.capacity || 'ظرفیت حمل بار (کیلوگرم)';
 
   async function submit(event) {
     event.preventDefault();
     setBusy(true); setError(''); setMessage('');
     const form = new FormData(event.currentTarget);
     const value = name => String(form.get(name) || '').trim();
-    const year = Number(value('year'));
+    const normalizeDigits = input => input.replace(/[۰-۹٠-٩]/g, digit => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit) >= 0 ? '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit) : '٠١٢٣٤٥٦٧٨٩'.indexOf(digit)));
+    const yearText = normalizeDigits(value('year'));
+    const year = Number(yearText);
     const capacity = Number(value('capacityKg'));
     if (!value('model') || !/^\d{4}$/.test(value('year')) || year < 1350 || year > 1500 ||
         !Number.isFinite(capacity) || capacity <= 0 || !value('plate') || !value('license')) {
