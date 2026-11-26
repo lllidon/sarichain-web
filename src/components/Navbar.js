@@ -49,13 +49,7 @@ const Navbar = ({ session }) => {
         {/* Navigation Menu */}
         <ul className={`nav-menu ${isOpen ? 'active' : ''}`}>
           <ProductMegaMenu />
-          <li className="nav-item"><Link href="/weekly-basket" className="nav-link">سبد هفتگی</Link></li>
-          <li className="nav-item"><Link href="/quick-order" className="nav-link">سفارش سریع</Link></li>
-          <li className="nav-item"><Link href="/pilot" className="nav-link">پیش‌نمایش پایلوت</Link></li>
           <SolutionsMegaMenu />
-          <li className="nav-item">
-            <Link href="/blog" className="nav-link">وبلاگ</Link>
-          </li>
           
           <li className="nav-item">
             <Link href="/support" className="nav-link">پشتیبانی</Link>
