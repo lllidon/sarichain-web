@@ -247,64 +247,69 @@ export default function WeeklyBasketPage() {
       <div className="weekly-hero-art"><FontAwesomeIcon icon={faShoppingBasket}/><span>خرید هفتگی، ساده‌تر از همیشه</span></div>
     </section>
 
-    <section className="weekly-suggestion-section" aria-label="پیشنهادهای خرید">
-      <div className="weekly-section-heading"><div><span>انتخاب هوشمند</span><h2>پیشنهادهای خرید</h2></div>
-        <p>پیشنهادهای روز، فصل و محصولات ویژه را در این بخش دنبال کن.</p></div>
-      <div className="weekly-suggestion-grid">
-        <article className="weekly-suggestion-card daily">
-          <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faCalendarDays}/></span>
-          <div><small>بر اساس موجودی فعلی</small><h3>پیشنهاد روز</h3><p>{number.format(readyCount)} محصول از فهرست شما در حال حاضر آماده سفارش است.</p></div>
-          <a href="#weekly-products">مشاهده محصولات <FontAwesomeIcon icon={faArrowLeft}/></a>
-        </article>
-        <article className="weekly-suggestion-card seasonal">
-          <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faLeaf}/></span>
-          <div><small>متناسب با زمان کشت</small><h3>پیشنهادهای فصلی</h3><p>محصولات متناسب با فصل و نیاز کشت را در این بخش دنبال کنید.</p></div>
-          <span className="weekly-coming-soon">به‌زودی</span>
-        </article>
-        <article className="weekly-suggestion-card special">
-          <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faStar}/></span>
-          <div><small>فرصت‌های منتخب</small><h3>پیشنهادهای ویژه</h3><p>منتخب پیشنهادها و فرصت‌های خرید ویژه در این قسمت نمایش داده می‌شود.</p></div>
-          <span className="weekly-coming-soon">به‌زودی</span>
-        </article>
-      </div>
-    </section>
-
-    {message && <p className="weekly-status weekly-store-status" role="status">{message}</p>}
-    {weekly.failed && <p className="checkout-warning" role="alert">ارتباط با سبد هفتگی برقرار نشد. صفحه را تازه‌سازی کنید.</p>}
-
-    <section id="weekly-products" className="weekly-products-section">
-      <div className="weekly-section-heading weekly-products-heading">
-        <div><span>فهرست شخصی شما</span><h2>محصولات سبد هفتگی</h2></div>
-        <div className="weekly-list-actions">
-          <Link className="weekly-action-link" href="/categories">مشاهده همه محصولات <FontAwesomeIcon icon={faArrowLeft}/></Link>
-          {!!items.length && <button type="button" className="weekly-clear" disabled={!!busy || weekly.pending} onClick={clear}>
-            <FontAwesomeIcon icon={faTrash}/> خالی کردن سبد
-          </button>}
-        </div>
-      </div>
-
-      {!!items.length && <div className="weekly-bulk-toolbar">
-        <label><input type="checkbox" checked={orderableItems.length > 0 && selectedOrderable.length === orderableItems.length}
-          onChange={event => selectAll(event.target.checked)}/> انتخاب همه محصولات قابل سفارش</label>
-        <span>{number.format(selectedIds.length)} محصول انتخاب شده</span>
-        <button type="button" disabled={!selectedOrderable.length || !!busy || weekly.pending} onClick={addSelected}>
-          <FontAwesomeIcon icon={faShoppingBasket}/> افزودن انتخاب‌شده‌ها
-        </button>
-        <button type="button" className="is-secondary" disabled={!orderableItems.length || !!busy || weekly.pending} onClick={addAll}>
-          <FontAwesomeIcon icon={faPlus}/> افزودن همه محصولات
-        </button>
-      </div>}
-
-      {items.length ? <div className="weekly-product-grid">
-        {items.map(item => <WeeklyProductCard key={item.productId} item={item}
-          selected={selectedIds.includes(item.productId)} onSelect={selectOne} onQuantity={change}
-          onRemove={remove} onAddToCart={addToCart} busy={Boolean(busy) || weekly.pending}/>)}
-      </div> : <section className="weekly-empty">
-        <FontAwesomeIcon icon={faShoppingBasket}/>
-        <h2>سبد هفتگی شما خالی است</h2>
-        <p>از صفحه محصولات، با آیکون سبد هفتگی هر کالا را به فهرست خود اضافه کنید.</p>
-        <Link className="checkout-submit" href="/categories">مشاهده محصولات</Link>
-      </section>}
-    </section>
+    <div className="weekly-layout">
+      <aside className="weekly-suggestions-sidebar" aria-label="پیشنهادهای خرید">
+            <section className="weekly-suggestion-section" aria-label="پیشنهادهای خرید">
+              <div className="weekly-section-heading"><div><span>انتخاب هوشمند</span><h2>پیشنهادهای خرید</h2></div>
+                <p>پیشنهادهای روز، فصل و محصولات ویژه را در این بخش دنبال کن.</p></div>
+              <div className="weekly-suggestion-grid">
+                <article className="weekly-suggestion-card daily">
+                  <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faCalendarDays}/></span>
+                  <div><small>بر اساس موجودی فعلی</small><h3>پیشنهاد روز</h3><p>{number.format(readyCount)} محصول از فهرست شما در حال حاضر آماده سفارش است.</p></div>
+                  <a href="#weekly-products">مشاهده محصولات <FontAwesomeIcon icon={faArrowLeft}/></a>
+                </article>
+                <article className="weekly-suggestion-card seasonal">
+                  <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faLeaf}/></span>
+                  <div><small>متناسب با زمان کشت</small><h3>پیشنهادهای فصلی</h3><p>محصولات متناسب با فصل و نیاز کشت را در این بخش دنبال کنید.</p></div>
+                  <span className="weekly-coming-soon">به‌زودی</span>
+                </article>
+                <article className="weekly-suggestion-card special">
+                  <span className="weekly-suggestion-icon"><FontAwesomeIcon icon={faStar}/></span>
+                  <div><small>فرصت‌های منتخب</small><h3>پیشنهادهای ویژه</h3><p>منتخب پیشنهادها و فرصت‌های خرید ویژه در این قسمت نمایش داده می‌شود.</p></div>
+                  <span className="weekly-coming-soon">به‌زودی</span>
+                </article>
+              </div>
+            </section>
+      </aside>
+      <main className="weekly-products-main">
+            {message && <p className="weekly-status weekly-store-status" role="status">{message}</p>}
+            {weekly.failed && <p className="checkout-warning" role="alert">ارتباط با سبد هفتگی برقرار نشد. صفحه را تازه‌سازی کنید.</p>}
+        
+            <section id="weekly-products" className="weekly-products-section">
+              <div className="weekly-section-heading weekly-products-heading">
+                <div><span>فهرست شخصی شما</span><h2>محصولات سبد هفتگی</h2></div>
+                <div className="weekly-list-actions">
+                  <Link className="weekly-action-link" href="/categories">مشاهده همه محصولات <FontAwesomeIcon icon={faArrowLeft}/></Link>
+                  {!!items.length && <button type="button" className="weekly-clear" disabled={!!busy || weekly.pending} onClick={clear}>
+                    <FontAwesomeIcon icon={faTrash}/> خالی کردن سبد
+                  </button>}
+                </div>
+              </div>
+        
+              {!!items.length && <div className="weekly-bulk-toolbar">
+                <label><input type="checkbox" checked={orderableItems.length > 0 && selectedOrderable.length === orderableItems.length}
+                  onChange={event => selectAll(event.target.checked)}/> انتخاب همه محصولات قابل سفارش</label>
+                <span>{number.format(selectedIds.length)} محصول انتخاب شده</span>
+                <button type="button" disabled={!selectedOrderable.length || !!busy || weekly.pending} onClick={addSelected}>
+                  <FontAwesomeIcon icon={faShoppingBasket}/> افزودن انتخاب‌شده‌ها
+                </button>
+                <button type="button" className="is-secondary" disabled={!orderableItems.length || !!busy || weekly.pending} onClick={addAll}>
+                  <FontAwesomeIcon icon={faPlus}/> افزودن همه محصولات
+                </button>
+              </div>}
+        
+              {items.length ? <div className="weekly-product-grid">
+                {items.map(item => <WeeklyProductCard key={item.productId} item={item}
+                  selected={selectedIds.includes(item.productId)} onSelect={selectOne} onQuantity={change}
+                  onRemove={remove} onAddToCart={addToCart} busy={Boolean(busy) || weekly.pending}/>)}
+              </div> : <section className="weekly-empty">
+                <FontAwesomeIcon icon={faShoppingBasket}/>
+                <h2>سبد هفتگی شما خالی است</h2>
+                <p>از صفحه محصولات، با آیکون سبد هفتگی هر کالا را به فهرست خود اضافه کنید.</p>
+                <Link className="checkout-submit" href="/categories">مشاهده محصولات</Link>
+              </section>}
+            </section>
+      </main>
+    </div>
   </div>;
 }
