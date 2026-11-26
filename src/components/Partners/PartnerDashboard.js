@@ -58,7 +58,7 @@ function TransportBulletin({ items, profile }) {
           <div className="partner-record-heading">
             <div><strong>{order.kind === 'job' ? 'بار پیشنهادی' : 'درخواست حمل'} · <bdi>{String(order._id).slice(-8)}</bdi></strong>
               <small>{date.format(new Date(order.createdAt))} · {transportCategoryLabels[order.quote?.category] || 'در انتظار دسته‌بندی'}</small></div>
-            <span className="partner-status">{order.special ? 'پیشنهاد ویژه' : transportStatusLabels[order.status] || 'ثبت‌شده'}</span>
+            <span className="partner-status">{order.kind === 'job' && order.status === 'approved' && order.special ? 'پیشنهاد ویژه' : transportStatusLabels[order.status] || 'ثبت‌شده'}</span>
           </div>
           <dl className="transport-order-summary">
             <div><dt>نوع بار</dt><dd>{order.goodsType}</dd></div>
@@ -66,7 +66,7 @@ function TransportBulletin({ items, profile }) {
             <div><dt>حجم</dt><dd>{number.format(order.volumeM3)} مترمکعب</dd></div>
             <div><dt>تحویل</dt><dd>{{ hourly: 'ساعتی', daily: 'روزانه', multiday: 'چندروزه' }[order.urgency] || '—'}</dd></div>
             <div><dt>مسافت تخمینی</dt><dd>{number.format(order.quote?.distanceKm || 0)} کیلومتر</dd></div>
-            <div><dt>کارسا</dt><dd>{number.format(order.kind === 'job' && order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0)}</dd></div>
+            <div><dt>کارسا</dt><dd>{number.format(order.acceptedRateKar ?? (order.kind === 'job' && order.acceptedRateKar ?? (order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0)))}</dd></div>
           </dl>
           <div className="transport-order-stops">
             {order.stops?.map((stop, index) => <div key={index}>
@@ -76,7 +76,7 @@ function TransportBulletin({ items, profile }) {
             </div>)}
           </div>
           {order.description && <p>{order.description}</p>}
-          {order.kind === 'job' && <form className="transport-accept-form" action={acceptTransportOrder}>
+          {order.kind === 'job' && order.status === 'approved' && <form className="transport-accept-form" action={acceptTransportOrder}>
             <input type="hidden" name="id" value={String(order._id)} />
             <button className="partner-primary" type="submit">پذیرش حمل با {number.format(order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0)} کارسا</button>
           </form>}
