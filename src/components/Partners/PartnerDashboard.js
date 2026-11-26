@@ -7,7 +7,7 @@ import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
 import TransportVehicleForm from './TransportVehicleForm';
-import TransportOrderForm from './TransportOrderForm';
+import TransportBulletin from './TransportBulletin';
 import { acceptTransportOrder } from '../../app/(workspace)/partners/actions';
 
 const icons = {
@@ -40,52 +40,6 @@ function Orders({ items }) {
 }
 
 
-const transportStatusLabels = {
-  pending_review: 'در انتظار بررسی مدیریت', approved: 'آماده دریافت پیشنهاد',
-  rejected: 'رد شده', assigned: 'به راننده واگذار شد',
-  in_transit: 'در حال حمل', delivered: 'تحویل شده', cancelled: 'لغو شده',
-};
-const transportCategoryLabels = { intracity: 'درون‌شهری', intercity: 'بین‌شهری', interprovincial: 'بین‌استانی' };
-
-function TransportBulletin({ items, profile }) {
-  const own = items.filter(item => item.kind === 'own');
-  const jobs = items.filter(item => item.kind === 'job');
-  return <div className="transport-bulletin">
-    {profile.customerType ? <TransportOrderForm /> : <div className="partner-empty"><p>برای ثبت درخواست حمل، ابتدا نوع مشتری را در پروفایل خود تکمیل کنید.</p><Link href={partnerHref('profile')}>تکمیل پروفایل</Link></div>}
-    <section className="transport-bulletin-list">
-      <div className="transport-bulletin-heading"><h2>درخواست‌های من و بارهای پیشنهادی</h2><p>بارهای تأییدشده متناسب با ظرفیت وسیله نقلیه شما در این بخش نمایش داده می‌شوند.</p></div>
-      {!own.length && !jobs.length ? <div className="partner-empty"><p>هنوز درخواست یا بار پیشنهادی برای نمایش وجود ندارد.</p></div> :
-        <ul className="partner-records">{[...own, ...jobs].map(order => <li key={String(order._id)}>
-          <div className="partner-record-heading">
-            <div><strong>{order.kind === 'job' ? 'بار پیشنهادی' : 'درخواست حمل'} · <bdi>{String(order._id).slice(-8)}</bdi></strong>
-              <small>{date.format(new Date(order.createdAt))} · {transportCategoryLabels[order.quote?.category] || 'در انتظار دسته‌بندی'}</small></div>
-            <span className="partner-status">{order.kind === 'job' && order.status === 'approved' && order.special ? 'پیشنهاد ویژه' : transportStatusLabels[order.status] || 'ثبت‌شده'}</span>
-          </div>
-          <dl className="transport-order-summary">
-            <div><dt>نوع بار</dt><dd>{order.goodsType}</dd></div>
-            <div><dt>وزن</dt><dd>{number.format(order.weightKg)} کیلوگرم</dd></div>
-            <div><dt>حجم</dt><dd>{number.format(order.volumeM3)} مترمکعب</dd></div>
-            <div><dt>نوع تحویل</dt><dd>{{ hourly: 'ساعتی', daily: 'روزانه', multiday: 'چندروزه' }[order.urgency] || '—'}</dd></div>
-            <div><dt>مهلت نهایی</dt><dd>{order.deadline ? dateTime.format(new Date(order.deadline)) : '—'}</dd></div>
-            <div><dt>مسافت مستقیم تخمینی</dt><dd>{number.format(order.quote?.distanceKm || 0)} کیلومتر</dd></div>
-            <div><dt>کارسا</dt><dd>{number.format(order.acceptedRateKar ?? (order.kind === 'job' && order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0))}</dd></div>
-          </dl>
-          <div className="transport-order-stops">
-            {order.stops?.map((stop, index) => <div key={index}>
-              <span className={stop.kind === 'pickup' ? 'transport-stop-dot pickup' : 'transport-stop-dot dropoff'} />
-              <span><strong>{stop.kind === 'pickup' ? 'بارگیری' : 'تخلیه'}: {stop.label}</strong><small>{stop.province}، {stop.city} · {stop.address}</small></span>
-              <a href={'https://www.openstreetmap.org/?mlat=' + stop.latitude + '&mlon=' + stop.longitude + '#map=14/' + stop.latitude + '/' + stop.longitude} target="_blank" rel="noopener noreferrer">نقشه</a>
-            </div>)}
-          </div>
-          {order.description && <p>{order.description}</p>}
-          {order.kind === 'job' && order.status === 'approved' && <form className="transport-accept-form" action={acceptTransportOrder}>
-            <input type="hidden" name="id" value={String(order._id)} />
-            <button className="partner-primary" type="submit">پذیرش حمل با {number.format(order.special ? order.quote?.specialKar || 0 : order.quote?.standardKar || 0)} کارسا</button>
-          </form>}
-        </li>)}</ul>}
-    </section>
-  </div>;
-}
 
 function WorkspaceEntries({ section, items, offerCatalog, locations, profile, result }) {
   const { entry, placeholder, help } = sections[section];
@@ -175,7 +129,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           </div>}
           {section === 'profile' && children}
           {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
-          {section === 'bulletin' ? <TransportBulletin items={data?.items || []} profile={profile} /> : data && (section === 'orders' ? <Orders items={data.items} /> :
+          {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && (section === 'orders' ? <Orders items={data.items} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
