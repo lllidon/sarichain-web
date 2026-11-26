@@ -33,7 +33,9 @@ export default async function PartnersPage({ searchParams }) {
   if (returnToCart) redirect('/cart');
 
   let data;
-  const canOffer = section === 'products' && profile.producerType;
+  const canOffer = section === 'products' && profile.capabilities?.sell === true;
+  if (section === 'bulletin' && !profile.capabilities?.drive) redirect('/partners?section=profile');
+  if (section === 'products' && !profile.capabilities?.sell) redirect('/partners?section=profile');
   const offerCatalog = canOffer ? readCatalog() : null;
   const locations = canOffer ? partnerBackend('/web/workspace/orchards/options', { token })
     .then(response => response.ok ? response.json() : null).catch(() => null) : null;
