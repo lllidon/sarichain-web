@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass, faBasketShopping } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faBasketShopping, faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
 import SearchModal from './modals/SearchModal';
 import ProductMegaMenu from './Products/ProductMegaMenu';
@@ -37,14 +37,12 @@ const Navbar = ({ session }) => {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className={`menu-icon `} >
-          <Link href="/quick-order" className="login-link">
-            <button className="contact-btn">
-              ثبت سفارش
-
-            </button>
-          </Link>
-        </div>
+        <button type="button" className="menu-icon nav-mobile-toggle"
+          aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen(value => !value)}>
+          <FontAwesomeIcon icon={isOpen ? faXmark : faBars} />
+        </button>
 
         {/* Navigation Menu */}
         <ul className={`nav-menu ${isOpen ? 'active' : ''}`}>
