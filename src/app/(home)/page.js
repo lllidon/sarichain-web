@@ -212,7 +212,6 @@ function HomeFooter() {
         <Link href="/categories" prefetch={false}>محصولات</Link>
         <Link href="/pilot" prefetch={false}>سبد هفتگی</Link>
         <Link href="/suppliers" prefetch={false}>دفترچه تأمین‌کنندگان</Link>
-        <Link href="/partners" prefetch={false}>پنل همکاران</Link>
       </nav>
     </div>
   </footer>;
