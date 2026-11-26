@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBasketShopping, faSeedling, faTruck } from '@fortawesome/free-solid-svg-icons';
 import '../Products/CategoriesPage.css';
 import './PartnerProfile.css';
+import TransportVehicleForm from './TransportVehicleForm';
 
 const buyers = { consumer: 'خریدار نهایی', retailer: 'مغازه‌دار', wholesaler: 'خریدار عمده', other: 'سایر' };
 const producers = { orchard: 'باغدار', farm: 'کشاورز', dairy: 'دامداری / گاوداری', greenhouse: 'گلخانه‌دار', other: 'سایر' };
@@ -95,6 +96,7 @@ export function ProfileLocation({ profile, required = false }) {
 function ProfileForm({ profile, onSaved, onExpired }) {
   const [producer, setProducer] = useState(profile.producerType ?? '');
   const [selected, setSelected] = useState(profile.serviceTypes ?? []);
+  const [vehicleDraft, setVehicleDraft] = useState(profile.vehicle ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const driver = selected.includes('driver');
@@ -112,7 +114,7 @@ function ProfileForm({ profile, onSaved, onExpired }) {
       ...(fields.has('provinceCode') && { provinceCode: value('provinceCode'), cityCode: value('cityCode') }),
       producerType: producer,
       serviceTypes: selected,
-      ...(driver && { vehicle: { type: value('vehicleType'), plate: value('plate'), license: value('license') } }),
+      ...(driver && vehicleDraft && { vehicle: { type: vehicleDraft.type, plate: vehicleDraft.plate, license: vehicleDraft.license } }),
       ...(specialist && { serviceCredential: value('serviceCredential') }),
     };
     try {
@@ -162,14 +164,12 @@ function ProfileForm({ profile, onSaved, onExpired }) {
         </div>
         {selected.length > 0 && <label className="partner-wide">محدوده خدمت<input name="serviceArea" defaultValue={profile.serviceArea} maxLength={180} /></label>}
         {driver && (
-          <>
-            <label>نوع وسیله<select name="vehicleType" defaultValue={profile.vehicle?.type ?? ''} required>
-              <option value="">انتخاب وسیله</option><SelectOptions options={vehicles} />
-            </select></label>
-            <label>پلاک<input name="plate" defaultValue={profile.vehicle?.plate} maxLength={40} required minLength={2} /></label>
-            <label>شماره یا مرجع گواهینامه<input name="license" defaultValue={profile.vehicle?.license} maxLength={80} required minLength={2} /></label>
+          <div className="partner-wide partner-transport-optin">
+            <p>برای فعال‌سازی امکان حمل بار، مشخصات وسیله و مدارک را تکمیل کنید. پس از بررسی و تأیید مدیریت، بارهای متناسب برای شما نمایش داده می‌شود.</p>
+            <TransportVehicleForm profile={profile} onVehicleLoaded={setVehicleDraft} onVehicleSaved={setVehicleDraft} />
             <div><ReviewStatus status={profile.driverStatus} /></div>
-          </>
+            {!vehicleDraft && <p className="partner-error" role="status">ابتدا مشخصات وسیله را در فرم بالا ذخیره کنید؛ سپس پروفایل را ذخیره کنید.</p>}
+          </div>
         )}
         {specialist && <>
           <label>شماره یا مرجع مدرک تخصصی<input name="serviceCredential" defaultValue={profile.serviceCredential} maxLength={120} required /></label>
