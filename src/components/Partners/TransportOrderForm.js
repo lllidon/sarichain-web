@@ -86,14 +86,14 @@ export default function TransportOrderForm() {
         <label>نوع بار<input name="goodsType" maxLength={120} placeholder="مثلاً مواد غذایی، مصالح، محصولات کشاورزی" required /></label>
         <label>وزن بار (کیلوگرم)<input name="weightKg" type="number" min="0.1" max="100000" step="0.01" required /></label>
         <label>حجم بار (متر مکعب)<input name="volumeM3" type="number" min="0.01" max="10000" step="0.01" required /></label>
-        <label>سرعت تحویل<select name="urgency" defaultValue="daily"><option value="hourly">ساعتی – فوری</option><option value="daily">روزانه</option><option value="multiday">چندروزه</option></select></label>
+        <label>سرعت تحویل<select name="urgency" defaultValue="daily"><option value="normal">عادی – تحویل زیر ۵ روز</option><option value="special">ویژه – تحویل زیر ۲ روز</option><option value="express">اکسپرس – تحویل همان روز</option><option value="urgent">فوری – تحویل زیر ۳ ساعت</option></select></label>
         <label>مهلت نهایی تحویل<input name="deadlineLocal" type="datetime-local" value={deadlineLocal} onChange={event => setDeadlineLocal(event.target.value)} required /></label>
         <input type="hidden" name="deadline" value={deadlineLocal && Number.isFinite(new Date(deadlineLocal).getTime()) ? new Date(deadlineLocal).toISOString() : ''} />
         <label className="transport-order-wide">توضیحات تکمیلی<textarea name="description" rows={3} maxLength={1000} placeholder="شرایط بارگیری، نوع بسته‌بندی، محدودیت‌های مسیر و..." /></label>
       </div>
     </div>
     <div className="transport-order-submit">
-      <p>هزینه بر اساس نوع مسیر، مسافت مستقیم تخمینی بین نقاط نقشه، وزن، حجم و زمان تحویل محاسبه می‌شود؛ مبلغ نهایی پس از بررسی مدیریت اعلام خواهد شد.</p>
+      <p>هزینه اولیه بر اساس زون مسافت، وزن حجمی و سرعت تحویل محاسبه می‌شود. فاصله مستقیم فقط برای تخمین اولیه است و مبلغ نهایی پس از محاسبه مسیر جاده‌ای و بررسی مدیریت مشخص می‌شود.</p>
       <button type="submit" className="partner-primary">ثبت درخواست برای بررسی</button>
     </div>
   </form>;
