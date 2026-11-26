@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faChevronDown, faFlask, faLeaf, faSeedling, faWheatAwn } from '@fortawesome/free-solid-svg-icons';
@@ -16,16 +16,19 @@ const icons = {
 export default function ProductMegaMenu() {
   const { catalog, categories } = useCatalog();
   const menu = useRef(null);
+  const timer = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     function closeOutside(event) {
-      if (!menu.current.contains(event.target)) menu.current.open = false;
+      if (!menu.current?.contains(event.target)) { menu.current.open = false; setIsOpen(false); }
     }
 
     function closeOnEscape(event) {
       if (event.key !== 'Escape' || !menu.current.open) return;
       const restoreFocus = menu.current.contains(document.activeElement);
       menu.current.open = false;
+      setIsOpen(false);
       if (restoreFocus) menu.current.querySelector('summary').focus();
     }
 
@@ -34,20 +37,32 @@ export default function ProductMegaMenu() {
     return () => {
       document.removeEventListener('pointerdown', closeOutside);
       document.removeEventListener('keydown', closeOnEscape);
+      if (timer.current) clearTimeout(timer.current);
     };
   }, []);
 
   function closeMenu() {
     menu.current.open = false;
+    setIsOpen(false);
+  }
+
+  function openOnHover() {
+    if (timer.current) clearTimeout(timer.current);
+    if (window.innerWidth > 992) { menu.current.open = true; setIsOpen(true); }
+  }
+
+  function closeOnLeave() {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => { if (menu.current) menu.current.open = false; setIsOpen(false); }, 220);
   }
 
   return (
     <li className="nav-item nav-products">
       <details className="nav-products-disclosure" ref={menu} suppressHydrationWarning>
-        <summary className="nav-link nav-products-toggle" aria-controls="nav-products-panel">
+        <summary className="nav-link nav-products-toggle" aria-controls="nav-products-panel" onClick={event => { if (window.innerWidth > 992) { event.preventDefault(); menu.current.open = !menu.current.open; setIsOpen(menu.current.open); } }}>
           محصولات <FontAwesomeIcon icon={faChevronDown} />
         </summary>
-        <div className="nav-products-panel" id="nav-products-panel">
+        <div className="nav-products-panel" id="nav-products-panel" onMouseEnter={openOnHover} onMouseLeave={closeOnLeave}>
           <div className="nav-products-inner">
             <div className="nav-products-heading">
               <h2>دسته‌بندی محصولات</h2>
