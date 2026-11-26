@@ -65,6 +65,7 @@ export default function TransportBulletin({ items = [] }) {
   const isDemo = selectedReal.length === 0;
   const visible = isDemo ? demoTransportOrders[active] : selectedReal;
   const allStops = useMemo(() => visible.flatMap(order => order.stops || []), [visible]);
+  const routes = useMemo(() => visible.map(order => order.stops || []), [visible]);
   return <div className="transport-bulletin">
     <header className="transport-bulletin-intro">
       <div><span>بازار فرصت‌های حمل ساری‌چین</span><h2>بارهای پیشنهادی متناسب با مسیر و ظرفیت شما</h2>
@@ -79,7 +80,7 @@ export default function TransportBulletin({ items = [] }) {
     </nav>
     <section className="transport-demo-map-section">
       <div><h3>نقشه مسیرها</h3><p>سبز: مبدأ بارگیری · آبی: مقصد تخلیه</p></div>
-      <TransportStopsMap stops={allStops} routes={visible.map(order => order.stops || [])} />
+      <TransportStopsMap stops={allStops} routes={routes} />
     </section>
     <div className="transport-bulletin-heading"><h2>{tabs.find(tab => tab.id === active)?.label}</h2><p>{number.format(visible.length)} سفارش {isDemo ? 'نمونه' : 'واقعی'}</p></div>
     <div className="transport-bulletin-cards">{visible.map(order => <OrderCard key={String(order._id)} order={order} />)}</div>
