@@ -112,7 +112,7 @@ function UpgradeForm({ kind, categories, onSubmitted }) {
   </form>;
 }
 
-export default function AccountUpgradeCenter() {
+export default function AccountUpgradeCenter({ profile }) {
   const [categories, setCategories] = useState([]);
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState('');
@@ -131,15 +131,16 @@ export default function AccountUpgradeCenter() {
     return () => { active = false; };
   }, [revision]);
   const pending = kind => requests.some(item => item.kind === kind && item.status === 'pending');
+  const approved = kind => kind === 'transport' ? profile?.capabilities?.drive : profile?.capabilities?.sell;
   return <section className="account-upgrade-center">
     <header><h3>ارتقای سطح حساب</h3><p>حساب پایه رایگان است. برای فعال‌سازی فعالیت‌های تخصصی، درخواست خود را همراه مدارک ارسال کنید. بررسی و تأیید توسط مدیریت انجام می‌شود.</p></header>
     {error && <p className="partner-error" role="alert">{error}</p>}
     <div className="account-upgrade-grid">
       <div className="account-upgrade-card">
-        {pending('transport') ? <p>درخواست حمل‌ونقل شما در انتظار بررسی است.</p> : <UpgradeForm key={'transport-' + revision} kind="transport" categories={categories} onSubmitted={() => setRevision(x => x + 1)} />}
+        {approved('transport') ? <p className="partner-status approved">صلاحیت حمل‌ونقل شما تأیید شده است و بخش حمل‌ونقل در پنل فعال است.</p> : pending('transport') ? <p>درخواست حمل‌ونقل شما در انتظار بررسی است.</p> : <UpgradeForm key={'transport-' + revision} kind="transport" categories={categories} onSubmitted={() => setRevision(x => x + 1)} />}
       </div>
       <div className="account-upgrade-card">
-        {pending('producer') ? <p>درخواست تولیدکنندگی شما در انتظار بررسی است.</p> : <UpgradeForm key={'producer-' + revision} kind="producer" categories={categories} onSubmitted={() => setRevision(x => x + 1)} />}
+        {approved('producer') ? <p className="partner-status approved">صلاحیت تولیدکنندگی شما تأیید شده است. دسته‌بندی‌های مجاز برای عرضه فعال هستند.</p> : pending('producer') ? <p>درخواست تولیدکنندگی شما در انتظار بررسی است.</p> : <UpgradeForm key={'producer-' + revision} kind="producer" categories={categories} onSubmitted={() => setRevision(x => x + 1)} />}
       </div>
     </div>
     {requests.length > 0 && <div className="account-upgrade-history"><h4>وضعیت درخواست‌های من</h4>
