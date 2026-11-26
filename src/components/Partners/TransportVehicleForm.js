@@ -1,22 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const vehicleKinds = [
   { value: 'motorcycle', label: 'موتورسیکلت', group: 'سبک', capacity: 'حداکثر بار مجاز (کیلوگرم)' },
   { value: 'car', label: 'خودروی سواری', group: 'سبک', capacity: 'حداکثر بار مجاز (کیلوگرم)' },
   { value: 'pickup', label: 'وانت', group: 'نیمه‌سنگین', capacity: 'ظرفیت حمل بار (کیلوگرم)' },
   { value: 'van', label: 'ون باری', group: 'نیمه‌سنگین', capacity: 'ظرفیت حمل بار (کیلوگرم)' },
-  { value: 'truck', label: 'کامیونت', group: 'سنگین', capacity: 'ظرفیت حمل بار (کیلوگرم)' },
+  { value: 'truckette', label: 'کامیونت', group: 'سنگین', capacity: 'ظرفیت حمل بار (کیلوگرم)' },
   { value: 'truck', label: 'کامیون', group: 'سنگین', capacity: 'ظرفیت حمل بار (کیلوگرم)' },
 ];
 
 async function saveVehicle(payload) {
-  const response = await fetch('/web/profile', {
+  const response = await fetch('/web/vehicle', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     cache: 'no-store',
-    body: JSON.stringify(payload),
+    body: JSON.stringify(payload.vehicle),
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.message || 'ذخیره مشخصات وسیله نقلیه انجام نشد.');
@@ -24,14 +24,25 @@ async function saveVehicle(payload) {
 }
 
 export default function TransportVehicleForm({ profile }) {
-  const saved = profile.vehicle || {};
+  const [saved, setSaved] = useState(profile.vehicle || {});
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    let active = true;
+    fetch('/web/vehicle', { cache: 'no-store' }).then(response => {
+      if (!response.ok) throw new Error('دریافت مشخصات خودرو ناموفق بود.');
+      return response.json();
+    }).then(data => { if (active) { const vehicle = data.vehicle || {}; setSaved(vehicle); setKind(vehicle.type || 'pickup'); setClassName(vehicle.className || ''); } })
+      .catch(failure => { if (active) setError(failure.message); })
+      .finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, []);
   const [kind, setKind] = useState(saved.type || 'pickup');
   const [className, setClassName] = useState(saved.className || (saved.type === 'truck' ? 'کامیونت' : ''));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const isTruck = kind === 'truck';
+  const isTruck = kind === 'truck' || kind === 'truckette';
 
   async function submit(event) {
     event.preventDefault();
@@ -62,7 +73,8 @@ export default function TransportVehicleForm({ profile }) {
       description: value('description'),
     };
     try {
-      await saveVehicle({ vehicle });
+      const result = await saveVehicle({ vehicle });
+      setSaved(result.vehicle || vehicle);
       setMessage('مشخصات وسیله نقلیه با موفقیت ذخیره شد.');
     } catch (failure) {
       setError(failure.message || 'ارتباط با سرور برقرار نشد.');
@@ -78,7 +90,7 @@ export default function TransportVehicleForm({ profile }) {
         <div className="transport-steps"><span>۱. انتخاب وسیله</span><span>۲. مشخصات فنی</span><span>۳. مدارک و شناسایی</span></div>
       </header>
 
-      <form className="transport-form" onSubmit={submit}>
+      <form key={loaded ? 'vehicle-loaded' : 'vehicle-initial'} className="transport-form" onSubmit={submit}>
         <section className="transport-panel">
           <div className="transport-panel-title"><span>01</span><div><h3>نوع وسیله نقلیه</h3><p>دسته وسیله‌ای را که در اختیار دارید انتخاب کنید.</p></div></div>
           <div className="transport-kind-grid">
