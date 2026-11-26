@@ -6,10 +6,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBasketShopping, faBox, faCalendarDays, faCircleCheck, faLeaf, faPlus, faShieldHalved, faStore, faTruck, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { scenario } from './pilotData';
 import { useCatalog } from '../Products/CatalogProvider';
+import { cheapestVariant } from '../Products/catalog';
 import { formatPrice, scalePrice, sumPrices } from '../Products/price';
 import './pilot.css';
 
 const number = new Intl.NumberFormat('fa-IR');
+const sampleBasket = [
+  { id: 'sample-orange', name: 'پرتقال فصلی', unit: 'کیلوگرم', price: { min: 1.2, max: 1.2 } },
+  { id: 'sample-apple', name: 'سیب باغی', unit: 'کیلوگرم', price: { min: 1.6, max: 1.6 } },
+  { id: 'sample-herbs', name: 'سبزی تازه', unit: 'بسته', price: { min: 0.8, max: 0.8 } },
+  { id: 'sample-tomato', name: 'گوجه‌فرنگی', unit: 'کیلوگرم', price: { min: 1, max: 1 } },
+];
 const sections = [
   ['basket', 'سبد هفتگی', faBasketShopping], ['market', 'بازار خانوار و تجاری', faStore],
   ['production', 'عرضه و پیشنهاد کشت', faLeaf], ['inputs', 'خرید تجمیعی نهاده', faBox],
@@ -17,7 +24,7 @@ const sections = [
   ['roles', 'حساب چندنقشی', faUsers],
 ];
 
-function Basket({ products, unavailable }) {
+function Basket({ products, sample }) {
   const initialBasket = products.slice(0, 3).map((product, index) => ({ ...product, quantity: index === 0 ? 2 : 1 }));
   const suggested = products[3];
   const [items, setItems] = useState(initialBasket);
@@ -53,7 +60,7 @@ function Basket({ products, unavailable }) {
         </select>
       </label>
       <p className="review-muted"><FontAwesomeIcon icon={faCalendarDays} /> تحویل نمونه شنبه، زون ساری</p>
-      {!items.length && <p role="status">{unavailable ? 'دریافت کاتالوگ انجام نشد.' : 'محصولی در کاتالوگ در دسترس نیست.'}</p>}
+      {sample && <p className="review-muted">اقلام و قیمت‌های این سبد نمونه هستند.</p>}
       <ul className="review-items">
         {items.map(item => <li key={item.id}>
           <div><strong>{item.name}</strong><small>{formatPrice(item.price)} برای هر {item.unit}</small></div>
@@ -109,7 +116,8 @@ function Scenario({ section }) {
 
 export default function PilotPreview() {
   const [section, select] = useState('basket');
-  const { catalog, unavailable } = useCatalog();
+  const { catalog } = useCatalog();
+  const orderable = catalog.map(cheapestVariant).filter(product => product.orderable);
   return <div className="review-page" dir="rtl">
     <div className="review-wrap">
       <header className="review-hero">
@@ -124,7 +132,7 @@ export default function PilotPreview() {
         {sections.map(([id, label, icon]) => <button key={id} type="button" aria-current={id === section ? 'page' : undefined}
           onClick={() => select(id)}><FontAwesomeIcon icon={icon} /><span>{label}</span></button>)}
       </nav>
-      <div hidden={section !== 'basket'}><Basket products={catalog.filter(product => product.orderable)} unavailable={unavailable} /></div>
+      <div hidden={section !== 'basket'}><Basket products={orderable.length ? orderable : sampleBasket} sample={!orderable.length} /></div>
       {section !== 'basket' && <Scenario section={section} key={section} />}
     </div>
   </div>;

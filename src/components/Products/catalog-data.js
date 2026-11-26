@@ -3,22 +3,23 @@ import { defaultOffer, withOffer } from './catalog';
 
 const empty = { catalog: [], categories: {}, brands: [], unavailable: true };
 
-async function readList(resource) {
+async function readList(resource, home) {
   const items = [];
+  const limit = home && resource === 'products' ? 12 : 100;
   for (let page = 1; ; page++) {
     const url = new URL('/web/' + resource, process.env.BACKEND_URL || 'http://127.0.0.1:3001');
-    url.search = new URLSearchParams({ limit: 100, page });
-    const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+    url.search = new URLSearchParams({ limit, page });
+    const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(home ? 2500 : 8000) });
     if (!response.ok) throw new Error('Catalog request failed');
     const result = await response.json();
     items.push(...result.items);
-    if (!result.items.length || items.length >= result.total) return items;
+    if ((home && resource === 'products') || !result.items.length || items.length >= result.total) return items;
   }
 }
 
-export const readCatalog = cache(async () => {
+export const readCatalog = cache(async (mode) => {
   try {
-    const [products, categoryRows, brands] = await Promise.all(['products', 'categories', 'brands'].map(readList));
+    const [products, categoryRows, brands] = await Promise.all(['products', 'categories', 'brands'].map(resource => readList(resource, mode === 'home')));
     const categories = Object.fromEntries(categoryRows.map(row => [row._id, {
       name: row.name, parentId: row.parentId, filter: 'کاربرد',
     }]));

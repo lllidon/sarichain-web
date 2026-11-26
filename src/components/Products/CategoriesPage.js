@@ -32,7 +32,7 @@ function CatalogCard({ product, categoryName, onMessage }) {
   );
 }
 
-export default function CategoriesPage({ initialCategory = 'all', initialDetail = '' }) {
+export default function CategoriesPage({ initialCategory = 'all', initialDetail = '', initialQuery = '' }) {
   const { catalog, categories, brands, unavailable: backendUnavailable } = useCatalog();
   const [brand, setBrand] = useState('');
   const products = catalog.map(product => ({ ...product, listing: cheapestVariant(product) }));
@@ -46,7 +46,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
   const withinPriceBounds = value => Math.min(highestPrice, Math.max(lowestPrice, value));
   const categoryOptions = [['all', 'همه محصولات'], ...Object.entries(categories).map(([id, category]) => [id, category.name])];
   const [category, setCategory] = useState(initialCategory);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [unit, setUnit] = useState('');
   const [minimum, setMinimum] = useState('');
   const [maximum, setMaximum] = useState('');
