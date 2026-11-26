@@ -53,8 +53,10 @@ export default function TransportVehicleForm({ profile }) {
     const yearText = normalizeDigits(value('year'));
     const year = Number(yearText);
     const capacity = Number(value('capacityKg'));
+    const capacityM3Text = value('capacityM3');
+    const capacityM3 = capacityM3Text ? Number(capacityM3Text) : undefined;
     if (!value('model') || !/^\d{4}$/.test(yearText) || year < 1350 || year > 1500 ||
-        !Number.isFinite(capacity) || capacity <= 0 || !value('plate') || !value('license')) {
+        !Number.isFinite(capacity) || capacity <= 0 || (capacityM3Text && (!Number.isFinite(capacityM3) || capacityM3 <= 0 || capacityM3 > 10000)) || !value('plate') || !value('license')) {
       setError('مدل، سال ساخت، ظرفیت، پلاک و شماره گواهینامه را کامل و صحیح وارد کنید.');
       setBusy(false); return;
     }
@@ -64,6 +66,7 @@ export default function TransportVehicleForm({ profile }) {
       model: value('model'),
       year,
       capacityKg: capacity,
+      ...(capacityM3 !== undefined && { capacityM3 }),
       plate: value('plate'),
       license: value('license'),
       licenseClass: value('licenseClass'),
@@ -111,6 +114,7 @@ export default function TransportVehicleForm({ profile }) {
             <label className="transport-field">برند و مدل خودرو<input name="model" defaultValue={saved.model || ''} placeholder="مثلاً نیسان زامیاد، ایسوزو NPR" required maxLength={100} /></label>
             <label className="transport-field">سال ساخت<input name="year" defaultValue={saved.year || ''} inputMode="numeric" placeholder="مثلاً ۱۴۰۱" required /></label>
             <label className="transport-field">ظرفیت مجاز حمل (کیلوگرم)<input name="capacityKg" defaultValue={saved.capacityKg || ''} type="number" min="1" max="100000" placeholder="مثلاً ۲۰۰۰" required /></label>
+            <label className="transport-field">ظرفیت حجمی اتاق (مترمکعب)<input name="capacityM3" defaultValue={saved.capacityM3 || ''} type="number" min="0.01" max="10000" step="0.01" placeholder="در صورت اطلاع، مثلاً ۱۲" /></label>
             <label className="transport-field">نوع اتاق / کاربری<select name="bodyType" defaultValue={saved.bodyType || ''}><option value="">انتخاب کنید</option><option>روباز</option><option>مسقف</option><option>یخچال‌دار</option><option>کمپرسی</option><option>چادری</option><option>کفی</option><option>مخزن‌دار</option><option>سایر</option></select></label>
           </div>
         </section>
