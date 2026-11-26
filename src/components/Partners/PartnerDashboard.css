@@ -309,3 +309,45 @@
   .transport-order-submit { align-items: stretch; }
   .transport-order-submit button { width: 100%; }
 }
+
+
+/* Route-filtered transport bulletin and explicitly synthetic sample data */
+.transport-bulletin { display:grid; gap:16px; min-width:0; }
+.transport-bulletin-intro { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; padding:20px; border:1px solid var(--dash-line); border-radius:14px; background:linear-gradient(135deg,#e5f2ea,#f8faf8); }
+.transport-bulletin-intro span { color:var(--dash-brand); font-size:.76rem; font-weight:800; }
+.transport-bulletin-intro h2 { margin:5px 0; font-size:clamp(1.05rem,2.5vw,1.35rem); }
+.transport-bulletin-intro p { margin:0; color:var(--dash-muted); font-size:.82rem; line-height:1.8; }
+.transport-bulletin-intro a { padding:9px 13px; border-radius:8px; background:#fff; color:var(--dash-brand); font-size:.82rem; font-weight:750; text-decoration:none; }
+.transport-route-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.transport-route-tabs button { display:flex; align-items:center; justify-content:center; gap:8px; min-width:0; padding:12px 8px; border:1px solid var(--dash-line); border-radius:10px; background:#fff; color:var(--dash-text); font:inherit; font-size:.82rem; cursor:pointer; }
+.transport-route-tabs button.active { border-color:var(--dash-brand); background:#e5f2ea; color:#075b48; font-weight:800; box-shadow:inset 0 0 0 1px var(--dash-brand); }
+.transport-route-tabs button span { display:inline-grid; place-items:center; min-width:23px; height:23px; padding:0 5px; border-radius:99px; background:#eef3ef; font-size:.72rem; }
+.transport-demo-notice { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1px solid #e4c98b; border-radius:10px; background:#fff9e9; color:#72551c; font-size:.8rem; line-height:1.8; }
+.transport-demo-notice b { flex:none; padding:2px 7px; border-radius:6px; background:#f5e5bd; }
+.transport-demo-map-section { display:grid; gap:9px; padding:14px; border:1px solid var(--dash-line); border-radius:12px; background:#fff; }
+.transport-demo-map-section h3 { margin:0 0 3px; font-size:.95rem; }
+.transport-demo-map-section p { margin:0; color:var(--dash-muted); font-size:.75rem; }
+.transport-demo-map { height:clamp(250px,38vw,390px); width:100%; border:1px solid var(--dash-line); border-radius:9px; background:#e8f1e5; z-index:0; }
+.transport-bulletin-heading h2 { margin:0 0 4px; font-size:1.05rem; }
+.transport-bulletin-heading p { margin:0; color:var(--dash-muted); font-size:.8rem; }
+.transport-bulletin-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.transport-bulletin-card { min-width:0; padding:14px; border:1px solid var(--dash-line); border-radius:12px; background:#fff; }
+.transport-bulletin-card-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.transport-bulletin-card-heading strong,.transport-bulletin-card-heading small { display:block; }
+.transport-bulletin-card-heading strong { font-size:.9rem; }
+.transport-bulletin-card-heading small { margin-top:4px; color:var(--dash-muted); font-size:.72rem; }
+.transport-demo-chip { padding:3px 7px; border-radius:6px; background:#f5e9c9; color:#795c20; font-size:.68rem; }
+.transport-bulletin-facts { display:flex; flex-wrap:wrap; gap:8px 13px; padding:11px 0; margin-top:9px; border-block:1px solid var(--dash-line); color:var(--dash-muted); font-size:.75rem; }
+.transport-bulletin-facts span { display:inline-flex; align-items:center; gap:5px; }
+.transport-bulletin-stops,.transport-bulletin-quote { display:flex; flex-wrap:wrap; gap:8px 13px; padding-top:9px; color:var(--dash-muted); font-size:.75rem; }
+.transport-bulletin-quote { justify-content:space-between; padding:9px; border-radius:8px; background:#f5f8f6; }
+.transport-bulletin-quote b { color:var(--dash-brand); }
+.transport-bulletin-stop-list { display:grid; gap:8px; padding:0; margin:12px 0 0; list-style:none; }
+.transport-bulletin-stop-list li { display:grid; grid-template-columns:10px minmax(0,1fr); align-items:start; gap:8px; }
+.transport-bulletin-stop-list i { width:9px; height:9px; margin-top:5px; border-radius:50%; background:#16845d; }
+.transport-bulletin-stop-list i.dropoff { background:#3869bd; }
+.transport-bulletin-stop-list b,.transport-bulletin-stop-list small { display:block; }
+.transport-bulletin-stop-list b { font-size:.76rem; }
+.transport-bulletin-stop-list small { margin-top:2px; color:var(--dash-muted); font-size:.7rem; line-height:1.7; }
+@media(max-width:700px) { .transport-bulletin-cards { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:520px) { .transport-route-tabs { grid-template-columns:minmax(0,1fr); } .transport-route-tabs button { justify-content:space-between; } }
