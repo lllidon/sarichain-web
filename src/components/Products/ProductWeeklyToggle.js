@@ -4,9 +4,11 @@ import { useAccountWeeklyBasket } from '../modals/AccountWeeklyBasketProvider';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faListCheck, faListUl } from '@fortawesome/free-solid-svg-icons';
 
-export default function ProductWeeklyToggle({ productId, productName, className = '' }) {
+export default function ProductWeeklyToggle({ productId, productIds = [], productName, className = '' }) {
   const weekly = useAccountWeeklyBasket();
-  const selected = Boolean(weekly?.items?.some(item => item.productId === productId));
+  const matchingIds = productIds.length ? productIds : [productId];
+  const selectedItems = weekly?.items?.filter(item => matchingIds.includes(item.productId)) ?? [];
+  const selected = selectedItems.length > 0;
 
   async function toggle(event) {
     event.preventDefault();
@@ -17,8 +19,9 @@ export default function ProductWeeklyToggle({ productId, productName, className 
       return;
     }
     try {
-      if (selected) await weekly.remove(productId);
-      else await weekly.add(productId, 1);
+      if (selected) {
+        for (const item of selectedItems) await weekly.remove(item.productId);
+      } else await weekly.add(productId, 1);
     } catch {
       // Keep the current selection visible; the shared basket provider exposes the error state.
     }
