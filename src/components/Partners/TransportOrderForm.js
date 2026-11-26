@@ -93,7 +93,7 @@ export default function TransportOrderForm() {
       </div>
     </div>
     <div className="transport-order-submit">
-      <p>هزینه بر اساس نوع مسیر، مسافت تخمینی نقشه، وزن، حجم و زمان تحویل محاسبه می‌شود؛ مبلغ نهایی پس از بررسی مدیریت اعلام خواهد شد.</p>
+      <p>هزینه بر اساس نوع مسیر، مسافت مستقیم تخمینی بین نقاط نقشه، وزن، حجم و زمان تحویل محاسبه می‌شود؛ مبلغ نهایی پس از بررسی مدیریت اعلام خواهد شد.</p>
       <button type="submit" className="partner-primary">ثبت درخواست برای بررسی</button>
     </div>
   </form>;
