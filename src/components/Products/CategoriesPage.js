@@ -23,7 +23,7 @@ function CatalogCard({ product, categoryName, onMessage }) {
         <Link href={href} className="catalog-card-image-link">
           <Image src={productImage(product)} alt={product.name} width={152} height={152} unoptimized />
         </Link>
-        <ProductWeeklyToggle productId={product.listing.id} productName={product.name} />
+        <ProductWeeklyToggle productId={product.listing.id} productIds={[product.id, ...product.variants.map(variant => variant.id)]} productName={product.name} />
       </div>
       <ProductPurchase product={product.listing} className="catalog-card-info" onMessage={onMessage}>
         <p className="catalog-card-category">{[categoryName, product.brand, product.form].filter(Boolean).join(' · ')}</p>
