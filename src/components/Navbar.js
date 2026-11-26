@@ -7,12 +7,12 @@ import { faMagnifyingGlass, faBasketShopping, faChevronDown } from '@fortawesome
 import './Navbar.css';
 import SearchModal from './modals/SearchModal';
 import ProductMegaMenu from './Products/ProductMegaMenu';
+import SolutionsMegaMenu from './SolutionsMegaMenu';
 import { useCatalogCart } from './modals/cartStore';
 
 const Navbar = ({ session }) => {
   const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const [isOpen, setIsOpen] = useState(false);
-  const [activeMegaMenu, setActiveMegaMenu] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -25,30 +25,6 @@ const Navbar = ({ session }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      setActiveMegaMenu(null);
-    }
-  };
-
-  const handleMegaMenuEnter = (menuName) => {
-    if (window.innerWidth > 992) {
-      setActiveMegaMenu(menuName);
-    }
-  };
-
-  const handleMegaMenuLeave = () => {
-    if (window.innerWidth > 992) {
-      setActiveMegaMenu(null);
-    }
-  };
-
-  const handleMegaMenuClick = (menuName) => {
-    if (window.innerWidth <= 992) {
-      setActiveMegaMenu(activeMegaMenu === menuName ? null : menuName);
-    }
-  };
   return (
     <>
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
@@ -77,72 +53,7 @@ const Navbar = ({ session }) => {
           <ProductMegaMenu />
           <li className="nav-item"><Link href="/pilot" className="nav-link">پیش‌نمایش پایلوت</Link></li>
 
-          {/* Solutions Mega Menu */}
-          <li 
-            className="nav-item mega-menu"
-            onMouseEnter={() => handleMegaMenuEnter('solutions')}
-            onMouseLeave={handleMegaMenuLeave}
-          >
-            <a 
-              href="#" 
-              className="nav-link"
-              onClick={(e) => {
-                e.preventDefault();
-                handleMegaMenuClick('solutions');
-              }}
-            >
-              راهکارها
-              <FontAwesomeIcon icon={faChevronDown} className="dropdown-icon" />
-            </a>
-            {activeMegaMenu === 'solutions' && (
-              <div 
-                className="mega-menu-content"
-                onMouseEnter={() => handleMegaMenuEnter('solutions')}
-                onMouseLeave={handleMegaMenuLeave}
-              >
-                <div className="mega-menu-grid">
-                  <div className="mega-col">
-                    <h4>بر اساس نوع محصول</h4>
-                    <ul>
-                      <li><a href="#">غلات و دانه‌ها</a></li>
-                      <li><a href="#">میوه‌ها و سبزیجات</a></li>
-                      <li><a href="#">دانه‌های روغنی</a></li>
-                      <li><a href="#">گیاهان زینتی</a></li>
-                    </ul>
-                  </div>
-                  <div className="mega-col">
-                    <h4>بر اساس چالش</h4>
-                    <ul>
-                      <li><a href="#">تنش خشکی</a></li>
-                      <li><a href="#">تنش شوری</a></li>
-                      <li><a href="#">کمبود مواد مغذی</a></li>
-                      <li><a href="#">سلامت ضعیف خاک</a></li>
-                    </ul>
-                  </div>
-                  <div className="mega-col">
-                    <h4>بر اساس مرحله رشد</h4>
-                    <ul>
-                      <li><a href="#">جوانه‌زنی</a></li>
-                      <li><a href="#">رشد رویشی</a></li>
-                      <li><a href="#">گلدهی</a></li>
-                      <li><a href="#">میوه‌دهی و رسیدگی</a></li>
-                    </ul>
-                  </div>
-                  <div className="mega-col">
-                    <h4>داستان‌های موفقیت</h4>
-                    <ul>
-                      <li><a href="#">مطالعات موردی</a></li>
-                      <li><a href="#">توصیفات کشاورزان</a></li>
-                      <li><a href="#">مقالات تحقیقاتی</a></li>
-                      <li><a href="#">گالری ویدیوها</a></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
-          </li>
-
-          <li className="nav-item">
+          <SolutionsMegaMenu />\n\n          <li className="nav-item">
             <a href="#" className="nav-link">وبلاگ</a>
           </li>
           
