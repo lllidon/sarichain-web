@@ -10,6 +10,7 @@ const routes = {
   orders: { POST: '/web/orders' },
   'delivery-options': { GET: '/web/delivery-options' },
   profile: { GET: '/web/profile', PATCH: '/web/profile' },
+  vehicle: { GET: '/web/workspace/transport/vehicle', PATCH: '/web/workspace/transport/vehicle' },
   provinces: { GET: '/web/locations/provinces' },
   cities: { GET: '/web/locations/cities' },
 };
@@ -65,7 +66,7 @@ async function forward(request, { params }) {
   const route = Object.hasOwn(routes, resource) && routes[resource][method];
   if (!route) return response({}, 404);
   const token = request.cookies.get(partnerSessionCookie)?.value;
-  const requiresSession = resource === 'profile' || resource === 'orders';
+  const requiresSession = resource === 'profile' || resource === 'orders' || resource === 'vehicle';
   if (requiresSession && !token) return response({}, 401);
   if (method !== 'GET' && contentType !== 'application/json' && !formLogin) return response({}, 415);
   try {
