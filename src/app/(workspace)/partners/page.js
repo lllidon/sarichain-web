@@ -40,7 +40,7 @@ export default async function PartnersPage({ searchParams }) {
   const isList = section !== 'overview' && section !== 'profile';
   if (isList) {
     try {
-      const path = section === 'orders' ? '/web/orders' : '/web/workspace/' + section;
+      const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : '/web/workspace/' + section;
       const result = await partnerBackend(path, { token, query: new URLSearchParams({ page, limit: 10 }).toString() });
       if (result.status === 401) return <PartnerProfile returnToCart={returnToCart} initialMessage="نشست پایان یافته است. دوباره وارد شوید." />;
       if (result.ok) data = await result.json();
