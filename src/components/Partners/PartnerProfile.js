@@ -130,6 +130,7 @@ function ProfileForm({ profile, onSaved, onExpired }) {
       {error && <p className="partner-message partner-error" role="alert">{error}</p>}
       <button className="partner-primary" disabled={busy} type="submit">{busy ? 'در حال ذخیره…' : 'ذخیره پروفایل'}</button>
     </form>
+    <AccountUpgradeCenter profile={profile} />
     </>
   );
 }
