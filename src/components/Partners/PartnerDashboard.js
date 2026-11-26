@@ -93,6 +93,8 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
 
 export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, children }) {
   const info = sections[section];
+  const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
+    .filter(([key]) => key !== 'bulletin' || profile.capabilities?.drive);
   const message = result === 'saved' && section === 'bulletin' ? 'درخواست حمل برای بررسی مدیریت ثبت شد.'
     : typeof result === 'string' && Object.hasOwn(feedback, result) ? feedback[result] : '';
   return <div className="catalog-page partners-page partner-dashboard" dir="rtl">
@@ -104,7 +106,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
             <div><strong>{profile.fullName || 'همکار ساری‌چین'}</strong><small>حساب ساری‌چین</small></div>
           </div>
           <nav aria-label="منوی پنل همکاران">
-            {Object.entries(sections).map(([key, item]) => <Link key={key} href={partnerHref(key)}
+            {visibleSections.map(([key, item]) => <Link key={key} href={partnerHref(key)}
               aria-current={key === section ? 'page' : undefined} prefetch={false}>
               <FontAwesomeIcon icon={icons[item.icon]} /><span>{item.label}</span>
             </Link>)}
@@ -119,7 +121,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
           </header>
           {message && <p className="partner-dash-feedback" role={result === 'error' || result === 'invalid' ? 'alert' : 'status'}>{message}</p>}
           {section === 'overview' && <div className="partner-dash-grid">
-            {Object.entries(sections).filter(([key]) => key !== 'overview').map(([key, item]) => <Link key={key} href={partnerHref(key)} prefetch={false}>
+            {visibleSections.filter(([key]) => key !== 'overview').map(([key, item]) => <Link key={key} href={partnerHref(key)} prefetch={false}>
               <span><FontAwesomeIcon icon={icons[item.icon]} /></span>
               <strong>{item.label}</strong><FontAwesomeIcon icon={faArrowLeft} />
             </Link>)}
