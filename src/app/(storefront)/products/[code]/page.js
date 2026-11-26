@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import ProductMarketplace from '../../../../components/Products/ProductMarketplace';
+import ProductWeeklyToggle from '../../../../components/Products/ProductWeeklyToggle';
 import { readCatalog } from '../../../../components/Products/catalog-data';
 import { productHref, productImage } from '../../../../components/Products/catalog';
 import { partnerBackend } from '../../../../lib/partnerBackend';
@@ -79,6 +80,7 @@ export default async function ProductPage({ params, searchParams }) {
                     <Image src={productImage(item)} alt="" width={80} height={80} unoptimized />
                     <span>{item.name}</span>
                   </Link>
+                  <ProductWeeklyToggle productId={item.id} productIds={[item.id, ...item.variants.map(variant => variant.id)]} productName={item.name} />
                 </li>
               ))}
             </ul>
