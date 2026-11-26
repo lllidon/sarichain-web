@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faEllipsis, faImage, faList, faMagnifyingGlassPlus, faShareNodes, faShieldHalved, faStar, faStore, faTruck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faEllipsis, faHeart, faImage, faList, faMagnifyingGlassPlus, faShareNodes, faShieldHalved, faStar, faStore, faTruck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import ProductPurchase from './ProductPurchase';
 import ProductWeeklyToggle from './ProductWeeklyToggle';
 import { cheapestVariant, productImage, productPackages, withOffer } from './catalog';
@@ -20,8 +20,10 @@ const displayDate = day => date.format(new Date(day + 'T12:00:00Z'));
 
 function ProductGallery({ product, weeklyProductId, weeklyProductIds, showTab }) {
   const [activeImage, setActiveImage] = useState(0);
+  const [favorite, setFavorite] = useState(false);
   const [message, setMessage] = useState('');
   const dialog = useRef(null);
+  const favoriteKey = `sarichain-favorite-${product.code}`;
   const gallery = product.gallery.length ? product.gallery : [product.fullImage || product.image].filter(Boolean);
   const isExample = gallery.length === 0;
   const images = (isExample ? [''] : gallery).map(url => productImage({ image: url }));
@@ -42,6 +44,21 @@ function ProductGallery({ product, weeklyProductId, weeklyProductIds, showTab })
   }
 
 
+  useEffect(() => {
+    try { setFavorite(localStorage.getItem(favoriteKey) === '1'); }
+    catch { setFavorite(false); }
+  }, [favoriteKey]);
+
+  function toggleFavorite() {
+    const next = !favorite;
+    setFavorite(next);
+    try {
+      if (next) localStorage.setItem(favoriteKey, '1');
+      else localStorage.removeItem(favoriteKey);
+    } catch {
+      setMessage('علاقه‌مندی فقط تا زمانی که این صفحه باز است حفظ می‌شود.');
+    }
+  }
   async function share() {
     try {
       if (navigator.share) await navigator.share({ title: product.name, url: location.href });
@@ -68,6 +85,7 @@ function ProductGallery({ product, weeklyProductId, weeklyProductIds, showTab })
             <Image src={image} alt={isExample ? 'تصویر نمونه' : product.name} width={400} height={400} loading="eager" unoptimized />
             {isExample && <span className="product-example gallery-example">تصویر نمونه</span>}
           </button>
+          <button type="button" className="product-favorite-toggle" aria-label="علاقه‌مندی" title="علاقه‌مندی" aria-pressed={favorite} onClick={toggleFavorite}><FontAwesomeIcon icon={faHeart} /></button>
           <ProductWeeklyToggle productId={weeklyProductId} productIds={weeklyProductIds} productName={product.name} />
         </div>
         <div className="market-gallery-thumbs" aria-label="گالری محصول">
