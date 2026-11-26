@@ -85,7 +85,7 @@ export function ProfileLocation({ profile, required = false }) {
   );
 }
 
-function ProfileForm({ profile, onSaved, onExpired }) {
+function ProfileForm({ profile, categories = [], onSaved, onExpired }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -141,7 +141,7 @@ export function PartnerProfileEditor({ initialProfile, categories = [] }) {
   const [revision, setRevision] = useState(0);
   return <>
     {message && <p className="partner-message" role="status">{message}</p>}
-    {profile ? <ProfileForm key={revision} profile={profile} onExpired={() => {
+    {profile ? <ProfileForm key={revision} profile={profile} categories={categories} onExpired={() => {
       setProfile(null);
       setMessage('نشست پایان یافته است. دوباره وارد شوید.');
     }} onSaved={updated => {
