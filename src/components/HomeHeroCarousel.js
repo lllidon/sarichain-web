@@ -44,7 +44,7 @@ export default function HomeHeroCarousel() {
   const move = useCallback((step) => setActive(index => (index + step + slides.length) % slides.length), []);
 
   useEffect(() => {
-    if (paused) return undefined;
+    if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const timer = window.setInterval(() => setActive(index => (index + 1) % slides.length), 6500);
     return () => window.clearInterval(timer);
   }, [paused]);
