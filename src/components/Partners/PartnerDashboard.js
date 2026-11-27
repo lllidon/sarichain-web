@@ -173,7 +173,7 @@ function Orders({ items, counts = {}, selectedStatus = 'current', selectedOrder 
 }
 
 
-function WorkspaceEntries({ section, items, offerCatalog, locations, profile, result }) {
+function WorkspaceEntries({ section, items, offerCatalog, locations, profile, result, pendingCategoryIds = [] }) {
   const { entry, placeholder, help } = sections[section];
   const action = saveWorkspaceEntry.bind(null, section);
   const isLocation = section === 'orchards';
@@ -182,6 +182,7 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
     {isLocation ? <WorkspaceLocationForm key={formKey} profile={profile} /> :
       section === 'products' ? offerCatalog && !offerCatalog.unavailable ?
       <ProductOfferForm key={formKey} locations={locations} categories={offerCatalog.categories} brands={offerCatalog.brands}
+        allowedCategoryIds={profile.allowedProductCategoryIds || []} pendingCategoryIds={pendingCategoryIds}
         products={offerCatalog.catalog.flatMap(product => [product, ...product.variants])
           .map(({ id, name, code, brand, brandId, category, unit }) => ({ id, name, code, brand, brandId, category, unit }))} /> :
       <div className="partner-empty"><p>{offerCatalog ? 'کاتالوگ موقتاً در دسترس نیست.' : 'برای ثبت عرضه باید نقش تولیدکننده در پروفایل شما فعال باشد.'}</p>
@@ -406,7 +407,7 @@ function KarshaWallet({ wallet }) {
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, overviewData, selectedStatus, selectedFulfillmentStatus, selectedOrder, orderDetail, children }) {
+export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, overviewData, pendingCategoryIds = [], selectedStatus, selectedFulfillmentStatus, selectedOrder, orderDetail, children }) {
   const info = sections[section];
   const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
     .filter(([key]) => key !== 'bulletin' || profile.capabilities?.drive);
@@ -450,7 +451,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
           {section === 'fulfillment' && <SellerOrders data={data} selectedStatus={selectedFulfillmentStatus} />}
           {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
           {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && !['wallet', 'fulfillment'].includes(section) && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
-            <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
+            <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} pendingCategoryIds={pendingCategoryIds} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
               {page > 1 && <Link href={partnerHref(section) + (section === 'orders' ? '&status=' + (selectedStatus || 'current') : section === 'fulfillment' ? '&fulfillmentStatus=' + (selectedFulfillmentStatus || 'active') : '') + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
