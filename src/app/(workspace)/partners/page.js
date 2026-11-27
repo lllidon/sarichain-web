@@ -36,6 +36,7 @@ export default async function PartnersPage({ searchParams }) {
 
   let data;
   let dataError = '';
+  let overviewData = null;
   const canOffer = section === 'products' && profile.capabilities?.sell === true;
   if (section === 'bulletin' && !profile.capabilities?.drive) redirect('/partners?section=profile');
   if (section === 'products' && !profile.capabilities?.sell) redirect('/partners?section=profile');
@@ -55,8 +56,8 @@ export default async function PartnersPage({ searchParams }) {
   const isList = section !== 'overview' && section !== 'profile';
   if (isList) {
     try {
-      const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : section === 'wallet' ? '/web/karsha' : '/web/workspace/' + section;
-      const query = new URLSearchParams({ page, limit: 10, ...(section === 'orders' && { status }) });
+      const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : section === 'wallet' ? '/web/karsha' : section === 'fulfillment' ? '/web/workspace/seller-orders' : '/web/workspace/' + section;
+      const query = new URLSearchParams({ page, limit: 10, ...(section === 'orders' && { status }), ...(section === 'fulfillment' && { status: 'active' }) });
       const result = await partnerBackend(path, { token, query: query.toString() });
       if (result.status === 401) return <PartnerProfile returnToCart={returnToCart} initialMessage="نشست پایان یافته است. دوباره وارد شوید." />;
       if (result.ok) {
@@ -74,6 +75,21 @@ export default async function PartnersPage({ searchParams }) {
         : 'ارتباط با بک‌اند برقرار نشد. آدرس BACKEND_URL و روشن بودن سرویس بک‌اند را بررسی کنید.';
     }
   }
+  if (section === 'overview') {
+    const requests = [
+      partnerBackend('/web/workspace/seller-orders', { token, query: 'page=1&limit=100&status=active' }),
+      profile.producerType ? partnerBackend('/web/workspace/products', { token, query: 'page=1&limit=100' }) : Promise.resolve(null),
+      profile.producerType ? partnerBackend('/web/workspace/orchards', { token, query: 'page=1&limit=100' }) : Promise.resolve(null),
+      profile.serviceTypes?.includes('driver') ? partnerBackend('/web/workspace/transport/vehicle', { token }) : Promise.resolve(null),
+    ];
+    const [sellerResult, offersResult, locationsResult, vehicleResult] = await Promise.all(requests.map(p => p.catch(() => null)));
+    overviewData = {
+      sellerOrders: sellerResult?.ok ? await sellerResult.json() : { items: [], total: 0, counts: {} },
+      offers: offersResult?.ok ? await offersResult.json() : null,
+      locations: locationsResult?.ok ? await locationsResult.json() : null,
+      vehicle: vehicleResult?.ok ? await vehicleResult.json() : null,
+    };
+  }
   let orderDetail;
   if (section === 'orders' && orderId) {
     try {
@@ -84,7 +100,7 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} dataError={dataError} page={page} result={feedback}
-    selectedStatus={status} selectedOrder={orderId} orderDetail={orderDetail} locations={await locations} unavailable={isList && !data}>
+    selectedStatus={status} selectedOrder={orderId} orderDetail={orderDetail} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
