@@ -35,6 +35,7 @@ export default async function PartnersPage({ searchParams }) {
   if (returnToCart) redirect('/cart');
 
   let data;
+  let dataError = '';
   const canOffer = section === 'products' && profile.capabilities?.sell === true;
   if (section === 'bulletin' && !profile.capabilities?.drive) redirect('/partners?section=profile');
   if (section === 'products' && !profile.capabilities?.sell) redirect('/partners?section=profile');
@@ -58,9 +59,19 @@ export default async function PartnersPage({ searchParams }) {
       const query = new URLSearchParams({ page, limit: 10, ...(section === 'orders' && { status }) });
       const result = await partnerBackend(path, { token, query: query.toString() });
       if (result.status === 401) return <PartnerProfile returnToCart={returnToCart} initialMessage="نشست پایان یافته است. دوباره وارد شوید." />;
-      if (result.ok) data = await result.json();
-    } catch {
-      // Navigation remains usable if the selected section is unavailable.
+      if (result.ok) {
+        data = await result.json();
+      } else {
+        const problem = await result.json().catch(() => null);
+        dataError = typeof problem?.message === 'string'
+          ? problem.message
+          : `دریافت اطلاعات از سرور ناموفق بود (HTTP ${result.status}).`;
+      }
+    } catch (failure) {
+      console.error('[partners] Failed to load section:', section, failure);
+      dataError = failure?.name === 'TimeoutError' || failure?.name === 'AbortError'
+        ? 'پاسخ سرور بیش از زمان مجاز طول کشید. وضعیت اجرای بک‌اند را بررسی کنید.'
+        : 'ارتباط با بک‌اند برقرار نشد. آدرس BACKEND_URL و روشن بودن سرویس بک‌اند را بررسی کنید.';
     }
   }
   let orderDetail;
@@ -72,7 +83,7 @@ export default async function PartnersPage({ searchParams }) {
       orderDetail = null;
     }
   }
-  return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback}
+  return <PartnerDashboard profile={profile} section={section} data={data} dataError={dataError} page={page} result={feedback}
     selectedStatus={status} selectedOrder={orderId} orderDetail={orderDetail} locations={await locations} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
