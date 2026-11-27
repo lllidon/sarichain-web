@@ -9,7 +9,7 @@ export const sections = {
   orchards: { label: 'موقعیت‌های مکانی من', icon: 'orchards', entry: 'موقعیت مکانی' },
   advisory: { label: 'مشاوره کسب‌وکار', icon: 'advisory', entry: 'درخواست مشاوره',
     help: 'موضوعی را که برای آن به مشاوره نیاز دارید ثبت کنید.', placeholder: 'هدف و پرسش اصلی شما' },
-  profile: { label: 'ویرایش اطلاعات', icon: 'profile' },
+  profile: { label: 'پروفایل من', icon: 'profile' },
 };
 
 export const locationTypes = {
