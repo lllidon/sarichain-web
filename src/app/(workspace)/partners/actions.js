@@ -44,6 +44,35 @@ function decimal(value, places) {
   return new RegExp('^\\d+(?:\\.\\d{1,' + places + '})?$').test(normalized) ? Number(normalized) : NaN;
 }
 
+export async function requestProductCategoryUpgrade(_state, formData) {
+  const token = (await cookies()).get(partnerSessionCookie)?.value;
+  if (!token) redirect('/partners');
+  let categoryIds = [];
+  try {
+    const raw = formData.get('categoryIds');
+    categoryIds = typeof raw === 'string' ? JSON.parse(raw) : [];
+  } catch { return 'دسته‌بندی‌های انتخاب‌شده معتبر نیستند.'; }
+  if (!Array.isArray(categoryIds) || !categoryIds.length || categoryIds.length > 20 ||
+      categoryIds.some(id => typeof id !== 'string' || !/^[a-f0-9]{24}$/i.test(id))) {
+    return 'حداقل یک دسته‌بندی معتبر انتخاب کنید.';
+  }
+  let response;
+  try {
+    response = await partnerBackend('/web/account-upgrades', {
+      token, method: 'POST',
+      body: JSON.stringify({ kind: 'producer_categories', requestedCategoryIds: JSON.stringify(categoryIds) }),
+    });
+  } catch { return 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.'; }
+  if (response.status === 401) redirect('/partners');
+  if (response.status === 400) {
+    const problem = await response.json().catch(() => null);
+    return typeof problem?.message === 'string' ? problem.message : 'ثبت درخواست دسترسی انجام نشد.';
+  }
+  if (response.status === 403) return 'ابتدا باید صلاحیت تولیدکنندگی شما تأیید شده باشد.';
+  if (!response.ok) return 'ثبت درخواست دسترسی انجام نشد. دوباره تلاش کنید.';
+  return 'درخواست دسترسی به دسته‌بندی با موفقیت برای بررسی مدیریت ارسال شد.';
+}
+
 export async function saveProductOffer(_state, formData) {
   const token = (await cookies()).get(partnerSessionCookie)?.value;
   if (!token) redirect('/partners');
