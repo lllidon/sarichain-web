@@ -19,6 +19,7 @@ import ProductMegaMenu from '../../components/Products/ProductMegaMenu';
 import SolutionsMegaMenu from '../../components/SolutionsMegaMenu';
 import { CatalogProvider } from '../../components/Products/CatalogProvider';
 import HomeHeroCarousel from '../../components/HomeHeroCarousel';
+import SafeCategoryImage from '../../components/SafeCategoryImage';
 
 const number = new Intl.NumberFormat('fa-IR');
 const catalogIcons = [faAppleWhole, faWheatAwn, faSeedling, faLeaf, faBox, faStore];
@@ -146,7 +147,7 @@ function CategoryList({ categories }) {
     <ul className="market-home-categories">
       {links.map(({ name, href, image }, index) => <li key={href}>
         <Link href={href} prefetch={false}>
-          <span className="market-home-category-image"><img src={image || '/img/catalog/field.webp'} alt="" loading="lazy"/></span>
+          <span className="market-home-category-image"><SafeCategoryImage src={image}/></span>
           <span className="market-home-category-meta"><strong>{name}</strong><small>مشاهده عرضه‌ها</small></span>
           <i><FontAwesomeIcon icon={icons[index % icons.length]}/></i>
         </Link>
