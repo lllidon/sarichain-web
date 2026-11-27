@@ -295,6 +295,7 @@ function DashboardOverview({ profile, overviewData }) {
   if (!profile.customerType) addTask('buyer','تعیین نوع مشتری','نوع خرید خود را مشخص کنید تا خدمات متناسب نمایش داده شود.',partnerHref('profile'));
   else if (!profile.deliveryAddresses?.length) addTask('delivery-address','ثبت نشانی تحویل','برای خرید و دریافت سفارش، دست‌کم یک نشانی تحویل ثبت کنید.',partnerHref('profile'));
   if (profile.producerType) {
+    if (!profile.productionActivity) addTask('production-activity','تکمیل شرح فعالیت تولیدی','نوع محصول یا فعالیت تولیدی خود را دقیق‌تر معرفی کنید.',partnerHref('profile'));
     if (profile.sellerStatus === 'pending') addTask('seller-review','تأیید نقش تولیدکننده','درخواست تولیدکنندگی در انتظار بررسی مدیریت است.',partnerHref('profile'));
     else if (profile.sellerStatus === 'rejected') addTask('seller-fix','اصلاح مدارک تولیدکننده','درخواست تولیدکنندگی نیازمند اصلاح یا تکمیل اطلاعات است.',partnerHref('profile'),'high');
     else if (profile.sellerStatus === 'approved') {
@@ -311,6 +312,7 @@ function DashboardOverview({ profile, overviewData }) {
       else if (profile.driverStatus === 'rejected') addTask('driver-fix','اصلاح مدارک راننده','مدارک رانندگی نیازمند اصلاح است.',partnerHref('profile'),'high');
     }
     if (services.some(type => ['supervisor','quality'].includes(type))) {
+      if (!profile.serviceCredential) addTask('specialist-credential','ثبت مدرک یا تخصص','مدرک یا توضیح صلاحیت تخصصی خود را تکمیل کنید.',partnerHref('profile'),'high');
       if (profile.specialistStatus === 'pending') addTask('specialist-review','تأیید صلاحیت تخصصی','مدارک ناظر یا کنترل کیفیت در انتظار بررسی است.',partnerHref('profile'));
       else if (profile.specialistStatus === 'rejected') addTask('specialist-fix','اصلاح مدارک تخصصی','اطلاعات صلاحیت تخصصی را بازبینی کنید.',partnerHref('profile'),'high');
     }
@@ -443,7 +445,8 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
           {message && <p className="partner-dash-feedback" role={result === 'error' || result === 'invalid' ? 'alert' : 'status'}>{message}</p>}
           {section === 'overview' && <DashboardOverview profile={profile} overviewData={overviewData} />}
           {section === 'profile' && children}
-          {section === 'wallet' && <KarshaWallet wallet={data} />}\n          {section === 'fulfillment' && <SellerOrders data={data} result={result} />}
+          {section === 'wallet' && <KarshaWallet wallet={data} />}
+          {section === 'fulfillment' && <SellerOrders data={data} />}
           {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
           {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && !['wallet', 'fulfillment'].includes(section) && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
