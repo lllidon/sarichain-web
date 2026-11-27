@@ -9,6 +9,7 @@ import { useCatalog } from './CatalogProvider';
 import { productHref, productImage } from './catalog';
 
 const fallbackImage = '/img/catalog/field.webp';
+const fallbackBrandImage = '/img/sarichain-icon.svg';
 const imageSource = value => value?.startsWith('/catalog-demo/') ? '/web' + value : value || fallbackImage;
 
 export default function ProductMegaMenu() {
@@ -168,7 +169,7 @@ export default function ProductMegaMenu() {
                 <div className="nav-products-brand-list">
                   {brands.slice(0, 12).map(brand => (
                     <Link key={brand._id} href={{ pathname: '/categories', query: { brand: brand._id } }} onClick={closeMenu}>
-                      <Image src={imageSource(brand.thumbnailUrl || brand.imageUrl)} alt="" width={30} height={30} unoptimized />
+                      <Image src={imageSource(brand.thumbnailUrl || brand.imageUrl || fallbackBrandImage)} alt="" width={30} height={30} unoptimized />
                       <span>{brand.name}</span>
                     </Link>
                   ))}
