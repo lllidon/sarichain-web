@@ -78,13 +78,14 @@ function OrderItems({ items, compact = false }) {
   </ul>;
 }
 
-function Orders({ items, counts = {}, selectedStatus = 'current', orderDetail }) {
+function Orders({ items, counts = {}, selectedStatus = 'current', selectedOrder = '', orderDetail }) {
   const tabs = [
     ['current', 'جاری', counts.current || 0],
     ['completed', 'تحویل‌شده', counts.completed || 0],
     ['returned', 'مرجوع‌شده', counts.returned || 0],
     ['cancelled', 'لغوشده', counts.cancelled || 0],
   ];
+  if (selectedOrder && !orderDetail) return <div className="partner-empty" role="alert"><p>دریافت جزئیات سفارش انجام نشد یا سفارش در دسترس نیست.</p><Link href={partnerHref('orders') + '&status=' + selectedStatus}>بازگشت به سفارش‌ها</Link></div>;
   if (orderDetail) {
     const status = orderDetail.status;
     const events = [...(orderDetail.events || []).map(event => ({
@@ -272,9 +273,9 @@ export default function PartnerDashboard({ profile, section, result, data, unava
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
-              {page > 1 && <Link href={partnerHref(section) + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
+              {page > 1 && <Link href={partnerHref(section) + (section === 'orders' ? '&status=' + (selectedStatus || 'current') : '') + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
               <span>{number.format(page)}</span>
-              {page * data.limit < data.total && <Link href={partnerHref(section) + '&page=' + (page + 1)}>صفحهٔ بعد</Link>}
+              {page * data.limit < data.total && <Link href={partnerHref(section) + (section === 'orders' ? '&status=' + (selectedStatus || 'current') : '') + '&page=' + (page + 1)}>صفحهٔ بعد</Link>}
             </nav>}
         </section>
       </div>
