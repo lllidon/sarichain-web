@@ -55,7 +55,7 @@ export default async function PartnersPage({ searchParams }) {
   const isList = section !== 'overview' && section !== 'profile';
   if (isList) {
     try {
-      const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : '/web/workspace/' + section;
+      const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : section === 'wallet' ? '/web/karsha' : '/web/workspace/' + section;
       const query = new URLSearchParams({ page, limit: 10, ...(section === 'orders' && { status }) });
       const result = await partnerBackend(path, { token, query: query.toString() });
       if (result.status === 401) return <PartnerProfile returnToCart={returnToCart} initialMessage="نشست پایان یافته است. دوباره وارد شوید." />;
