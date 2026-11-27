@@ -21,7 +21,7 @@ export const readCatalog = cache(async (mode) => {
   try {
     const [products, categoryRows, brands] = await Promise.all(['products', 'categories', 'brands'].map(resource => readList(resource, mode === 'home')));
     const categories = Object.fromEntries(categoryRows.map(row => [row._id, {
-      name: row.name, parentId: row.parentId, level: row.level, image: row.thumbnailUrl || row.imageUrl || '/img/catalog/field.webp', filter: 'کاربرد',
+      name: row.name, description: row.shortDescription || row.description || '', parentId: row.parentId, level: row.level, image: row.thumbnailUrl || row.imageUrl || '/img/catalog/field.webp', filter: 'کاربرد',
     }]));
     const brandNames = new Map(brands.map(brand => [brand._id, brand.name]));
     function mapProduct(product, parent) {
