@@ -280,7 +280,7 @@ function SellerOrders({ data, selectedStatus = 'active' }) {
       <div className="seller-fulfillment-total"><strong>{number.format(data?.counts?.active || 0)}</strong><span>سفارش فعال</span></div>
     </div>
     <nav className="seller-fulfillment-tabs" aria-label="فیلتر سفارش‌های قابل پردازش">{tabs.map(([key,label,count])=><Link key={key} href={partnerHref('fulfillment') + '&fulfillmentStatus=' + key} className={selectedStatus===key?'active':''} aria-current={selectedStatus===key?'page':undefined}>{label}<b>{number.format(count)}</b></Link>)}</nav>
-    {!data?.items?.length ? <div className="partner-empty"><p>در حال حاضر سفارش قابل پردازشی برای عرضه‌های شما ثبت نشده است.</p>
+    {!data?.items?.length ? <div className="partner-empty"><p>{selectedStatus === 'completed' ? 'هنوز سفارشی به حمل‌کننده تحویل نشده است.' : 'در حال حاضر سفارش قابل پردازشی برای عرضه‌های شما ثبت نشده است.'}</p>
       <Link href={partnerHref('products')}>مدیریت عرضه‌های من</Link></div> :
       <div className="seller-order-grid">{data.items.map(order=><SellerOrderCard key={order.id} order={order}/>)}</div>}
   </section>;
