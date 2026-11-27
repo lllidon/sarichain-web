@@ -47,6 +47,12 @@ const orderProgress = status => ({
 }[status] ?? 8);
 const money = value => formatPrice({ min: Number(value || 0), max: Number(value || 0) });
 const orderDateTime = value => value ? dateTime.format(new Date(value)) : '—';
+const orderSubStatusLabels = {
+  pending: 'در انتظار بررسی', unselected: 'انتخاب نشده', not_requested: 'درخواستی ثبت نشده',
+  not_reserved: 'هنوز تأمین نشده', staged: 'تأمین و به انبار واسط منتقل شده',
+  posted_to_accounting: 'در حسابداری ثبت شده', synced: 'همگام‌سازی شده',
+  released: 'رزرو آزاد شده', delivered: 'تحویل شده', in_transit: 'در مسیر تحویل',
+};
 const orderEventLabels = {
   'order.created': 'سفارش ثبت شد',
   'checkout.request.received': 'درخواست سفارش دریافت شد',
@@ -117,9 +123,9 @@ function Orders({ items, counts = {}, selectedStatus = 'current', selectedOrder 
         <dl>
           <div><dt>روش ارسال</dt><dd>{delivery.label || delivery.method || 'ثبت نشده'}</dd></div>
           <div><dt>نشانی تحویل</dt><dd>{delivery.addressSnapshot?.address || delivery.addressSnapshot?.title || 'در سفارش ثبت نشده'}</dd></div>
-          <div><dt>وضعیت ارسال</dt><dd>{orderStatusLabels[orderDetail.meta?.shipping?.status] || orderDetail.meta?.shipping?.status || 'در انتظار تعیین'}</dd></div>
-          <div><dt>وضعیت تأمین کالا</dt><dd>{orderDetail.meta?.inventory?.status || orderDetail.inventoryStatus || 'در انتظار تأمین'}</dd></div>
-          <div><dt>وضعیت پرداخت</dt><dd>{orderDetail.meta?.payment?.status || 'در انتظار پرداخت'}</dd></div>
+          <div><dt>وضعیت ارسال</dt><dd>{orderStatusLabels[orderDetail.meta?.shipping?.status] || orderSubStatusLabels[orderDetail.meta?.shipping?.status] || orderDetail.meta?.shipping?.status || 'در انتظار تعیین'}</dd></div>
+          <div><dt>وضعیت تأمین کالا</dt><dd>{orderSubStatusLabels[orderDetail.meta?.inventory?.status || orderDetail.inventoryStatus] || orderDetail.meta?.inventory?.status || orderDetail.inventoryStatus || 'در انتظار تأمین'}</dd></div>
+          <div><dt>وضعیت پرداخت</dt><dd>{orderSubStatusLabels[orderDetail.meta?.payment?.status] || orderDetail.meta?.payment?.status || 'در انتظار پرداخت'}</dd></div>
         </dl>
       </section>
       <section className="partner-order-detail-section">
