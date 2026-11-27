@@ -1,7 +1,8 @@
 export const sections = {
   overview: { label: 'داشبورد', icon: 'grid' },
   wallet: { label: 'کیف پول کارسا', icon: 'wallet' },
-  orders: { label: 'سفارشات من', icon: 'orders' },
+  orders: { label: 'خریدهای من', icon: 'orders' },
+  fulfillment: { label: 'سفارش‌های قابل پردازش', icon: 'fulfillment' },
   products: { label: 'محصولات من', icon: 'products', entry: 'عرضهٔ محصول' },
   bulletin: { label: 'بولتن حمل‌ونقل', icon: 'bulletin', entry: 'آگهی حمل',
     help: 'آگهی برای همکاران واردشده قابل مشاهده است. شماره تماس یا نشانی دقیق را در متن نگذارید.', placeholder: 'شهر مبدأ و مقصد، نوع بار و زمان حمل' },
