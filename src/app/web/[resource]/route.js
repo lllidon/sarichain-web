@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 const routes = {
   login: { POST: '/web/login' },
   orders: { POST: '/web/orders' },
-  'delivery-options': { GET: '/web/delivery-options' },
+  'delivery-options': { GET: '/web/delivery-options', POST: '/web/delivery-options' },
   profile: { GET: '/web/profile', PATCH: '/web/profile' },
   'account-upgrades': { GET: '/web/account-upgrades', POST: '/web/account-upgrades' },
   vehicle: { GET: '/web/workspace/transport/vehicle', PATCH: '/web/workspace/transport/vehicle' },
