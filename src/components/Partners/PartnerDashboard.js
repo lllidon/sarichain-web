@@ -324,7 +324,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
           {section === 'profile' && children}
           {section === 'wallet' && <KarshaWallet wallet={data} />}
           {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
-          {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
+          {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && section !== 'wallet' && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
