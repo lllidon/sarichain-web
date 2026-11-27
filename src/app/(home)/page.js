@@ -88,7 +88,7 @@ function HomeHeader({ catalogData }) {
             <SolutionsMegaMenu />
             <li className="nav-item"><Link href="/categories" className="nav-link">بازار محصولات</Link></li>
             <li className="nav-item"><Link href="/suppliers" className="nav-link">تولیدکنندگان</Link></li>
-            <li className="nav-item"><Link href="/support" className="nav-link">پشتیبانی</Link></li>
+            <li className="nav-item"><Link href="/pilot" className="nav-link">راهنما و آموزش</Link></li>
           </ul>
         </nav>
       </div>
@@ -231,6 +231,7 @@ async function HomeCatalog({ catalogData }) {
   const live = catalog.length > 0;
   const products = live ? [...catalog].sort((a, b) => Number(cheapestVariant(b).orderable) - Number(cheapestVariant(a).orderable)).slice(0, 8) : examples;
   return <>
+    <HomeBenefits/>
     <CategoryList categories={categories}/>
     <section className="market-home-section market-home-product-section" aria-labelledby="market-products-title">
       <div className="market-home-section-heading">
@@ -261,10 +262,10 @@ function HomeFooter() {
         <Link href="/categories">همه محصولات</Link><Link href="/categories">دسته‌بندی‌ها</Link><Link href="/suppliers">تأمین‌کنندگان</Link><Link href="/pilot">سبد خرید هفتگی</Link>
       </div>
       <div className="market-home-footer-col"><h3>همکاری با ما</h3>
-        <Link href="/partners">ثبت‌نام و ورود همکاران</Link><Link href="/suppliers">دفترچه تأمین‌کنندگان</Link><Link href="/solutions">راهکارهای ساری‌چین</Link>
+        <Link href="/partners">ثبت‌نام و ورود همکاران</Link><Link href="/suppliers">دفترچه تأمین‌کنندگان</Link><Link href="/categories">راهکارهای ساری‌چین</Link>
       </div>
       <div className="market-home-footer-col"><h3>راهنما و پشتیبانی</h3>
-        <Link href="/support">مرکز پشتیبانی</Link><Link href="/support">راهنمای خرید و سفارش</Link><Link href="/support">ارتباط با ساری‌چین</Link>
+        <Link href="/pilot">راهنمای خرید و سفارش</Link><Link href="/partners">همکاری و ارتباط با ساری‌چین</Link>
       </div>
     </div>
     <div className="market-home-footer-bottom"><div className="market-home-shell">
