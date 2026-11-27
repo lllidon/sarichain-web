@@ -10,7 +10,7 @@ import { readCatalog } from '../../../components/Products/catalog-data';
 export const metadata = { title: 'فروشندگان و همکاران ساری‌چین', robots: { index: false, follow: true } };
 
 export default async function PartnersPage({ searchParams }) {
-  const { login, returnTo, section: selected, page: requestedPage, result: feedback } = await searchParams;
+  const { login, returnTo, section: selected, page: requestedPage, result: feedback, status: selectedStatus, order: selectedOrder } = await searchParams;
   const returnToCart = returnTo === 'cart';
   const section = typeof selected === 'string' && Object.hasOwn(sections, selected) ? selected : 'overview';
   const page = typeof requestedPage === 'string' && /^[1-9]\d{0,3}$/.test(requestedPage) ? Number(requestedPage) : 1;
@@ -53,15 +53,25 @@ export default async function PartnersPage({ searchParams }) {
   if (isList) {
     try {
       const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : '/web/workspace/' + section;
-      const result = await partnerBackend(path, { token, query: new URLSearchParams({ page, limit: 10 }).toString() });
+      const query = new URLSearchParams({ page, limit: 10, ...(section === 'orders' && { status }) });
+      const result = await partnerBackend(path, { token, query: query.toString() });
       if (result.status === 401) return <PartnerProfile returnToCart={returnToCart} initialMessage="نشست پایان یافته است. دوباره وارد شوید." />;
       if (result.ok) data = await result.json();
     } catch {
       // Navigation remains usable if the selected section is unavailable.
     }
   }
+  let orderDetail;
+  if (section === 'orders' && orderId) {
+    try {
+      const detail = await partnerBackend('/web/orders/' + orderId, { token });
+      if (detail.ok) orderDetail = await detail.json();
+    } catch {
+      orderDetail = null;
+    }
+  }
   return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback}
-    offerCatalog={offerCatalog} locations={await locations} unavailable={isList && !data}>
+    selectedStatus={status} orderDetail={orderDetail} locations={await locations} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
