@@ -101,7 +101,7 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} dataError={dataError} page={page} result={feedback}
-    selectedStatus={status} selectedFulfillmentStatus={fulfillmentStatus} selectedOrder={orderId} orderDetail={orderDetail} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
+    selectedStatus={status} selectedFulfillmentStatus={fulfillmentStatus} selectedOrder={orderId} orderDetail={orderDetail} offerCatalog={offerCatalog} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
