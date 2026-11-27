@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faMagnifyingGlass, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faMagnifyingGlass, faMinus, faPlus, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './CatalogProvider';
 import { categoryContains, cheapestVariant, normalizeCatalogSearch as normalize, productImage, productHref } from './catalog';
 import ProductPurchase from './ProductPurchase';
@@ -14,6 +14,44 @@ import './CategoriesPage.css';
 const pageSize = 12;
 const number = new Intl.NumberFormat('fa-IR');
 
+function CategoryTreeItem({ node, depth = 0, expandedPath, selected, counts, onSelect, onToggle }) {
+  const isExpanded = expandedPath[depth] === node.id;
+  const hasChildren = node.children.length > 0;
+  const nextPath = [...expandedPath.slice(0, depth), node.id];
+  return (
+    <li className={`catalog-category-node depth-${depth}`}>
+      <div className={selected === node.id ? 'catalog-category-row is-selected' : 'catalog-category-row'}>
+        {hasChildren ? <button type="button" className="catalog-category-expand" aria-label={isExpanded ? 'بستن زیرمجموعه‌ها' : 'باز کردن زیرمجموعه‌ها'}
+          aria-expanded={isExpanded} onClick={() => onToggle(nextPath)}><FontAwesomeIcon icon={isExpanded ? faMinus : faPlus} /></button>
+          : <span className="catalog-category-expand-placeholder" aria-hidden="true" />}
+        <label><input type="radio" name="catalog-category" checked={selected === node.id} onChange={() => onSelect(node, nextPath)} /><span>{node.name}</span></label>
+        <small>{counts.get(node.id) || 0}</small>
+      </div>
+      {hasChildren && isExpanded && <ul className="catalog-category-children">{node.children.map(child =>
+        <CategoryTreeItem key={child.id} node={child} depth={depth + 1} expandedPath={expandedPath} selected={selected}
+          counts={counts} onSelect={onSelect} onToggle={onToggle} />)}</ul>}
+    </li>
+  );
+}
+
+function makeCategoryTree(categories) {
+  const nodes = Object.entries(categories).map(([id, category]) => ({ id, ...category, children: [] }));
+  const byId = new Map(nodes.map(node => [node.id, node]));
+  const roots = [];
+  for (const node of nodes) { const parent = node.parentId ? byId.get(String(node.parentId)) : null; if (parent) parent.children.push(node); else roots.push(node); }
+  const sort = items => { items.sort((a, b) => a.name.localeCompare(b.name, 'fa')); items.forEach(item => sort(item.children)); };
+  sort(roots);
+  return roots;
+}
+
+function categoryPath(roots, selected) {
+  if (!selected || selected === 'all') return [];
+  const find = (nodes, path = []) => {
+    for (const node of nodes) { const next = [...path, node.id]; if (node.id === selected) return next; const nested = find(node.children, next); if (nested) return nested; }
+    return null;
+  };
+  return find(roots) || [];
+}
 function CatalogCard({ product, categoryName, onMessage }) {
   const href = productHref(product);
 
@@ -46,8 +84,10 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
 
   const pricePosition = value => 100 * (value - lowestPrice) / (highestPrice - lowestPrice || 1);
   const withinPriceBounds = value => Math.min(highestPrice, Math.max(lowestPrice, value));
-  const categoryOptions = [['all', 'همه محصولات'], ...Object.entries(categories).map(([id, category]) => [id, category.name])];
+  const categoryTree = useMemo(() => makeCategoryTree(categories), [categories]);
   const [category, setCategory] = useState(initialCategory);
+  const [expandedPath, setExpandedPath] = useState(() => categoryPath(categoryTree, initialCategory));
+  const categoryCounts = useMemo(() => new Map(Object.keys(categories).map(id => [id, products.filter(product => categoryContains(categories, id, product.category)).length])), [categories, products]);
   const [query, setQuery] = useState(initialQuery);
   const [unit, setUnit] = useState('');
   const [minimum, setMinimum] = useState('');
@@ -97,9 +137,14 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
     if (/^\d{0,7}(?:\.\d{0,6})?$/.test(input) && input !== '.') changeFilter(setter, input);
   }
 
-  function chooseCategory(id) {
+  function chooseCategory(id, path = []) {
     changeFilter(setCategory, id);
+    setExpandedPath(path);
     setDetail('');
+  }
+
+  function toggleCategoryPath(path) {
+    setExpandedPath(current => current.length === path.length && current.every((id, index) => id === path[index]) ? path.slice(0, -1) : path);
   }
 
   function reset() {
@@ -158,15 +203,18 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
                   {brands.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}
                 </select>
               </div>
-              <fieldset className="catalog-filter-group">
+              <fieldset className="catalog-filter-group catalog-category-filter">
                 <legend>دسته‌بندی</legend>
-                {categoryOptions.map(([id, label]) => (
-                  <label key={id} className={category === id ? 'is-selected' : ''}>
-                    <input type="radio" name="catalog-category" checked={category === id} onChange={() => chooseCategory(id)} />
-                    <span>{label}</span>
-                    <small>{number.format(id === 'all' ? products.length : products.filter(product => product.category === id).length)}</small>
-                  </label>
-                ))}
+                <div className={category === 'all' ? 'catalog-category-row is-selected' : 'catalog-category-row'}>
+                  <span className="catalog-category-expand-placeholder" aria-hidden="true" />
+                  <label><input type="radio" name="catalog-category" checked={category === 'all'} onChange={() => chooseCategory('all', [])} /><span>همه محصولات</span></label>
+                  <small>{number.format(products.length)}</small>
+                </div>
+                <ul className="catalog-category-tree">
+                  {categoryTree.map(node => <CategoryTreeItem key={node.id} node={node} expandedPath={expandedPath} selected={category}
+                    counts={categoryCounts} onSelect={(item, path) => chooseCategory(item.id, item.children.length ? path : path.slice(0, -1))}
+                    onToggle={toggleCategoryPath} />)}
+                </ul>
               </fieldset>
 
               {category !== 'all' && (
