@@ -1,6 +1,6 @@
 export const sections = {
   overview: { label: 'داشبورد', icon: 'grid' },
-  orders: { label: 'سفارش‌های جاری من', icon: 'orders' },
+  orders: { label: 'سفارشات من', icon: 'orders' },
   products: { label: 'محصولات من', icon: 'products', entry: 'عرضهٔ محصول' },
   bulletin: { label: 'بولتن حمل‌ونقل', icon: 'bulletin', entry: 'آگهی حمل',
     help: 'آگهی برای همکاران واردشده قابل مشاهده است. شماره تماس یا نشانی دقیق را در متن نگذارید.', placeholder: 'شهر مبدأ و مقصد، نوع بار و زمان حمل' },
