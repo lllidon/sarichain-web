@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faMagnifyingGlass, faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 
-const slides = [
+const defaultSlides = [
   {
     eyebrow: 'از ریشه تا سفره',
     title: 'تازه‌ترین محصولات،\nمستقیم از تولیدکننده',
@@ -38,16 +38,18 @@ const slides = [
   },
 ];
 
-export default function HomeHeroCarousel() {
+export default function HomeHeroCarousel({ slides: managedSlides = [] }) {
+  const slides = managedSlides.length ? managedSlides : defaultSlides;
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const move = useCallback((step) => setActive(index => (index + step + slides.length) % slides.length), []);
+
+  useEffect(() => setActive(0), [slides.length]);
 
   useEffect(() => {
     if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const timer = window.setInterval(() => setActive(index => (index + 1) % slides.length), 6500);
     return () => window.clearInterval(timer);
-  }, [paused]);
+  }, [paused, slides.length]);
 
   const slide = slides[active];
   return <section className="market-home-carousel" aria-roledescription="اسلایدر" aria-label="معرفی ساری‌چین"
@@ -73,15 +75,8 @@ export default function HomeHeroCarousel() {
     </div>
     <div className="market-home-carousel-controls">
       <div className="market-home-carousel-dots" role="group" aria-label="انتخاب اسلاید">
-        {slides.map((item, index) => <button key={item.tone} type="button" className={active === index ? 'active' : ''}
+        {slides.map((item, index) => <button key={item._id || item.tone || index} type="button" className={active === index ? 'active' : ''}
           aria-label={'نمایش اسلاید ' + (index + 1)} aria-pressed={active === index} onClick={() => setActive(index)} />)}
-      </div>
-      <div className="market-home-carousel-arrows">
-        <button type="button" onClick={() => move(-1)} aria-label="اسلاید قبلی"><FontAwesomeIcon icon={faArrowRight}/></button>
-        <button type="button" onClick={() => move(1)} aria-label="اسلاید بعدی"><FontAwesomeIcon icon={faArrowLeft}/></button>
-        <button type="button" onClick={() => setPaused(value => !value)} aria-label={paused ? 'ادامه اسلایدر' : 'توقف اسلایدر'}>
-          <FontAwesomeIcon icon={paused ? faPlay : faPause}/>
-        </button>
       </div>
     </div>
     <span className="market-home-slide-count"><b>0{active + 1}</b><i />0{slides.length}</span>
