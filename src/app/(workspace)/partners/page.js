@@ -52,6 +52,10 @@ export default async function PartnersPage({ searchParams }) {
   const producerProducts = offerCatalog ? offerCatalog.catalog.flatMap(product => [product, ...product.variants])
     .filter(product => allowedCategoryIds.has(product.category))
     .map(({ id, name, code, brand, brandId, category, unit }) => ({ id, name, code, brand, brandId, category, unit })) : [];
+  const producerBrandIds = new Set(producerProducts.map(product => product.brandId).filter(Boolean));
+  const producerBrands = offerCatalog
+    ? offerCatalog.brands.filter(brand => producerBrandIds.has(brand._id))
+    : [];
   const locations = canOffer ? partnerBackend('/web/workspace/orchards/options', { token })
     .then(response => response.ok ? response.json() : null).catch(() => null) : null;
   const isList = section !== 'overview' && section !== 'profile';
@@ -101,7 +105,8 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} dataError={dataError} page={page} result={feedback}
-    selectedStatus={status} selectedFulfillmentStatus={fulfillmentStatus} selectedOrder={orderId} orderDetail={orderDetail} offerCatalog={offerCatalog} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
+    selectedStatus={status} selectedFulfillmentStatus={fulfillmentStatus} selectedOrder={orderId} orderDetail={orderDetail} offerCatalogAvailable={Boolean(offerCatalog && !offerCatalog.unavailable)} producerCategories={producerCategories}
+    producerProducts={producerProducts} producerBrands={producerBrands} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
