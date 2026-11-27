@@ -206,6 +206,7 @@ export default function CartPage({ initialMessage = '' }) {
       })), orderRequest, {
         method: selected.id, dispatchDate: date, slot,
         destination: { latitude: Number(destination.latitude), longitude: Number(destination.longitude) },
+        quotedFee: selected.fee, quotedRouteMode: selected.routeMode, quotedDistanceKm: selected.distanceKm,
       }, account.revision);
       setMessage('درخواست ثبت شد. کد پیگیری ' + result.id);
       await account.request().catch(() => {});
