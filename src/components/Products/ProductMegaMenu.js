@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faChevronDown, faLeaf } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './CatalogProvider';
-import { productHref, productImage } from './catalog';
+import { cheapestVariant, productHref, productImage } from './catalog';
+import ProductPurchase from './ProductPurchase';
 
 const fallbackImage = '/img/catalog/field.webp';
 const fallbackBrandImage = '/img/sarichain-icon.svg';
@@ -27,7 +28,7 @@ export default function ProductMegaMenu() {
   const descendants = useMemo(() => {
     if (!selectedRoot) return [];
     const children = Object.entries(categories).filter(([, category]) => category.parentId === selectedRoot.id);
-    return children.map(([id, category]) => ({
+    return children.slice(0, 4).map(([id, category]) => ({
       id, ...category,
       children: Object.entries(categories).filter(([, child]) => child.parentId === id)
         .map(([childId, child]) => ({ id: childId, ...child })),
@@ -37,7 +38,10 @@ export default function ProductMegaMenu() {
   const relatedProducts = useMemo(() => {
     if (!selectedRoot) return [];
     const ids = new Set([selectedRoot.id, ...descendants.flatMap(child => [child.id, ...child.children.map(item => item.id)])]);
-    return catalog.filter(product => ids.has(product.category)).slice(0, 6);
+    return catalog.filter(product => ids.has(product.category))
+      .map(product => ({ product, listing: cheapestVariant(product) }))
+      .sort((a, b) => Number(Boolean(b.listing.offer && b.listing.orderable)) - Number(Boolean(a.listing.offer && a.listing.orderable)))
+      .slice(0, 6);
   }, [catalog, descendants, selectedRoot]);
 
   const categoryCounts = useMemo(() => {
@@ -135,6 +139,7 @@ export default function ProductMegaMenu() {
                     مشاهده همه <FontAwesomeIcon icon={faArrowLeft} />
                   </Link>
                 </header>
+                {selectedRoot.description && <p className="nav-products-description">{selectedRoot.description}</p>}
                 <div className="nav-products-columns">
                   <div className="nav-products-subcategories">
                     {descendants.map(child => (
@@ -142,7 +147,7 @@ export default function ProductMegaMenu() {
                         <Link className="nav-products-category" href={{ pathname: '/categories', query: { category: child.id } }} onClick={closeMenu}>
                           {child.name}
                         </Link>
-                        {child.children.map(grandchild => (
+                        {child.children.slice(0, 3).map(grandchild => (
                           <Link key={grandchild.id} href={{ pathname: '/categories', query: { category: grandchild.id } }} onClick={closeMenu}>
                             {grandchild.name}
                           </Link>
@@ -153,15 +158,20 @@ export default function ProductMegaMenu() {
                   </div>
 
                   <div className="nav-products-featured">
-                    <h3>محصولات این دسته</h3>
-                    {relatedProducts.length ? relatedProducts.map(product => (
-                      <Link key={product.id} href={productHref(product)} onClick={closeMenu}>
-                        <Image src={productImage(product)} alt="" width={54} height={54} unoptimized />
-                        <span>{product.name}</span>
-                      </Link>
+                    <h3>محصولات ویژه این دسته</h3>
+                    {relatedProducts.length ? relatedProducts.map(({ product, listing }) => (
+                      <article className="nav-products-featured-card" key={product.id}>
+                        <Link className="nav-products-featured-image" href={productHref(product)} onClick={closeMenu}>
+                          <Image src={productImage(listing)} alt={listing.name} width={68} height={68} unoptimized />
+                        </Link>
+                        <div className="nav-products-featured-info">
+                          <Link className="nav-products-featured-name" href={productHref(product)} onClick={closeMenu}>{product.name}</Link>
+                          <ProductPurchase product={listing} className="nav-products-featured-purchase" />
+                        </div>
+                      </article>
                     )) : <p>محصولی در این دسته ثبت نشده است.</p>}
                     <Link className="nav-products-view-all" href={{ pathname: '/categories', query: { category: selectedRoot.id } }} onClick={closeMenu}>
-                      مشاهده محصولات این دسته <FontAwesomeIcon icon={faArrowLeft} />
+                      مشاهده همه محصولات این دسته <FontAwesomeIcon icon={faArrowLeft} />
                     </Link>
                   </div>
                 </div>
