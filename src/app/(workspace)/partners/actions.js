@@ -75,6 +75,28 @@ export async function saveProductOffer(_state, formData) {
   redirect(partnerHref('products') + '&result=saved');
 }
 
+export async function saveProductOfferLocation(formData) {
+  const token = (await cookies()).get(partnerSessionCookie)?.value;
+  if (!token) redirect('/partners');
+  const offerId = formData.get('offerId');
+  const locationId = formData.get('locationId');
+  const href = partnerHref('products');
+  if (typeof offerId !== 'string' || !/^[a-f0-9]{24}$/i.test(offerId) ||
+      typeof locationId !== 'string' || !/^[a-f0-9]{24}$/i.test(locationId)) {
+    redirect(href + '&result=invalid');
+  }
+  let response;
+  try {
+    response = await partnerBackend('/web/workspace/products/offers/' + offerId + '/location', {
+      token, method: 'PATCH', body: JSON.stringify({ locationId }),
+    });
+  } catch {
+    redirect(href + '&result=locationError');
+  }
+  if (response.status === 401) redirect('/partners');
+  redirect(href + '&result=' + (response.ok ? 'locationSaved' : 'locationError'));
+}
+
 export async function saveWorkspaceLocation(_state, formData) {
   const token = (await cookies()).get(partnerSessionCookie)?.value;
   if (!token) redirect('/partners');
