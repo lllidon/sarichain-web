@@ -103,6 +103,52 @@ function UpgradeForm({ kind, categories, onSubmitted }) {
   </form>;
 }
 
+function ProducerCategoryEditor({ profile, categories, onSubmitted, pending }) {
+  const current = profile?.allowedProductCategoryIds || [];
+  const [selected, setSelected] = useState(current);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const changed = selected.length !== current.length || selected.some(id => !current.includes(id));
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!selected.length) { setError('حداقل یک دسته‌بندی باید فعال بماند.'); return; }
+    setBusy(true); setError(''); setMessage('');
+    try {
+      await api('account-upgrades/producer-categories', {
+        method: 'POST', body: { requestedCategoryIds: selected },
+      });
+      setMessage('درخواست تغییر دسته‌بندی‌ها برای تأیید مدیریت ارسال شد. تا زمان تأیید، مجوزهای فعلی شما فعال می‌مانند.');
+      onSubmitted();
+    } catch (failure) { setError(failure.message || 'ارسال درخواست انجام نشد.'); }
+    finally { setBusy(false); }
+  }
+
+  return <form className="account-upgrade-form" onSubmit={submit}>
+    <h4>مدیریت دسته‌بندی‌های مجاز عرضه</h4>
+    <p>دسته‌بندی‌های موردنظر را انتخاب کنید. اضافه یا حذف آن‌ها پس از تأیید مدیریت اعمال می‌شود و تا آن زمان مجوزهای فعلی شما تغییر نمی‌کند.</p>
+    <fieldset className="account-upgrade-categories">
+      <legend>دسته‌بندی‌های درخواستی</legend>
+      {categories.map(category => <label key={category._id}>
+        <input type="checkbox" checked={selected.includes(category._id)}
+          onChange={event => setSelected(currentIds => event.target.checked
+            ? [...currentIds, category._id]
+            : currentIds.filter(id => id !== category._id))}/>
+        {category.name}
+        {current.includes(category._id) && <small> · مجاز فعلی</small>}
+      </label>)}
+    </fieldset>
+    {error && <p className="partner-error" role="alert">{error}</p>}
+    {message && <p className="partner-message" role="status">{message}</p>}
+    {pending
+      ? <p className="partner-status">درخواست تغییر دسته‌بندی در انتظار بررسی مدیریت است.</p>
+      : <button className="partner-primary" disabled={busy || !changed}>
+        {busy ? 'در حال ارسال…' : 'ارسال تغییرات برای تأیید'}
+      </button>}
+  </form>;
+}
+
 export default function AccountUpgradeCenter({ profile, categories = [] }) {
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState('');
@@ -119,6 +165,7 @@ export default function AccountUpgradeCenter({ profile, categories = [] }) {
     return () => { active = false; };
   }, [revision]);
   const pending = kind => requests.some(item => item.kind === kind && item.status === 'pending');
+  const categoryChangePending = pending('producer_categories');
   const approved = kind => kind === 'transport' ? profile?.capabilities?.drive : profile?.capabilities?.sell;
   return <section className="account-upgrade-center">
     <header><h3>ارتقای سطح حساب</h3><p>حساب پایه رایگان است. برای فعال‌سازی فعالیت‌های تخصصی، درخواست خود را همراه مدارک ارسال کنید. بررسی و تأیید توسط مدیریت انجام می‌شود.</p></header>
@@ -128,7 +175,12 @@ export default function AccountUpgradeCenter({ profile, categories = [] }) {
         {approved('transport') ? <p className="partner-status approved">صلاحیت حمل‌ونقل شما تأیید شده است و بخش حمل‌ونقل در پنل فعال است.</p> : pending('transport') ? <p>درخواست حمل‌ونقل شما در انتظار بررسی است.</p> : <UpgradeForm key={'transport-' + revision} kind="transport" categories={categories} onSubmitted={() => setRevision(x => x + 1)} />}
       </div>
       <div className="account-upgrade-card">
-        {approved('producer') ? <p className="partner-status approved">صلاحیت تولیدکنندگی شما تأیید شده است. دسته‌بندی‌های مجاز برای عرضه فعال هستند.</p> : pending('producer') ? <p>درخواست تولیدکنندگی شما در انتظار بررسی است.</p> : <UpgradeForm key={'producer-' + revision} kind="producer" categories={categories} onSubmitted={() => setRevision(x => x + 1)} />}
+        {approved('producer')
+          ? <><p className="partner-status approved">صلاحیت تولیدکنندگی شما تأیید شده است.</p>
+              <ProducerCategoryEditor profile={profile} categories={categories}
+                pending={categoryChangePending} onSubmitted={() => setRevision(x => x + 1)} /></>
+          : pending('producer') ? <p>درخواست تولیدکنندگی شما در انتظار بررسی است.</p>
+          : <UpgradeForm key={'producer-' + revision} kind="producer" categories={categories} onSubmitted={() => setRevision(x => x + 1)} />}
       </div>
     </div>
     {requests.length > 0 && <div className="account-upgrade-history"><h4>وضعیت درخواست‌های من</h4>
