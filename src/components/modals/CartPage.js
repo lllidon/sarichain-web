@@ -269,8 +269,8 @@ export default function CartPage({ initialMessage = '' }) {
           <p>برای اقلام زیر، اطلاعات واقعی حمل در کاتالوگ کامل نبوده و مقدار تخمینی زیر فقط برای محاسبه کرایه استفاده شده است:</p>
           <ul>{selected.defaultsApplied.map((item, index) => <li key={item.productId + ':' + index}>
             <b>{item.productName}</b>
-            <span>{item.defaultWeight ? 'وزن پیش‌فرض: ۱ کیلوگرم برای هر واحد' : 'وزن ثبت‌شده محصول'}</span>
-            <span>{item.defaultVolume ? `حجم تخمینی: ${number.format(item.unitVolumeLiters)} لیتر برای هر واحد (چگالی ${number.format(item.densityKgM3)} kg/m³)` : 'حجم بر اساس ابعاد ثبت‌شده'}</span>
+            <span>{item.defaultWeight ? 'وزن پیش‌فرض: ۱ کیلوگرم برای هر واحد اصلی محصول' : 'وزن ثبت‌شده محصول'}</span>
+            <span>{item.defaultVolume ? `حجم تخمینی: ${number.format(item.unitVolumeLiters)} لیتر برای هر واحد اصلی محصول (چگالی ${number.format(item.densityKgM3)} kg/m³)` : 'حجم بر اساس ابعاد ثبت‌شده'}</span>
           </li>)}</ul>
           <small>این مقادیر، مشخصات اندازه‌گیری‌شده کالا نیستند. برای کرایه دقیق‌تر، وزن و ابعاد واقعی را در اطلاعات محصول ثبت کنید.</small>
         </section>}
