@@ -34,9 +34,9 @@ function CatalogCard({ product, categoryName, onMessage }) {
   );
 }
 
-export default function CategoriesPage({ initialCategory = 'all', initialDetail = '', initialQuery = '' }) {
+export default function CategoriesPage({ initialCategory = 'all', initialDetail = '', initialQuery = '', initialBrand = '' }) {
   const { catalog, categories, brands, unavailable: backendUnavailable } = useCatalog();
-  const [brand, setBrand] = useState('');
+  const [brand, setBrand] = useState(initialBrand);
   const products = catalog.map(product => ({ ...product, listing: cheapestVariant(product) }));
   const priced = products.filter(product => product.listing.offer);
   const units = [...new Set(products.flatMap(product => [product.unit, ...product.saleUnits.map(option => option.name)]))];
@@ -72,7 +72,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
     (!maximum || (product.listing.offer && product.listing.price.min <= Number(maximum))) &&
     (!form || product.form === form) &&
     (!detail || product.detail === detail) &&
-    [product.name, product.code, product.brand, categories[product.category].name].some(value => normalize(value).includes(search))
+    [product.name, product.code, product.brand, categories[product.category]?.name || 'سایر محصولات'].some(value => normalize(value).includes(search))
   );
   if (sort === 'lowest' || sort === 'highest') {
     const direction = sort === 'lowest' ? 1 : -1;
@@ -171,7 +171,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
 
               {category !== 'all' && (
                 <div className="catalog-filter-group catalog-detail">
-                  <label htmlFor="catalog-detail">{categories[category].filter}</label>
+                  <label htmlFor="catalog-detail">{categories[category]?.filter || 'کاربرد'}</label>
                   <select id="catalog-detail" value={detail} onChange={event => changeFilter(setDetail, event.target.value)}>
                     <option value="">همه گزینه‌ها</option>
                     {details.map(value => <option key={value}>{value}</option>)}
@@ -238,7 +238,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
               </label>
             </div>
             <div className="catalog-results-heading" ref={resultsHeading} tabIndex={-1}>
-              <h2>{category === 'all' ? 'همه محصولات' : categories[category].name}</h2>
+              <h2>{category === 'all' ? 'همه محصولات' : categories[category]?.name || 'سایر محصولات'}</h2>
               <span role="status">{number.format(results.length)} محصول</span>
             </div>
 
