@@ -1,5 +1,6 @@
 export const sections = {
   overview: { label: 'داشبورد', icon: 'grid' },
+  wallet: { label: 'کیف پول کارسا', icon: 'wallet' },
   orders: { label: 'سفارشات من', icon: 'orders' },
   products: { label: 'محصولات من', icon: 'products', entry: 'عرضهٔ محصول' },
   bulletin: { label: 'بولتن حمل‌ونقل', icon: 'bulletin', entry: 'آگهی حمل',
