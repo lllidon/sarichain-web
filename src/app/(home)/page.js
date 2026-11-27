@@ -275,14 +275,26 @@ function HomeFooter() {
   </footer>;
 }
 
+async function readHomeSlides() {
+  try {
+    const url = new URL('/web/home-slides', process.env.BACKEND_URL || 'http://127.0.0.1:3001');
+    const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(2500) });
+    if (!response.ok) return [];
+    const slides = await response.json();
+    return Array.isArray(slides) ? slides.filter(slide => slide && slide.isActive !== false && slide.imageUrl && slide.title) : [];
+  } catch {
+    return [];
+  }
+}
+
 export const metadata = { description: 'بازار چندفروشندگی ساری‌چین برای خرید محصولات و نهاده‌های کشاورزی از تولیدکنندگان.' };
 
 export default async function HomePage() {
-  const catalogData = await readCatalog('home');
+  const [catalogData, slides] = await Promise.all([readCatalog('home'), readHomeSlides()]);
   return <div className="market-home">
     <HomeHeader catalogData={catalogData} />
     <main className="market-home-shell">
-      <HomeHeroCarousel />
+      <HomeHeroCarousel slides={slides} />
       <div className="market-home-paths">
         <WeeklyBasket />
         <Suspense fallback={<div className="market-home-member" aria-busy="true" />}><AccountSection /></Suspense>
