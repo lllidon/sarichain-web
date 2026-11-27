@@ -272,14 +272,14 @@ function SellerOrderCard({ order }) {
     {!step && <p className="seller-order-done"><FontAwesomeIcon icon={faCircleCheck}/> تحویل به حمل‌کننده ثبت شده است.</p>}
   </article>;
 }
-function SellerOrders({ data }) {
+function SellerOrders({ data, selectedStatus = 'active' }) {
   const tabs = [['active','در جریان',data?.counts?.active || 0],['completed','تحویل به حمل',data?.counts?.handed_over || 0]];
   return <section className="seller-fulfillment">
     <div className="seller-fulfillment-intro"><div><h2>سفارش‌هایی که باید آماده و تحویل دهید</h2>
       <p>فقط اقلامی نمایش داده می‌شود که از عرضه‌های ثبت‌شده توسط حساب شما خریداری شده‌اند.</p></div>
       <div className="seller-fulfillment-total"><strong>{number.format(data?.counts?.active || 0)}</strong><span>سفارش فعال</span></div>
     </div>
-    <nav className="seller-fulfillment-tabs">{tabs.map(([key,label,count])=><span key={key} className={key==='active'?'active':''}>{label}<b>{number.format(count)}</b></span>)}</nav>
+    <nav className="seller-fulfillment-tabs" aria-label="فیلتر سفارش‌های قابل پردازش">{tabs.map(([key,label,count])=><Link key={key} href={partnerHref('fulfillment') + '&fulfillmentStatus=' + key} className={selectedStatus===key?'active':''} aria-current={selectedStatus===key?'page':undefined}>{label}<b>{number.format(count)}</b></Link>)}</nav>
     {!data?.items?.length ? <div className="partner-empty"><p>در حال حاضر سفارش قابل پردازشی برای عرضه‌های شما ثبت نشده است.</p>
       <Link href={partnerHref('products')}>مدیریت عرضه‌های من</Link></div> :
       <div className="seller-order-grid">{data.items.map(order=><SellerOrderCard key={order.id} order={order}/>)}</div>}
@@ -406,7 +406,7 @@ function KarshaWallet({ wallet }) {
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, overviewData, selectedStatus, selectedOrder, orderDetail, children }) {
+export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, overviewData, selectedStatus, selectedFulfillmentStatus, selectedOrder, orderDetail, children }) {
   const info = sections[section];
   const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
     .filter(([key]) => key !== 'bulletin' || profile.capabilities?.drive);
@@ -447,7 +447,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
           {section === 'overview' && <DashboardOverview profile={profile} overviewData={overviewData} />}
           {section === 'profile' && children}
           {section === 'wallet' && <KarshaWallet wallet={data} />}
-          {section === 'fulfillment' && <SellerOrders data={data} />}
+          {section === 'fulfillment' && <SellerOrders data={data} selectedStatus={selectedFulfillmentStatus} />}
           {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
           {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && !['wallet', 'fulfillment'].includes(section) && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
