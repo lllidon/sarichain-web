@@ -541,3 +541,30 @@
   padding-top:5px;
 }
 .partner-kar-balance > a:hover { text-decoration:underline; }
+
+
+.karsha-wallet { display:grid; gap:14px; min-width:0; }
+.karsha-wallet-balance { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:18px; border:1px solid var(--dash-line); border-radius:14px; background:#edf6ef; }
+.karsha-wallet-balance > div,.karsha-wallet-stats article { display:grid; gap:7px; min-width:0; }
+.karsha-wallet-balance span,.karsha-wallet-stats span { color:var(--dash-muted); font-size:.78rem; }
+.karsha-wallet-balance strong { font-size:clamp(1.2rem,3vw,1.8rem); overflow-wrap:anywhere; color:var(--dash-brand); }
+.karsha-wallet-balance strong small { font-size:.8rem; }
+.karsha-wallet-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.karsha-wallet-stats article { padding:12px; border:1px solid var(--dash-line); border-radius:11px; background:#fff; }
+.karsha-wallet-stats strong { font-size:.9rem; overflow-wrap:anywhere; }
+.karsha-wallet-lots,.karsha-wallet-history { display:grid; gap:10px; padding:14px; border:1px solid var(--dash-line); border-radius:13px; background:#fff; }
+.karsha-wallet-lots > header,.karsha-wallet-history > header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.karsha-wallet-lots h3,.karsha-wallet-history h3 { margin:0; font-size:1rem; }
+.karsha-wallet-lots header small,.karsha-wallet-history header small { color:var(--dash-muted); font-size:.72rem; }
+.karsha-lot-list,.karsha-transaction-list { display:grid; }
+.karsha-lot-list article,.karsha-transaction-list article { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:11px 2px; border-top:1px solid var(--dash-line); }
+.karsha-lot-list article > div,.karsha-transaction-list article > div { display:grid; gap:4px; min-width:0; }
+.karsha-lot-list strong,.karsha-transaction-list strong { font-size:.85rem; }
+.karsha-lot-list small,.karsha-transaction-list small { color:var(--dash-muted); font-size:.72rem; line-height:1.8; overflow-wrap:anywhere; }
+.karsha-transaction-list article > div:last-child { text-align:left; }
+.karsha-transaction-list .positive { color:#16834b; }
+.karsha-transaction-list .negative { color:#b43b45; }
+.karsha-wallet-note { margin:0; padding:11px; border-radius:9px; background:#f5f7f3; color:var(--dash-muted); font-size:.75rem; line-height:1.9; }
+.partner-kar-balance > a { color:inherit; text-decoration:none; }
+@media(max-width:700px) { .karsha-wallet-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:480px) { .karsha-wallet-balance { grid-template-columns:1fr; } .karsha-lot-list article,.karsha-transaction-list article { align-items:flex-start; } }
