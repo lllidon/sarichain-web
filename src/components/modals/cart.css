@@ -438,3 +438,11 @@
 .checkout-defaults-note li { display:grid; gap:2px; }
 .checkout-defaults-note li b { color:var(--cart-ink); font-size:11px; }
 .checkout-defaults-note small { color:var(--cart-muted); }
+
+.checkout-address-select { display:grid; gap:5px; color:var(--cart-muted); font-size:11px; }
+.checkout-address-select select { width:100%; min-width:0; padding:9px 10px; border:1px solid var(--cart-border); border-radius:8px; background:#fff; color:var(--cart-ink); font:inherit; }
+.checkout-address-preview { display:grid; gap:4px; padding:10px; border:1px solid var(--cart-border); border-radius:8px; background:#fff; font-size:11px; }
+.checkout-address-preview strong { color:var(--cart-green); }
+.checkout-address-preview span,.checkout-address-preview p { margin:0; color:var(--cart-muted); line-height:1.8; }
+.checkout-address-preview small { color:var(--cart-green); }
+.checkout-address-settings { width:fit-content; color:var(--cart-green); font-size:11px; text-decoration:underline; text-underline-offset:3px; }
