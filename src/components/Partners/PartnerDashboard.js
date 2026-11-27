@@ -1,7 +1,7 @@
 import { formatPrice } from '../Products/price';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen, faWallet } from '@fortawesome/free-solid-svg-icons';
 import { importProductOffers, leaveWorkspace, saveProductOfferLocation, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
@@ -11,7 +11,7 @@ import PartnerOfferExcelActions from './PartnerOfferExcelActions';
 import './PartnerDashboard.css';
 
 const icons = {
-  grid: faBorderAll, orders: faClipboardList, products: faBox,
+  grid: faBorderAll, orders: faClipboardList, products: faBox, wallet: faWallet,
   bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
 };
 const feedback = {
@@ -236,6 +236,47 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
   </div>;
 }
 
+
+function KarshaWallet({ wallet }) {
+  const precise = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 8 });
+  const transactionLabels = {
+    credit: 'افزایش کارسا', onboarding: 'هدیه تکمیل مدارک', debit: 'کاهش کارسا',
+    purchase: 'پرداخت خرید', conversion: 'تبدیل به تومان', decay: 'کاهش ماهانه',
+    admin_adjustment: 'اصلاح مدیریتی', admin_debit: 'کاهش مدیریتی',
+  };
+  const signed = value => (Number(value) > 0 ? '+' : '') + precise.format(Number(value || 0));
+  return <div className="karsha-wallet">
+    <section className="karsha-wallet-balance">
+      <div><span>موجودی قابل استفاده</span><strong>{precise.format(wallet?.balance ?? 0)} <small>کارسا</small></strong></div>
+      <div><span>معادل تومانی با نرخ ثبت‌شده</span><strong>{wallet?.equivalentToman == null ? 'نرخ تعیین نشده' : money(wallet.equivalentToman) + ' تومان'}</strong></div>
+    </section>
+    <section className="karsha-wallet-stats">
+      <article><span>نرخ هر کارسا</span><strong>{wallet?.rateTomanPerKarsha == null ? 'تعیین نشده' : money(wallet.rateTomanPerKarsha) + ' تومان'}</strong></article>
+      <article><span>کاهش سالانه</span><strong>۰٫۲٪</strong></article>
+      <article><span>کاهش ماهانه مرکب</span><strong>{precise.format((wallet?.monthlyDecayRate ?? 0) * 100)}٪</strong></article>
+      <article><span>ماهگرد بعدی</span><strong>{wallet?.nextDecayAt ? dateTime.format(new Date(wallet.nextDecayAt)) : '—'}</strong></article>
+    </section>
+    <section className="karsha-wallet-lots">
+      <header><h3>واریزهای مصرف‌نشده</h3><small>مصرف به ترتیب قدیمی‌ترین واریز (FIFO)</small></header>
+      {!wallet?.lots?.length ? <p className="partner-empty">هنوز سهمیه کارسای فعالی ثبت نشده است.</p> :
+        <div className="karsha-lot-list">{wallet.lots.map(lot => <article key={String(lot.id)}>
+          <div><strong>{lot.source === 'onboarding' ? 'هدیه تکمیل مدارک' : lot.source === 'legacy_migration' ? 'موجودی قبلی' : 'واریز کارسا'}</strong>
+            <small>تاریخ واریز: {orderDateTime(lot.createdAt)}</small></div>
+          <div><b>{precise.format(lot.remainingAmount)} کارسا</b><small>از {precise.format(lot.originalAmount)} · ماهگرد بعدی: {orderDateTime(lot.nextDecayAt)}</small></div>
+        </article>)}</div>}
+    </section>
+    <section className="karsha-wallet-history">
+      <header><h3>تاریخچه افزایش و کاهش کارسا</h3><small>آخرین ۲۰ تراکنش</small></header>
+      {!wallet?.transactions?.length ? <p className="partner-empty">تراکنشی ثبت نشده است.</p> :
+        <div className="karsha-transaction-list">{wallet.transactions.map(item => <article key={String(item._id)}>
+          <div><strong>{transactionLabels[item.type] || item.type}</strong><small>{item.reason || '—'} · {orderDateTime(item.createdAt)}</small></div>
+          <div className={Number(item.amount) >= 0 ? 'positive' : 'negative'}><b>{signed(item.amount)} کارسا</b><small>مانده: {precise.format(item.balanceAfter ?? 0)}</small></div>
+        </article>)}</div>}
+    </section>
+    <p className="karsha-wallet-note">کاهش ماهانه فقط از مانده مصرف‌نشده هر واریز و پس از ماهگرد همان واریز محاسبه می‌شود. نرخ تبدیل در زمان هر تراکنش ثبت می‌شود.</p>
+  </div>;
+}
+
 export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, selectedStatus, selectedOrder, orderDetail, children }) {
   const info = sections[section];
   const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
@@ -251,7 +292,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
             <div><strong>{profile.fullName || 'همکار ساری‌چین'}</strong><small>حساب ساری‌چین</small></div>
           </div>
           <div className="partner-kar-balance">
-            <span>مانده کارسای مشتری</span>
+            <Link href={partnerHref('wallet')}><span>مانده کارسای مشتری</span></Link>
             <strong>{number.format(profile.karshaBalance ?? 0)} کارسا</strong>
             {profile.onboardingKarshaAwarded
               ? <small>هدیه تکمیل و تأیید مدارک به اعتبار شما افزوده شده است.</small>
@@ -281,6 +322,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
             </Link>)}
           </div>}
           {section === 'profile' && children}
+          {section === 'wallet' && <KarshaWallet wallet={data} />}
           {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
           {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
