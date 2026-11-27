@@ -93,7 +93,7 @@ export default function ProductPurchase({ product, className, children, onMessag
           </>
         ) : (
           <div className="catalog-card-price">
-            <strong>{offerId ? formatPrice(product.price) : 'در انتظار اعلام قیمت از سوی فروشنده'}</strong>
+            <strong>{offerId ? formatPrice(product.price) : 'فروشنده هنوز قیمت ثبت نکرده است'}</strong>
             {offerId && <small> · موجودی قابل سفارش نیست</small>}
             
           </div>
