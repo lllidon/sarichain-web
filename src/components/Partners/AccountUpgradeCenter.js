@@ -8,7 +8,7 @@ const documentLabels = {
   vehicleCard: 'تصویر کارت خودرو',
   productionProof: 'مدرک مالکیت یا فعالیت تولیدی',
 };
-const requestLabels = { transport: 'حمل‌ونقل', producer: 'تولیدکننده' };
+const requestLabels = { transport: 'حمل‌ونقل', producer: 'تولیدکننده', producer_categories: 'دسترسی دسته‌بندی‌های جدید' };
 const statusLabels = { pending: 'در انتظار بررسی', approved: 'تأیید شده', rejected: 'نیازمند اصلاح / رد شده' };
 const vehicleTypes = { motorcycle: 'موتورسیکلت', car: 'خودروی شخصی', pickup: 'وانت', van: 'ون', truckette: 'کامیونت', truck: 'کامیون' };
 
@@ -134,6 +134,7 @@ export default function AccountUpgradeCenter({ profile, categories = [] }) {
     {requests.length > 0 && <div className="account-upgrade-history"><h4>وضعیت درخواست‌های من</h4>
       {requests.map(item => <article key={item._id}><strong>{requestLabels[item.kind] || item.kind}</strong>
         <span className={'partner-status ' + (item.status === 'approved' ? 'approved' : '')}>{statusLabels[item.status] || item.status}</span>
+        {item.requestedCategoryLabels?.length > 0 && <p>دسته‌بندی‌ها: {item.requestedCategoryLabels.join('، ')}</p>}
         {item.reviewNote && <p>{item.reviewNote}</p>}
       </article>)}
     </div>}
