@@ -485,3 +485,70 @@
   .market-home-categories a { grid-template-columns:80px minmax(0,1fr); }
   .market-home-categories a > .market-home-category-image { width:80px; height:80px; }
 }
+
+
+/* Final polish: white footer mark and prominent collaboration CTA */
+.market-home-footer-about .market-home-logo img {
+  width:150px;
+  height:auto;
+  padding:0;
+  border-radius:0;
+  background:transparent;
+  filter:brightness(0) invert(1);
+}
+.market-home-slide-cta {
+  min-height:52px;
+  min-width:190px;
+  justify-content:center;
+  gap:12px;
+  margin-top:20px;
+  padding:13px 24px;
+  border:1px solid rgba(236,246,222,.72);
+  border-radius:12px;
+  background:#e4efcf;
+  color:#1c4932!important;
+  box-shadow:0 8px 20px rgba(4,25,14,.18);
+  font-size:16px;
+  font-weight:900;
+  line-height:1.5;
+  transition:transform .2s,box-shadow .2s,background .2s;
+}
+.market-home-slide-cta:hover {
+  transform:translateY(-2px);
+  background:#f0f6e3;
+  box-shadow:0 12px 25px rgba(4,25,14,.24);
+  text-decoration:none;
+}
+.market-home-slide-cta svg { font-size:14px; }
+.market-home-wholesale .market-home-button {
+  min-height:50px;
+  min-width:190px;
+  justify-content:center;
+  padding:13px 23px;
+  border:1px solid rgba(236,246,222,.72);
+  border-radius:12px;
+  box-shadow:0 7px 18px rgba(4,25,14,.15);
+  font-size:15px;
+  transition:transform .2s,box-shadow .2s,background .2s;
+}
+.market-home-wholesale .market-home-button:hover {
+  transform:translateY(-2px);
+  background:#f0f6e3;
+  box-shadow:0 11px 22px rgba(4,25,14,.22);
+  text-decoration:none;
+}
+.market-home-slide-cta:focus-visible,
+.market-home-wholesale .market-home-button:focus-visible {
+  outline:3px solid #f4f8e8;
+  outline-offset:3px;
+}
+@media(max-width:680px) {
+  .market-home-footer-about .market-home-logo img { width:142px; }
+  .market-home-slide-cta,
+  .market-home-wholesale .market-home-button {
+    min-width:205px;
+    min-height:54px;
+    padding:14px 23px;
+    font-size:15px;
+  }
+}
