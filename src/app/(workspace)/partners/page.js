@@ -73,7 +73,7 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} page={page} result={feedback}
-    selectedStatus={status} orderDetail={orderDetail} locations={await locations} unavailable={isList && !data}>
+    selectedStatus={status} selectedOrder={orderId} orderDetail={orderDetail} locations={await locations} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
