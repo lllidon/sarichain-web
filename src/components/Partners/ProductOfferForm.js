@@ -23,6 +23,11 @@ export default function ProductOfferForm({ products, categories, brands, locatio
     normalizeCatalogSearch([product.name, product.code, product.brand].join(' ')).includes(query));
   const changeFilter = set => event => { set(event.target.value); setLimit(resultPageSize); };
   const changeField = event => setFields({ ...fields, [event.target.name]: event.target.value });
+  const normalizedPrice = String(fields.price).replace(/[۰-۹]/g, digit => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))).replace(/٫/g, '.').replace(/,/g, '');
+  const priceKarsha = Number(normalizedPrice);
+  const tomanEquivalent = Number.isFinite(priceKarsha) && priceKarsha > 0
+    ? new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 0 }).format(priceKarsha * 100_000)
+    : null;
   const categoryName = id => {
     const item = categories[id];
     const parent = categories[item.parentId];
@@ -65,6 +70,8 @@ export default function ProductOfferForm({ products, categories, brands, locatio
       <div className="partner-offer-filters">
         <label>قیمت هر {selected.unit} (کارسا)
           <input name="price" type="text" inputMode="decimal" maxLength={16} value={fields.price} onChange={changeField} required />
+          <small>هر ۱ کارسا معادل ۱۰۰٬۰۰۰ تومان است.</small>
+          {tomanEquivalent && <small className="partner-price-equivalent">معادل تقریبی: {tomanEquivalent} تومان</small>}
         </label>
         <label>موجودی تقریبی ({selected.unit})
           <input name="stock" type="text" inputMode="decimal" maxLength={16} value={fields.stock} onChange={changeField} required />
