@@ -47,13 +47,16 @@ export default async function PartnersPage({ searchParams }) {
     .filter(([, category]) => category.parentId)
     .map(([id, category]) => ({ _id: id, name: category.name, parentId: category.parentId })) : [];
   const allowedCategoryIds = new Set(profile.allowedProductCategoryIds || []);
-  const producerCategories = offerCatalog ? Object.fromEntries(Object.entries(offerCatalog.categories)
-    .filter(([id]) => allowedCategoryIds.has(id))) : {};
+  const producerCategories = offerCatalog ? offerCatalog.categories : {};
   const producerProducts = offerCatalog ? offerCatalog.catalog.flatMap(product => [product, ...product.variants])
-    .filter(product => allowedCategoryIds.has(product.category))
     .map(({ id, name, code, brand, brandId, category, unit }) => ({ id, name, code, brand, brandId, category, unit })) : [];
-  const locations = canOffer ? partnerBackend('/web/workspace/orchards/options', { token })
-    .then(response => response.ok ? response.json() : null).catch(() => null) : null;
+  const [locations, categoryUpgradeRequests] = canOffer ? await Promise.all([
+    partnerBackend('/web/workspace/orchards/options', { token }).then(response => response.ok ? response.json() : null).catch(() => null),
+    partnerBackend('/web/account-upgrades', { token }).then(response => response.ok ? response.json() : { items: [] }).catch(() => ({ items: [] })),
+  ]) : [null, { items: [] }];
+  const pendingCategoryIds = (categoryUpgradeRequests.items || [])
+    .filter(item => item.kind === 'producer_categories' && item.status === 'pending')
+    .flatMap(item => item.requestedCategoryIds || []);
   const isList = section !== 'overview' && section !== 'profile';
   if (isList) {
     try {
@@ -101,7 +104,7 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} dataError={dataError} page={page} result={feedback}
-    selectedStatus={status} selectedFulfillmentStatus={fulfillmentStatus} selectedOrder={orderId} orderDetail={orderDetail} offerCatalog={offerCatalog} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
+    selectedStatus={status} selectedFulfillmentStatus={fulfillmentStatus} selectedOrder={orderId} orderDetail={orderDetail} offerCatalog={offerCatalog} locations={locations} overviewData={overviewData} pendingCategoryIds={pendingCategoryIds} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
