@@ -240,7 +240,7 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
 function KarshaWallet({ wallet }) {
   const precise = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 8 });
   const transactionLabels = {
-    credit: 'افزایش کارسا', onboarding: 'هدیه تکمیل مدارک', debit: 'کاهش کارسا',
+    credit: 'افزایش کارسا', migration: 'انتقال موجودی قبلی', onboarding: 'هدیه تکمیل مدارک', debit: 'کاهش کارسا',
     purchase: 'پرداخت خرید', conversion: 'تبدیل به تومان', decay: 'کاهش ماهانه',
     admin_adjustment: 'اصلاح مدیریتی', admin_debit: 'کاهش مدیریتی',
   };
