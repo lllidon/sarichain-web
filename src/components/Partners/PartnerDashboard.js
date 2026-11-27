@@ -236,7 +236,7 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, selectedStatus, selectedOrder, orderDetail, children }) {
+export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, selectedStatus, selectedOrder, orderDetail, children }) {
   const info = sections[section];
   const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
     .filter(([key]) => key !== 'bulletin' || profile.capabilities?.drive);
@@ -281,7 +281,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
             </Link>)}
           </div>}
           {section === 'profile' && children}
-          {unavailable && <div className="partner-empty" role="alert">دریافت اطلاعات انجام نشد. <Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
+          {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
           {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
