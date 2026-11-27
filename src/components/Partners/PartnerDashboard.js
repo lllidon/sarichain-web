@@ -24,21 +24,146 @@ const offerPrice = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 4 });
 const date = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeZone: 'Asia/Tehran' });
 const dateTime = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tehran' });
 
-function Orders({ items }) {
-  if (!items.length) return <div className="partner-empty"><p>سفارش جاری ندارید.</p><Link href="/quick-order">ثبت سفارش</Link></div>;
-  return <ul className="partner-records">
-    {items.map(order => <li key={order._id}>
-      <div className="partner-record-heading">
-        <div><strong>سفارش <bdi title={order._id}>{order._id.slice(0, 12)}</bdi></strong><small>{date.format(new Date(order.createdAt))}</small></div>
-        <span className="partner-status">{statuses[order.status] || 'ثبت شده'}</span>
+const orderStatusLabels = {
+  pending: 'ثبت سفارش',
+  confirmed: 'تأیید شده',
+  awaiting_inventory: 'در انتظار تأمین کالا',
+  processing: 'در حال آماده‌سازی',
+  shipped: 'ارسال شده',
+  in_transit: 'در مسیر تحویل',
+  awaiting_delivery: 'آماده تحویل',
+  completed: 'تحویل شده',
+  returned: 'مرجوع شده',
+  refunded: 'مبلغ برگشت داده شده',
+  cancelled: 'لغو شده',
+  canceled: 'لغو شده',
+};
+const orderStatusTone = status => ['completed'].includes(status) ? 'done'
+  : ['cancelled', 'canceled', 'returned', 'refunded'].includes(status) ? 'stopped'
+  : ['shipped', 'in_transit', 'awaiting_delivery'].includes(status) ? 'shipping' : 'active';
+const orderProgress = status => ({
+  pending: 12, confirmed: 28, awaiting_inventory: 42, processing: 62,
+  shipped: 82, in_transit: 91, awaiting_delivery: 96, completed: 100,
+}[status] ?? 8);
+const money = value => formatPrice({ min: Number(value || 0), max: Number(value || 0) });
+const orderDateTime = value => value ? dateTime.format(new Date(value)) : '—';
+const orderEventLabels = {
+  'order.created': 'سفارش ثبت شد',
+  'checkout.request.received': 'درخواست سفارش دریافت شد',
+  'checkout.products.validated': 'محصولات و موجودی بررسی شد',
+  'checkout.order.persisted': 'سفارش در سامانه ثبت شد',
+  'inventory.seller_stock_reservation.started': 'آغاز تأمین از فروشنده',
+  'inventory.seller_stock_reservation.completed': 'تأمین کالا و انتقال به انبار واسط انجام شد',
+  'accounting.posting.started': 'ثبت حسابداری آغاز شد',
+  'inventory.reservation_release.completed': 'رزرو موجودی آزاد شد',
+};
+
+function OrderStatus({ status }) {
+  return <span className={'partner-order-status ' + orderStatusTone(status)}>
+    {orderStatusLabels[status] || 'در حال پیگیری'}
+  </span>;
+}
+
+function OrderItems({ items, compact = false }) {
+  return <ul className={compact ? 'partner-order-items compact' : 'partner-order-items'}>
+    {items.map((item, index) => <li key={item._id || item.productId + ':' + item.unitId + ':' + index}>
+      {item.image ? <img src={item.image} alt="" loading="lazy" /> : <span className="partner-order-item-placeholder">🌱</span>}
+      <div className="partner-order-item-copy">
+        <strong>{item.name}</strong>
+        <small>{item.sku ? 'کد کالا: ' + item.sku + ' · ' : ''}{number.format(item.quantity)} {item.unitName || 'واحد'}</small>
+        {!compact && item.specifications?.length > 0 && <span>{item.specifications.map(option => option.name + ': ' + option.value).join(' · ')}</span>}
       </div>
-      <ul>{order.items.map(item => <li key={item.productId + ':' + (item.unitId ?? 'unit') + ':' + (item.offerId ?? '')}>{item.name} <span>× {number.format(item.quantity)} {item.unitName}</span>{item.sellerName && <small>{item.sellerName}</small>}</li>)}</ul>
-      {order.delivery && <p>{order.delivery.label} · تحویل برآوردی {date.format(new Date(order.delivery.date + 'T12:00:00Z'))} · بازهٔ ارسال {order.delivery.slotLabel}</p>}
-      <strong>{order.price ? formatPrice(order.price) : `${number.format(order.total)} ${order.currency === 'IRR' ? 'ریال' : order.currency}`}</strong>
+      <strong className="partner-order-item-price">{money(item.lineSubtotal?.max ?? item.unitPrice?.max * item.baseQuantity)}</strong>
     </li>)}
   </ul>;
 }
 
+function Orders({ items, counts = {}, selectedStatus = 'current', orderDetail }) {
+  const tabs = [
+    ['current', 'جاری', counts.current || 0],
+    ['completed', 'تحویل‌شده', counts.completed || 0],
+    ['returned', 'مرجوع‌شده', counts.returned || 0],
+    ['cancelled', 'لغوشده', counts.cancelled || 0],
+  ];
+  if (orderDetail) {
+    const status = orderDetail.status;
+    const events = [...(orderDetail.events || []).map(event => ({
+      label: orderEventLabels[event.type] || orderStatusLabels[event.toStatus] || event.type,
+      at: event.occurredAt,
+    })), ...(orderDetail.timeline || []).map(event => ({
+      label: orderEventLabels[event.stage] || event.stage.replaceAll('.', ' · '),
+      at: event.occurredAt,
+    }))].sort((a, b) => new Date(a.at || 0) - new Date(b.at || 0));
+    const delivery = orderDetail.delivery || {};
+    return <section className="partner-order-detail">
+      <Link className="partner-order-back" href={partnerHref('orders') + '&status=' + selectedStatus}>← بازگشت به سفارش‌ها</Link>
+      <header className="partner-order-detail-head">
+        <div><span>جزئیات سفارش</span><h2><bdi>{orderDetail.orderNumber || orderDetail._id}</bdi></h2>
+          <small>تاریخ ثبت: {orderDateTime(orderDetail.createdAt)}</small></div>
+        <OrderStatus status={status} />
+      </header>
+      <section className="partner-order-progress">
+        <div className="partner-order-progress-label"><strong>وضعیت فعلی سفارش</strong><b>{orderStatusLabels[status] || 'در حال پیگیری'}</b></div>
+        <div className="partner-order-progress-track"><span style={{ width: orderProgress(status) + '%' }} /></div>
+        <small>آخرین به‌روزرسانی: {orderDateTime(orderDetail.updatedAt)}</small>
+      </section>
+      <section className="partner-order-detail-section">
+        <h3>اقلام سفارش ({number.format(orderDetail.items?.length || 0)})</h3>
+        <OrderItems items={orderDetail.items || []} />
+      </section>
+      <section className="partner-order-detail-section partner-order-facts">
+        <h3>اطلاعات ارسال و پرداخت</h3>
+        <dl>
+          <div><dt>روش ارسال</dt><dd>{delivery.label || delivery.method || 'ثبت نشده'}</dd></div>
+          <div><dt>نشانی تحویل</dt><dd>{delivery.addressSnapshot?.address || delivery.addressSnapshot?.title || 'در سفارش ثبت نشده'}</dd></div>
+          <div><dt>وضعیت ارسال</dt><dd>{orderStatusLabels[orderDetail.meta?.shipping?.status] || orderDetail.meta?.shipping?.status || 'در انتظار تعیین'}</dd></div>
+          <div><dt>وضعیت تأمین کالا</dt><dd>{orderDetail.meta?.inventory?.status || orderDetail.inventoryStatus || 'در انتظار تأمین'}</dd></div>
+          <div><dt>وضعیت پرداخت</dt><dd>{orderDetail.meta?.payment?.status || 'در انتظار پرداخت'}</dd></div>
+        </dl>
+      </section>
+      <section className="partner-order-detail-section">
+        <h3>تاریخچه سفارش</h3>
+        {events.length ? <ol className="partner-order-timeline">
+          {events.map((event, index) => <li key={index}><span className="partner-order-timeline-dot" />
+            <div><strong>{event.label}</strong><small>{orderDateTime(event.at)}</small></div>
+          </li>)}
+        </ol> : <p className="partner-order-muted">هنوز رویداد جدیدی برای این سفارش ثبت نشده است.</p>}
+      </section>
+      <section className="partner-order-total"><span>مبلغ نهایی سفارش</span><strong>{money(orderDetail.total)}</strong></section>
+    </section>;
+  }
+  return <section className="partner-orders">
+    <nav className="partner-order-tabs" aria-label="دسته‌بندی سفارش‌ها">
+      {tabs.map(([key, label, count]) => <Link key={key}
+        className={selectedStatus === key ? 'is-active' : ''}
+        aria-current={selectedStatus === key ? 'page' : undefined}
+        href={partnerHref('orders') + '&status=' + key}>
+        <span>{label}</span><b>{number.format(count)}</b>
+      </Link>)}
+    </nav>
+    {!items?.length ? <div className="partner-empty"><p>در این گروه سفارشی وجود ندارد.</p><Link href="/categories">مشاهده محصولات</Link></div> :
+      <ul className="partner-order-list">
+        {items.map(order => <li key={order._id} className="partner-order-card">
+          <header className="partner-order-card-head">
+            <div><span>شماره سفارش</span><strong><bdi>{order.orderNumber || order._id?.slice(0, 14)}</bdi></strong>
+              <small>{orderDateTime(order.createdAt)}</small></div>
+            <OrderStatus status={order.status} />
+          </header>
+          <div className="partner-order-card-meta">
+            <span>مبلغ سفارش <strong>{money(order.total)}</strong></span>
+            <span>{number.format(order.items?.length || order.itemCount || 0)} قلم کالا</span>
+          </div>
+          <OrderItems items={(order.items || []).slice(0, 3)} compact />
+          {(order.items?.length || 0) > 3 && <small className="partner-order-more">و {number.format(order.items.length - 3)} قلم کالای دیگر</small>}
+          <div className="partner-order-card-progress">
+            <div className="partner-order-progress-track"><span style={{ width: orderProgress(order.status) + '%' }} /></div>
+            <span>{orderStatusLabels[order.status] || 'در حال پیگیری'}</span>
+          </div>
+          <footer><Link href={partnerHref('orders') + '&status=' + selectedStatus + '&order=' + order._id}>مشاهده جزئیات سفارش ←</Link></footer>
+        </li>)}
+      </ul>}
+  </section>;
+}
 
 
 function WorkspaceEntries({ section, items, offerCatalog, locations, profile, result }) {
@@ -104,7 +229,7 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, children }) {
+export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, selectedStatus, orderDetail, children }) {
   const info = sections[section];
   const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
     .filter(([key]) => key !== 'bulletin' || profile.capabilities?.drive);
@@ -118,6 +243,7 @@ export default function PartnerDashboard({ profile, section, result, data, unava
             <span className="partner-avatar" aria-hidden="true">{profile.fullName?.trim().slice(0, 1) || 'س'}</span>
             <div><strong>{profile.fullName || 'همکار ساری‌چین'}</strong><small>حساب ساری‌چین</small></div>
           </div>
+          <div className="partner-kar-balance"><span>مانده کارسای مشتری</span><strong>در دسترس نیست</strong><small>نمایش موجودی پس از اتصال دفتر حساب مشتری فعال می‌شود.</small></div>
           <nav aria-label="منوی پنل همکاران">
             {visibleSections.map(([key, item]) => <Link key={key} href={partnerHref(key)}
               aria-current={key === section ? 'page' : undefined} prefetch={false}>
