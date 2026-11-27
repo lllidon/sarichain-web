@@ -42,9 +42,15 @@ export default function ProductMegaMenu() {
 
   const categoryCounts = useMemo(() => {
     const counts = new Map();
-    for (const product of catalog) counts.set(product.category, (counts.get(product.category) || 0) + 1);
+    for (const product of catalog) {
+      let current = product.category;
+      for (let depth = 0; current && depth < 3; depth++) {
+        counts.set(current, (counts.get(current) || 0) + 1);
+        current = categories[current]?.parentId;
+      }
+    }
     return counts;
-  }, [catalog]);
+  }, [catalog, categories]);
 
   useEffect(() => {
     function closeOutside(event) {
@@ -147,7 +153,7 @@ export default function ProductMegaMenu() {
                   </div>
 
                   <div className="nav-products-featured">
-                    <h3>محصولات منتخب</h3>
+                    <h3>محصولات این دسته</h3>
                     {relatedProducts.length ? relatedProducts.map(product => (
                       <Link key={product.id} href={productHref(product)} onClick={closeMenu}>
                         <Image src={productImage(product)} alt="" width={54} height={54} unoptimized />
