@@ -236,7 +236,7 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, selectedStatus, orderDetail, children }) {
+export default function PartnerDashboard({ profile, section, result, data, unavailable, page, offerCatalog, locations, selectedStatus, selectedOrder, orderDetail, children }) {
   const info = sections[section];
   const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
     .filter(([key]) => key !== 'bulletin' || profile.capabilities?.drive);
@@ -250,7 +250,14 @@ export default function PartnerDashboard({ profile, section, result, data, unava
             <span className="partner-avatar" aria-hidden="true">{profile.fullName?.trim().slice(0, 1) || 'س'}</span>
             <div><strong>{profile.fullName || 'همکار ساری‌چین'}</strong><small>حساب ساری‌چین</small></div>
           </div>
-          <div className="partner-kar-balance"><span>مانده کارسای مشتری</span><strong>در دسترس نیست</strong><small>نمایش موجودی پس از اتصال دفتر حساب مشتری فعال می‌شود.</small></div>
+          <div className="partner-kar-balance">
+            <span>مانده کارسای مشتری</span>
+            <strong>{number.format(profile.karshaBalance ?? 0)} کارسا</strong>
+            {profile.onboardingKarshaAwarded
+              ? <small>هدیه تکمیل و تأیید مدارک به اعتبار شما افزوده شده است.</small>
+              : <small>با تکمیل مدارک و تأیید اولین درخواست، ۱ کارسا هدیه دریافت می‌کنید.</small>}
+            {!profile.onboardingKarshaAwarded && <Link href={partnerHref('profile')}>تکمیل مدارک و دریافت هدیه ←</Link>}
+          </div>
           <nav aria-label="منوی پنل همکاران">
             {visibleSections.map(([key, item]) => <Link key={key} href={partnerHref(key)}
               aria-current={key === section ? 'page' : undefined} prefetch={false}>
