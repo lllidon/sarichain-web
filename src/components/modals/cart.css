@@ -430,3 +430,11 @@
 .checkout-destination-coordinates input { width:100%; min-width:0; padding:7px; border:1px solid var(--cart-border); border-radius:7px; background:#fff; color:var(--cart-text); direction:ltr; }
 .checkout-method small { display:block; margin-top:3px; color:var(--cart-muted); font-size:10px; line-height:1.6; }
 @media(max-width:560px) { .checkout-destination .partner-location-map { height:210px; } }
+
+.checkout-defaults-note { display:grid; gap:7px; margin:10px 0; padding:11px 12px; border:1px dashed var(--cart-border); border-radius:10px; background:#f8faf6; color:var(--cart-muted); font-size:10px; line-height:1.8; }
+.checkout-defaults-note > strong { color:var(--cart-green); font-size:11px; }
+.checkout-defaults-note p { margin:0; }
+.checkout-defaults-note ul { display:grid; gap:7px; margin:0; padding-inline-start:18px; }
+.checkout-defaults-note li { display:grid; gap:2px; }
+.checkout-defaults-note li b { color:var(--cart-ink); font-size:11px; }
+.checkout-defaults-note small { color:var(--cart-muted); }
