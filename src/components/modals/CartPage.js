@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,7 +12,6 @@ import { submitOrder } from '../Products/submitOrder';
 import { useCartCommands, useCatalogCart } from './cartStore';
 import { displayCart } from './cartPresentation';
 import CartNotices from './CartNotices';
-import LocationMap from '../Partners/LocationMap';
 import { useAccountWeeklyBasket } from './AccountWeeklyBasketProvider';
 import './cart.css';
 
@@ -127,9 +126,35 @@ export default function CartPage({ initialMessage = '' }) {
   const [method, setMethod] = useState('standard');
   const [requestedDate, setDate] = useState('');
   const [requestedSlot, setSlot] = useState('');
-  const [destination, setDestination] = useState({ latitude: '', longitude: '' });
+  const [deliveryAddresses, setDeliveryAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [addressError, setAddressError] = useState('');
   const [quoteError, setQuoteError] = useState('');
-  const pickDestination = useCallback(point => setDestination(point), []);
+
+  const signedIn = Boolean(account);
+  useEffect(() => {
+    if (!signedIn) { setDeliveryAddresses([]); setSelectedAddressId(''); return; }
+    const controller = new AbortController();
+    setAddressLoading(true); setAddressError('');
+    fetch('/web/profile', { cache: 'no-store', signal: controller.signal })
+      .then(async response => {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw Error(response.status === 401 ? 'برای مشاهده نشانی‌های ذخیره‌شده وارد حساب شوید.' : result.message || 'دریافت نشانی‌ها انجام نشد.');
+        return result;
+      }).then(profile => {
+        if (controller.signal.aborted) return;
+        const addresses = Array.isArray(profile.deliveryAddresses) ? profile.deliveryAddresses : [];
+        setDeliveryAddresses(addresses);
+        setSelectedAddressId(current => addresses.some(address => address.id === current) ? current : addresses[0]?.id ?? '');
+      }).catch(error => { if (!controller.signal.aborted) setAddressError(error.message); })
+      .finally(() => { if (!controller.signal.aborted) setAddressLoading(false); });
+    return () => controller.abort();
+  }, [signedIn]);
+
+  const selectedAddress = deliveryAddresses.find(address => address.id === selectedAddressId);
+  const destination = selectedAddress && selectedAddress.latitude != null && selectedAddress.longitude != null
+    ? { latitude: selectedAddress.latitude, longitude: selectedAddress.longitude } : null;
 
   const hasItems = cart.length > 0;
   const quoteLines = cart.map(item => ({
@@ -140,7 +165,7 @@ export default function CartPage({ initialMessage = '' }) {
   useEffect(() => {
     if (!hasItems) return;
     if (!destination.latitude || !destination.longitude) {
-      setOptions(null); setFailed(false); setQuoteError('برای محاسبه مسیر و هزینه، مقصد را روی نقشه انتخاب کنید.');
+      setOptions(null); setFailed(false); setQuoteError(selectedAddress ? 'موقعیت جغرافیایی این نشانی ثبت نشده است. از بخش اطلاعات حساب، نشانی را ویرایش و موقعیت تحویل را روی نقشه مشخص کنید.' : 'ابتدا یکی از نشانی‌های ذخیره‌شده را انتخاب کنید یا از بخش اطلاعات حساب نشانی جدید بسازید.');
       return;
     }
     const controller = new AbortController();
@@ -160,7 +185,7 @@ export default function CartPage({ initialMessage = '' }) {
       if (!controller.signal.aborted) { setFailed(true); setQuoteError(error.message || 'محاسبه هزینه حمل انجام نشد.'); }
     });
     return () => controller.abort();
-  }, [hasItems, revision, quoteSignature, destination.latitude, destination.longitude]);
+  }, [hasItems, revision, quoteSignature, destination?.latitude, destination?.longitude, selectedAddressId, Boolean(selectedAddress)]);
 
   const items = displayCart(cart, catalog, account);
   const changes = cart.filter(item => item.notice);
@@ -199,7 +224,7 @@ export default function CartPage({ initialMessage = '' }) {
   }
 
   async function checkout() {
-    if (!account || cartBusy || changes.length || containsInactive || exceedsLimit || !items.length || !selected || !date || !slot) return;
+    if (!account || cartBusy || changes.length || containsInactive || exceedsLimit || !items.length || !selected || !date || !slot || !selectedAddressId || !destination) return;
     setBusy(true);
     setMessage('');
     setLoginNeeded(false);
@@ -208,6 +233,7 @@ export default function CartPage({ initialMessage = '' }) {
         productId: item.productId, quantity: item.quantity, unitId: item.pack.id, offerId: item.offerId,
       })), orderRequest, {
         method: selected.id, dispatchDate: date, slot,
+        addressId: selectedAddressId,
         destination: { latitude: Number(destination.latitude), longitude: Number(destination.longitude) },
         quotedFee: selected.fee, quotedRouteMode: selected.routeMode, quotedDistanceKm: selected.distanceKm,
       }, account.revision);
@@ -252,13 +278,24 @@ export default function CartPage({ initialMessage = '' }) {
       <aside className="checkout-card checkout-summary" aria-labelledby="checkout-summary-title">
         <h3 id="checkout-summary-title">خلاصهٔ سبد و ارسال</h3>
         <section className="checkout-destination">
-          <strong>مقصد تحویل سفارش</strong>
-          <p>برای محاسبه دقیق مسافت و مقایسه ارسال مستقیم با تجمیع، محل تحویل را روی نقشه مشخص کنید.</p>
-          <LocationMap point={destination} onPick={pickDestination} />
-          <div className="checkout-destination-coordinates">
-            <label>عرض جغرافیایی<input type="number" step="0.000001" value={destination.latitude} onChange={event=>setDestination(current=>({...current,latitude:event.target.value}))}/></label>
-            <label>طول جغرافیایی<input type="number" step="0.000001" value={destination.longitude} onChange={event=>setDestination(current=>({...current,longitude:event.target.value}))}/></label>
-          </div>
+          <strong>نشانی تحویل سفارش</strong>
+          <p>نشانی را در تنظیمات حساب ذخیره و موقعیت جغرافیایی آن را یک‌بار روی نقشه مشخص کنید. در این صفحه فقط نشانی مقصد را انتخاب می‌کنید.</p>
+          {addressLoading ? <p role="status">در حال دریافت نشانی‌های شما…</p> : <>
+            <label className="checkout-address-select">انتخاب نشانی
+              <select value={selectedAddressId} onChange={event => { setSelectedAddressId(event.target.value); setOptions(null); setDate(''); setSlot(''); }}>
+                <option value="">انتخاب نشانی تحویل</option>
+                {deliveryAddresses.map(address => <option key={address.id} value={address.id}>{address.title} · {address.city || address.address}</option>)}
+              </select>
+            </label>
+            {selectedAddress && <div className="checkout-address-preview">
+              <strong>{selectedAddress.title}</strong>
+              <span>{selectedAddress.recipientName}{selectedAddress.phone ? ' · ' + selectedAddress.phone : ''}</span>
+              <p>{[selectedAddress.province, selectedAddress.city, selectedAddress.address, selectedAddress.postalCode].filter(Boolean).join('، ')}</p>
+              <small>{destination ? 'موقعیت جغرافیایی ثبت شده است.' : 'موقعیت جغرافیایی این نشانی ثبت نشده است.'}</small>
+            </div>}
+          </>}
+          {addressError && <p className="checkout-warning" role="alert">{addressError}</p>}
+          <Link className="checkout-address-settings" href="/partners?section=profile">مدیریت نشانی‌ها و اطلاعات مشتری</Link>
         </section>
         {selected ? <DeliveryOptions options={options} selected={selected} setSelected={setMethod} date={date} setDate={setDate}
           slot={slot} setSlot={setSlot} busy={busy} /> : failed ?
@@ -283,7 +320,7 @@ export default function CartPage({ initialMessage = '' }) {
         {exceedsLimit && <p className="checkout-warning">تعداد بعضی اقلام بیشتر از سقف مجاز است. تعداد را کاهش دهید.</p>}
         {containsInactive && <p className="checkout-warning">برای ادامه، اقلام ناموجود را از سبد حذف کنید.</p>}
         {(!account || loginNeeded) ? <Link className="checkout-submit" href="/login?returnTo=cart">ورود به حساب برای ثبت سفارش</Link> :
-          <button type="button" className="checkout-submit" disabled={cartBusy || changes.length > 0 || containsInactive || exceedsLimit || !selected || confirmClear} onClick={checkout}>
+          <button type="button" className="checkout-submit" disabled={cartBusy || changes.length > 0 || containsInactive || exceedsLimit || !selected || !selectedAddressId || !destination || confirmClear} onClick={checkout}>
             {busy ? 'در حال ثبت…' : 'ثبت درخواست سفارش'}<FontAwesomeIcon icon={faArrowLeft} />
           </button>}
       </aside>
