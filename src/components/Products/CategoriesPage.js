@@ -247,7 +247,7 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
             {results.length > 0 ? (
               <ul className="catalog-grid">
                 {visibleProducts.map(product => (
-                  <CatalogCard key={product.id} categoryName={categories[product.category].name} product={product} onMessage={setMessage} />
+                  <CatalogCard key={product.id} categoryName={categories[product.category]?.name || 'سایر محصولات'} product={product} onMessage={setMessage} />
                 ))}
               </ul>
             ) : (
