@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faAppleWhole, faArrowLeft, faBasketShopping, faBox, faLeaf, faMagnifyingGlass,
-  faSeedling, faStore, faUser, faWheatAwn,
+  faSeedling, faStore, faUser, faWheatAwn, faTractor, faTruckFast, faShieldHalved, faHandshake,
 } from '@fortawesome/free-solid-svg-icons';
 import { readCatalog } from '../../components/Products/catalog-data';
 import { cheapestVariant, productHref, productImage } from '../../components/Products/catalog';
@@ -18,6 +18,7 @@ import '../../components/Navbar.css';
 import ProductMegaMenu from '../../components/Products/ProductMegaMenu';
 import SolutionsMegaMenu from '../../components/SolutionsMegaMenu';
 import { CatalogProvider } from '../../components/Products/CatalogProvider';
+import HomeHeroCarousel from '../../components/HomeHeroCarousel';
 
 const number = new Intl.NumberFormat('fa-IR');
 const catalogIcons = [faAppleWhole, faWheatAwn, faSeedling, faLeaf, faBox, faStore];
@@ -66,44 +67,33 @@ async function PersonalizedAccount() {
 function HomeHeader({ catalogData }) {
   return <CatalogProvider value={{ ...catalogData, brands: [], unavailable: false }}>
     <header className="market-home-header">
-      <div className="market-home-shell market-home-header-grid">
-        <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
-          <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="132" height="44" />
-        </Link>
+      <div className="market-home-shell">
+        <div className="market-home-header-top">
+          <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
+            <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="132" height="44" />
+          </Link>
+          <form action="/categories" method="get" role="search" className="market-home-header-search">
+            <label className="market-home-visually-hidden" htmlFor="home-header-search">جستجوی محصولات و تولیدکنندگان</label>
+            <FontAwesomeIcon icon={faMagnifyingGlass}/>
+            <input id="home-header-search" name="q" type="search" placeholder="جستجوی محصول، دسته‌بندی یا تولیدکننده…" maxLength={80}/>
+            <button type="submit">جستجو</button>
+          </form>
+          <Suspense fallback={<div className="market-home-actions"><AccountLink/></div>}>
+            <HomeActions/>
+          </Suspense>
+        </div>
         <nav aria-label="منوی اصلی" className="market-home-nav">
           <ul className="nav-menu">
             <ProductMegaMenu />
             <SolutionsMegaMenu />
+            <li className="nav-item"><Link href="/categories" className="nav-link">بازار محصولات</Link></li>
+            <li className="nav-item"><Link href="/suppliers" className="nav-link">تولیدکنندگان</Link></li>
             <li className="nav-item"><Link href="/support" className="nav-link">پشتیبانی</Link></li>
           </ul>
         </nav>
-        <Suspense fallback={<div className="market-home-actions"><Link href="/cart" aria-label="سبد خرید"><FontAwesomeIcon icon={faBasketShopping} /></Link><AccountLink /></div>}>
-          <HomeActions />
-        </Suspense>
       </div>
     </header>
   </CatalogProvider>;
-}
-
-function HomeHero() {
-  return <section className="market-home-hero" aria-labelledby="market-home-title">
-    <div className="market-home-hero-copy">
-      <h1 id="market-home-title">خرید از تولیدکننده،<br /><span>برای سفره و کسب‌وکار</span></h1>
-      <p>محصول و نهادهٔ کشاورزی را پیدا کنید، قیمت عرضه‌ها را مقایسه کنید و فروشندهٔ مناسب را انتخاب کنید.</p>
-      <form action="/categories" method="get" role="search" className="market-home-search">
-        <label className="market-home-visually-hidden" htmlFor="home-search">نام محصول، برند یا دسته</label>
-        <input type="search" id="home-search" name="q" placeholder="نام محصول، برند یا دسته" maxLength={80} />
-        <button type="submit" aria-label="جستجوی محصولات"><FontAwesomeIcon icon={faMagnifyingGlass} /></button>
-      </form>
-      <Link className="market-home-text-link" href="/categories" prefetch={false}>مشاهدهٔ همهٔ محصولات <FontAwesomeIcon icon={faArrowLeft} /></Link>
-    </div>
-    <div className="market-home-hero-image">
-      <picture>
-        <source media="(max-width: 640px)" srcSet="/img/home/seasonal-market-mobile.webp" />
-        <img src="/img/home/seasonal-market.webp" alt="" width="960" height="680" fetchPriority="high" />
-      </picture>
-    </div>
-  </section>;
 }
 
 function WeeklyBasket() {
@@ -136,20 +126,29 @@ async function AccountSection() {
 }
 
 function CategoryList({ categories }) {
-  const roots = Object.entries(categories).filter(([, row]) => !row.parentId).slice(0, 6);
-  const links = roots.length ? roots.map(([id, row]) => ({ name: row.name, href: '/categories?category=' + id }))
-    : ['محصولات باغی', 'تغذیهٔ گیاه', 'بهبود خاک', 'نهاده‌های کشاورزی'].map(name => ({
-      name, href: '/categories?q=' + encodeURIComponent(name),
-    }));
-  return <section className="market-home-section" aria-labelledby="market-category-title">
+  const roots = Object.entries(categories).filter(([, row]) => !row.parentId).slice(0, 8);
+  const fallback = [
+    { name: 'محصولات باغی', href: '/categories?q=' + encodeURIComponent('محصولات باغی'), image: '/img/catalog/fruit-pro.webp' },
+    { name: 'محصولات زراعی', href: '/categories?q=' + encodeURIComponent('محصولات زراعی'), image: '/img/catalog/field.webp' },
+    { name: 'دام و طیور', href: '/categories?q=' + encodeURIComponent('دام و طیور'), image: '/img/catalog/compost.webp' },
+    { name: 'لبنیات و فرآورده‌ها', href: '/categories?q=' + encodeURIComponent('لبنیات'), image: '/img/catalog/kelp.webp' },
+    { name: 'نهاده‌های کشاورزی', href: '/categories?q=' + encodeURIComponent('نهاده کشاورزی'), image: '/img/catalog/bio-boost.webp' },
+    { name: 'تجهیزات و ابزار', href: '/categories?q=' + encodeURIComponent('تجهیزات کشاورزی'), image: '/img/catalog/soil-life.webp' },
+  ];
+  const links = roots.length ? roots.map(([id, row]) => ({ name: row.name, href: '/categories?category=' + id, image: row.image || '/img/catalog/field.webp' })) : fallback;
+  const icons = [faAppleWhole, faWheatAwn, faSeedling, faLeaf, faBox, faTractor, faStore, faBasketShopping];
+  return <section className="market-home-section market-home-category-section" aria-labelledby="market-category-title">
     <div className="market-home-section-heading">
-      <div><h2 id="market-category-title">دسته‌بندی محصولات</h2>{!roots.length && <p>دسته‌بندی‌های نمونه</p>}</div>
-      <Link className="market-home-text-link" href="/categories" prefetch={false}>همهٔ دسته‌ها <FontAwesomeIcon icon={faArrowLeft} /></Link>
+      <div><span className="market-home-kicker">بازار ساری‌چین</span><h2 id="market-category-title">از چه چیزی شروع کنیم؟</h2>
+        <p>دسته موردنظرتان را انتخاب کنید و عرضه‌های موجود را ببینید.</p></div>
+      <Link className="market-home-text-link" href="/categories" prefetch={false}>همهٔ دسته‌ها <FontAwesomeIcon icon={faArrowLeft}/></Link>
     </div>
     <ul className="market-home-categories">
-      {links.map(({ name, href }, index) => <li key={href}>
+      {links.map(({ name, href, image }, index) => <li key={href}>
         <Link href={href} prefetch={false}>
-          <span><FontAwesomeIcon icon={catalogIcons[index]} /></span><strong>{name}</strong><FontAwesomeIcon icon={faArrowLeft} />
+          <span className="market-home-category-image"><img src={image} alt="" loading="lazy"/></span>
+          <span className="market-home-category-meta"><strong>{name}</strong><small>مشاهده عرضه‌ها</small></span>
+          <i><FontAwesomeIcon icon={icons[index % icons.length]}/></i>
         </Link>
       </li>)}
     </ul>
@@ -179,37 +178,99 @@ function CatalogCard({ product, category, sample }) {
   </li>;
 }
 
+function FeaturedProducers({ catalog }) {
+  const names = [...new Set(catalog.flatMap(product => (product.offers || []).map(offer => offer.name).filter(Boolean)))].slice(0, 6);
+  return <section className="market-home-section market-home-producers" aria-labelledby="market-producers-title">
+    <div className="market-home-section-heading">
+      <div><span className="market-home-kicker">ارتباط مستقیم با مبدأ تولید</span><h2 id="market-producers-title">تولیدکنندگان و عرضه‌کنندگان</h2>
+        <p>محصولات را از عرضه‌کنندگان فعال بازار پیدا کنید.</p></div>
+      <Link className="market-home-text-link" href="/suppliers" prefetch={false}>دفترچه تأمین‌کنندگان <FontAwesomeIcon icon={faArrowLeft}/></Link>
+    </div>
+    {names.length ? <ul className="market-home-producer-list">
+      {names.map((name,index)=><li key={name}>
+        <span className="market-home-producer-mark"><FontAwesomeIcon icon={[faSeedling,faTractor,faLeaf,faStore,faWheatAwn,faAppleWhole][index % 6]}/></span>
+        <span><strong>{name}</strong><small>عرضه‌کننده در بازار ساری‌چین</small></span>
+        <FontAwesomeIcon icon={faArrowLeft} className="market-home-producer-arrow"/>
+      </li>)}
+    </ul> : <div className="market-home-producer-empty"><span><FontAwesomeIcon icon={faHandshake}/></span>
+      <div><strong>شبکه تولیدکنندگان ساری‌چین</strong><p>برای آشنایی با تأمین‌کنندگان و ثبت همکاری، به دفترچه تأمین‌کنندگان مراجعه کنید.</p></div>
+      <Link href="/suppliers">مشاهده تأمین‌کنندگان <FontAwesomeIcon icon={faArrowLeft}/></Link>
+    </div>}
+  </section>;
+}
+
+function HomeBenefits() {
+  const items = [
+    [faHandshake,'ارتباط مستقیم','خرید از تولیدکنندگان و عرضه‌کنندگان'],
+    [faShieldHalved,'شفافیت در عرضه','مشاهده مشخصات و شرایط هر عرضه'],
+    [faTruckFast,'هماهنگی تأمین و حمل','مسیر ساده‌تر برای پیگیری سفارش'],
+    [faTractor,'همراه زنجیره تولید','محصول، نهاده و خدمات در یک بازار'],
+  ];
+  return <section className="market-home-benefits" aria-label="مزیت‌های ساری‌چین">
+    {items.map(([icon,title,description])=><article key={title}>
+      <span><FontAwesomeIcon icon={icon}/></span><div><strong>{title}</strong><p>{description}</p></div>
+    </article>)}
+  </section>;
+}
+
+function WholesaleBanner() {
+  return <section className="market-home-wholesale">
+    <div><span className="market-home-kicker">برای تولیدکنندگان و خریداران حرفه‌ای</span>
+      <h2>بازار بزرگ‌تری برای محصولاتتان بسازید</h2>
+      <p>محصولات خود را عرضه کنید، خریداران را پیدا کنید و ارتباطات تجاری‌تان را توسعه دهید.</p>
+    </div>
+    <div className="market-home-wholesale-actions">
+      <Link href="/partners" className="market-home-button">شروع همکاری <FontAwesomeIcon icon={faArrowLeft}/></Link>
+      <Link href="/suppliers" className="market-home-wholesale-link">آشنایی با تأمین‌کنندگان</Link>
+    </div>
+  </section>;
+}
+
 async function HomeCatalog({ catalogData }) {
   const { catalog, categories } = catalogData;
   const live = catalog.length > 0;
-  const products = live ? [...catalog].sort((a, b) => Number(cheapestVariant(b).orderable) - Number(cheapestVariant(a).orderable)).slice(0, 4) : examples;
+  const products = live ? [...catalog].sort((a, b) => Number(cheapestVariant(b).orderable) - Number(cheapestVariant(a).orderable)).slice(0, 8) : examples;
   return <>
-    <CategoryList categories={categories} />
-    <section className="market-home-section" aria-labelledby="market-products-title">
+    <CategoryList categories={categories}/>
+    <section className="market-home-section market-home-product-section" aria-labelledby="market-products-title">
       <div className="market-home-section-heading">
-        <div><h2 id="market-products-title">{live ? 'محصولات بازار' : 'پیش‌نمایش محصولات'}</h2>
-          <p>{live ? 'قیمت هر کالا از عرضه‌های ثبت‌شده می‌آید.' : 'کارت‌های نمونه تا زمان دسترسی به کاتالوگ.'}</p></div>
-        <Link className="market-home-text-link" href="/categories" prefetch={false}>رفتن به کاتالوگ <FontAwesomeIcon icon={faArrowLeft} /></Link>
+        <div><span className="market-home-kicker">منتخب بازار</span><h2 id="market-products-title">{live ? 'محصولات و عرضه‌های منتخب' : 'پیش‌نمایش محصولات'}</h2>
+          <p>{live ? 'قیمت‌ها از عرضه‌های ثبت‌شده در بازار نمایش داده می‌شوند.' : 'نمونه‌هایی از دسته‌های محصول در ساری‌چین.'}</p></div>
+        <Link className="market-home-text-link" href="/categories" prefetch={false}>مشاهده همه محصولات <FontAwesomeIcon icon={faArrowLeft}/></Link>
       </div>
       <ul className="market-home-products">
-        {products.map(product => <CatalogCard key={product.id ?? product.name} product={product} category={categories[product.category]?.name} sample={!live} />)}
+        {products.map(product=><CatalogCard key={product.id ?? product.name} product={product} category={categories[product.category]?.name} sample={!live}/>)}
       </ul>
     </section>
+    {live && <FeaturedProducers catalog={catalog}/>}
+    <WholesaleBanner/>
   </>;
 }
 
 function HomeFooter() {
   return <footer className="market-home-footer">
-    <div className="market-home-shell">
-      <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
-        <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="106" height="36" />
-      </Link>
-      <nav aria-label="پایین صفحه">
-        <Link href="/categories" prefetch={false}>محصولات</Link>
-        <Link href="/pilot" prefetch={false}>سبد هفتگی</Link>
-        <Link href="/suppliers" prefetch={false}>دفترچه تأمین‌کنندگان</Link>
-      </nav>
+    <div className="market-home-footer-main market-home-shell">
+      <div className="market-home-footer-about">
+        <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
+          <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="126" height="42"/>
+        </Link>
+        <p>بازار پیونددهنده تولیدکنندگان، تأمین‌کنندگان و خریداران؛ از مزرعه تا بازار و سفره.</p>
+        <Link href="/partners" className="market-home-footer-join">همکاری با ساری‌چین <FontAwesomeIcon icon={faArrowLeft}/></Link>
+      </div>
+      <div className="market-home-footer-col"><h3>بازار محصولات</h3>
+        <Link href="/categories">همه محصولات</Link><Link href="/categories">دسته‌بندی‌ها</Link><Link href="/suppliers">تأمین‌کنندگان</Link><Link href="/pilot">سبد خرید هفتگی</Link>
+      </div>
+      <div className="market-home-footer-col"><h3>همکاری با ما</h3>
+        <Link href="/partners">ثبت‌نام و ورود همکاران</Link><Link href="/suppliers">دفترچه تأمین‌کنندگان</Link><Link href="/solutions">راهکارهای ساری‌چین</Link>
+      </div>
+      <div className="market-home-footer-col"><h3>راهنما و پشتیبانی</h3>
+        <Link href="/support">مرکز پشتیبانی</Link><Link href="/support">راهنمای خرید و سفارش</Link><Link href="/support">ارتباط با ساری‌چین</Link>
+      </div>
     </div>
+    <div className="market-home-footer-bottom"><div className="market-home-shell">
+      <span>© ساری‌چین · بازار زنجیره تأمین محصولات کشاورزی</span>
+      <span>از تولیدکننده تا مصرف‌کننده</span>
+    </div></div>
   </footer>;
 }
 
@@ -220,7 +281,7 @@ export default async function HomePage() {
   return <div className="market-home">
     <HomeHeader catalogData={catalogData} />
     <main className="market-home-shell">
-      <HomeHero />
+      <HomeHeroCarousel />
       <div className="market-home-paths">
         <WeeklyBasket />
         <Suspense fallback={<div className="market-home-member" aria-busy="true" />}><AccountSection /></Suspense>
