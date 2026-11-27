@@ -22,8 +22,8 @@ const defaultSlides = [
     description: 'از نهاده و تجهیزات تا خدمات تخصصی؛ نیازهای کسب‌وکار کشاورزی را یکجا پیدا کنید.',
     image: '/img/sliderFade.jpg',
     imageAlt: 'فعالیت و تولید در مزرعه',
-    cta: 'کشف راهکارها',
-    href: '/solutions',
+    cta: 'مشاهده دسته‌ها',
+    href: '/categories',
     tone: 'solutions',
   },
   {
@@ -80,6 +80,5 @@ export default function HomeHeroCarousel({ slides: managedSlides = [] }) {
           aria-label={'نمایش اسلاید ' + (index + 1)} aria-pressed={active === index} onClick={() => setActive(index)} />)}
       </div>
     </div>
-    <span className="market-home-slide-count"><b>0{active + 1}</b><i />0{slides.length}</span>
   </section>;
 }
