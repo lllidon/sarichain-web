@@ -1,8 +1,8 @@
 import { formatPrice } from '../Products/price';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen, faWallet } from '@fortawesome/free-solid-svg-icons';
-import { importProductOffers, leaveWorkspace, saveProductOfferLocation, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
+import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen, faWallet, faTruckFast, faCircleCheck, faClock, faClipboardCheck, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { importProductOffers, leaveWorkspace, saveProductOfferLocation, saveWorkspaceEntry, updateSellerOrderStatus } from '../../app/(workspace)/partners/actions';
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
@@ -11,7 +11,7 @@ import PartnerOfferExcelActions from './PartnerOfferExcelActions';
 import './PartnerDashboard.css';
 
 const icons = {
-  grid: faBorderAll, orders: faClipboardList, products: faBox, wallet: faWallet,
+  grid: faBorderAll, orders: faClipboardList, fulfillment: faTruckFast, products: faBox, wallet: faWallet,
   bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
 };
 const feedback = {
@@ -237,6 +237,131 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
 }
 
 
+
+const serviceLabels = {
+  driver: 'راننده و حمل‌ونقل', warehouse: 'انبارداری', harvest: 'برداشت محصول',
+  labor: 'نیروی کار', supervisor: 'ناظر خدمات', quality: 'کنترل کیفیت', other: 'سایر خدمات',
+};
+const producerLabels = { orchard: 'باغدار', farm: 'کشاورز', dairy: 'دامدار و لبنیات', greenhouse: 'گلخانه‌دار', other: 'تولیدکننده' };
+const reviewLabels = { pending: 'در انتظار بررسی', approved: 'تأیید شده', rejected: 'نیازمند اصلاح' };
+const sellerSteps = [
+  ['pending', 'accepted', 'در انتظار بررسی', 'پذیرفتن سفارش'],
+  ['accepted', 'preparing', 'پذیرفته‌شده', 'شروع آماده‌سازی'],
+  ['preparing', 'ready', 'در حال آماده‌سازی', 'آماده تحویل به حمل'],
+  ['ready', 'handed_over', 'آماده تحویل به حمل', 'ثبت تحویل به حمل‌کننده'],
+];
+function SellerOrderCard({ order }) {
+  const step = sellerSteps.find(row => row[0] === order.status);
+  return <article className="seller-order-card">
+    <header><div><span>سفارش</span><strong><bdi>{order.orderNumber || order.id.slice(0, 12)}</bdi></strong><small>{orderDateTime(order.createdAt)}</small></div>
+      <span className={'seller-fulfillment-state state-' + order.status}>{order.statusLabel}</span></header>
+    <div className="seller-order-buyer"><span>مشتری</span><strong>{order.buyer?.name || 'مشتری ساری‌چین'}</strong>
+      {(order.buyer?.city || order.buyer?.province) && <small>{[order.buyer.city, order.buyer.province].filter(Boolean).join('، ')}</small>}</div>
+    <ul className="seller-order-lines">{(order.items || []).map(line => <li key={line.id}>
+      <span>{line.name}</span><strong>{number.format(line.quantity)} {line.unitName || line.unit || 'واحد'}</strong>
+    </li>)}</ul>
+    <div className="seller-order-foot"><span>{number.format(order.itemCount)} قلم کالا</span><strong>{money(order.total)} کارسا</strong></div>
+    {order.delivery?.dispatchDate && <p className="seller-order-delivery">زمان ارسال: {order.delivery.dispatchDate}{order.delivery.slot ? ' · ' + order.delivery.slot : ''}</p>}
+    {step && <form action={updateSellerOrderStatus} className="seller-order-action">
+      <input type="hidden" name="orderId" value={order.id}/>
+      <input type="hidden" name="status" value={step[1]}/>
+      <button className="partner-primary" disabled={step[1] === 'preparing' && !order.allowedToPrepare}>
+        {step[1] === 'preparing' && !order.allowedToPrepare ? 'در انتظار تأیید سفارش یا پرداخت' : step[2] === 'در انتظار بررسی' ? 'پذیرش سفارش' : step[3]}
+      </button>
+    </form>}
+    {!step && <p className="seller-order-done"><FontAwesomeIcon icon={faCircleCheck}/> تحویل به حمل‌کننده ثبت شده است.</p>}
+  </article>;
+}
+function SellerOrders({ data, result }) {
+  const tabs = [['active','در جریان',data?.counts?.active || 0],['completed','تحویل به حمل',data?.counts?.handed_over || 0]];
+  return <section className="seller-fulfillment">
+    <div className="seller-fulfillment-intro"><div><h2>سفارش‌هایی که باید آماده و تحویل دهید</h2>
+      <p>فقط اقلامی نمایش داده می‌شود که از عرضه‌های ثبت‌شده توسط حساب شما خریداری شده‌اند.</p></div>
+      <div className="seller-fulfillment-total"><strong>{number.format(data?.counts?.active || 0)}</strong><span>سفارش فعال</span></div>
+    </div>
+    <nav className="seller-fulfillment-tabs">{tabs.map(([key,label,count])=><span key={key} className={key==='active'?'active':''}>{label}<b>{number.format(count)}</b></span>)}</nav>
+    {!data?.items?.length ? <div className="partner-empty"><p>در حال حاضر سفارش قابل پردازشی برای عرضه‌های شما ثبت نشده است.</p>
+      <Link href={partnerHref('products')}>مدیریت عرضه‌های من</Link></div> :
+      <div className="seller-order-grid">{data.items.map(order=><SellerOrderCard key={order.id} order={order}/>)}</div>}
+  </section>;
+}
+function DashboardOverview({ profile, overviewData }) {
+  const orders = overviewData?.sellerOrders || { items: [], counts: {}, total: 0 };
+  const offers = overviewData?.offers?.total ?? 0;
+  const locations = overviewData?.locations?.total ?? 0;
+  const tasks = [];
+  const addTask = (id,title,description,href,priority='normal') => tasks.push({id,title,description,href,priority});
+  if (!profile.fullName || !profile.city || !profile.email) addTask('profile','تکمیل اطلاعات پایه','نام، شهر و راه ارتباطی حساب را بررسی کنید.',partnerHref('profile'),'high');
+  if (!profile.customerType) addTask('buyer','تعیین نوع مشتری','نوع خرید خود را مشخص کنید تا خدمات متناسب نمایش داده شود.',partnerHref('profile'));
+  if (profile.producerType) {
+    if (profile.sellerStatus === 'pending') addTask('seller-review','تأیید نقش تولیدکننده','درخواست تولیدکنندگی در انتظار بررسی مدیریت است.',partnerHref('profile'));
+    else if (profile.sellerStatus === 'rejected') addTask('seller-fix','اصلاح مدارک تولیدکننده','درخواست تولیدکنندگی نیازمند اصلاح یا تکمیل اطلاعات است.',partnerHref('profile'),'high');
+    else if (profile.sellerStatus === 'approved') {
+      if (!locations) addTask('location','ثبت محل تولید یا بارگیری','برای عرضه محصولات، باغ، مزرعه، دامداری یا انبار خود را ثبت کنید.',partnerHref('orchards'),'high');
+      if (!offers) addTask('offer','ثبت اولین عرضه محصول','محصول، قیمت و موجودی قابل فروش خود را معرفی کنید.',partnerHref('products'));
+    }
+  }
+  const services = profile.serviceTypes || [];
+  if (services.length) {
+    if (!profile.serviceArea) addTask('service-area','تعیین محدوده فعالیت خدماتی','استان‌ها یا شهرهایی را که در آن خدمات ارائه می‌کنید ثبت کنید.',partnerHref('profile'));
+    if (services.includes('driver')) {
+      if (!overviewData?.vehicle?.vehicle) addTask('vehicle','ثبت مشخصات وسیله نقلیه','اطلاعات خودرو و مدارک رانندگی را تکمیل کنید.',partnerHref('profile'),'high');
+      else if (profile.driverStatus === 'pending') addTask('driver-review','تأیید مدارک راننده','مدارک رانندگی در انتظار بررسی است.',partnerHref('profile'));
+      else if (profile.driverStatus === 'rejected') addTask('driver-fix','اصلاح مدارک راننده','مدارک رانندگی نیازمند اصلاح است.',partnerHref('profile'),'high');
+    }
+    if (services.some(type => ['supervisor','quality'].includes(type))) {
+      if (profile.specialistStatus === 'pending') addTask('specialist-review','تأیید صلاحیت تخصصی','مدارک ناظر یا کنترل کیفیت در انتظار بررسی است.',partnerHref('profile'));
+      else if (profile.specialistStatus === 'rejected') addTask('specialist-fix','اصلاح مدارک تخصصی','اطلاعات صلاحیت تخصصی را بازبینی کنید.',partnerHref('profile'),'high');
+    }
+  }
+  (orders.items || []).filter(order => order.status !== 'handed_over').slice(0,5).forEach(order => {
+    const stage = sellerSteps.find(row=>row[0]===order.status);
+    addTask('order-'+order.id, (stage?.[3] || 'پیگیری سفارش') + ' · ' + (order.orderNumber || order.id.slice(0,8)),
+      (order.items || []).map(item=>item.name).slice(0,2).join('، '),partnerHref('fulfillment'),'high');
+  });
+  const roles = [
+    profile.customerType && {label:({consumer:'مشتری نهایی',retailer:'خرده‌فروش',wholesaler:'خریدار عمده',other:'مشتری'})[profile.customerType] || 'مشتری',tone:'buyer'},
+    profile.producerType && {label:producerLabels[profile.producerType] || 'تولیدکننده',tone:'producer'},
+    ...services.map(type=>({label:serviceLabels[type] || type,tone:'service'})),
+  ].filter(Boolean);
+  const activeOrders = orders.counts?.active || 0;
+  return <div className="partner-overview">
+    <section className="partner-overview-hero">
+      <div><span className="partner-overview-eyebrow">میز کار ساری‌چین</span><h2>{profile.fullName ? profile.fullName + '، خوش آمدید' : 'به پنل ساری‌چین خوش آمدید'}</h2>
+        <p>وضعیت فعالیت‌ها، سفارش‌ها و کارهای بعدی شما در یک نگاه.</p>
+        <div className="partner-role-chips">{roles.length ? roles.map((role,index)=><span key={index} className={'role-'+role.tone}>{role.label}</span>) : <span>حساب کاربری</span>}</div>
+      </div>
+      <Link href={partnerHref('profile')} className="partner-overview-edit">ویرایش پروفایل <FontAwesomeIcon icon={faArrowUpRightFromSquare}/></Link>
+    </section>
+    <section className="partner-overview-stats">
+      <Link href={partnerHref('fulfillment')}><span>سفارش‌های در جریان</span><strong>{number.format(activeOrders)}</strong><small>نیازمند اقدام شما</small></Link>
+      <Link href={partnerHref('fulfillment')}><span>در انتظار بررسی</span><strong>{number.format(orders.counts?.pending || 0)}</strong><small>سفارش جدید</small></Link>
+      <Link href={partnerHref('fulfillment')}><span>در حال آماده‌سازی</span><strong>{number.format(orders.counts?.preparing || 0)}</strong><small>در حال انجام</small></Link>
+      <Link href={partnerHref('products')}><span>عرضه‌های فعال</span><strong>{number.format(offers)}</strong><small>محصولات ثبت‌شده</small></Link>
+    </section>
+    <div className="partner-overview-columns">
+      <section className="partner-task-panel"><header><div><h3>کارهای بعدی من</h3><p>اقدام‌هایی که برای تکمیل فعالیت یا پیشبرد سفارش لازم است</p></div><span>{number.format(tasks.length)} مورد</span></header>
+        {!tasks.length ? <div className="partner-task-empty"><FontAwesomeIcon icon={faCircleCheck}/><strong>همه‌چیز مرتب است</strong><p>در حال حاضر اقدام ضروری ثبت نشده است.</p></div> :
+          <ul>{tasks.map(task=><li key={task.id} className={task.priority==='high'?'priority-high':''}>
+            <span className="partner-task-marker"><FontAwesomeIcon icon={faClipboardCheck}/></span>
+            <div><strong>{task.title}</strong><p>{task.description}</p></div><Link href={task.href}>پیگیری <FontAwesomeIcon icon={faArrowLeft}/></Link>
+          </li>)}</ul>}
+      </section>
+      <section className="partner-role-panel"><header><h3>وضعیت نقش‌ها و پیش‌نیازها</h3><Link href={partnerHref('profile')}>مشاهده پروفایل</Link></header>
+        <div className="partner-role-status"><span>خریدار</span><strong>{profile.customerType ? 'فعال' : 'اطلاعات ناقص'}</strong></div>
+        {profile.producerType && <div className="partner-role-status"><span>{producerLabels[profile.producerType] || 'تولیدکننده'}</span><strong>{reviewLabels[profile.sellerStatus] || 'در انتظار ثبت درخواست'}</strong></div>}
+        {services.map(type=><div className="partner-role-status" key={type}><span>{serviceLabels[type] || type}</span><strong>{type==='driver' ? (reviewLabels[profile.driverStatus] || (overviewData?.vehicle?.vehicle ? 'در انتظار بررسی' : 'نیازمند ثبت وسیله')) : ['supervisor','quality'].includes(type) ? (reviewLabels[profile.specialistStatus] || 'در انتظار بررسی') : 'ثبت‌شده'}</strong></div>)}
+        <div className="partner-role-status"><span>اطلاعات پایه</span><strong>{profile.fullName && profile.city ? 'تکمیل' : 'نیازمند تکمیل'}</strong></div>
+        <div className="partner-role-status"><span>موقعیت‌های ثبت‌شده</span><strong>{number.format(locations)}</strong></div>
+      </section>
+    </div>
+    <section className="partner-overview-latest"><header><h3>سفارش‌های نیازمند پیگیری</h3><Link href={partnerHref('fulfillment')}>مشاهده همه سفارش‌ها ←</Link></header>
+      {orders.items?.length ? <div className="seller-order-grid">{orders.items.slice(0,2).map(order=><SellerOrderCard key={order.id} order={order}/>)}</div> :
+        <div className="partner-task-empty"><p>سفارشی برای عرضه‌های شما ثبت نشده است.</p><Link href={partnerHref('products')}>مدیریت عرضه‌ها</Link></div>}
+    </section>
+  </div>;
+}
+
 function KarshaWallet({ wallet }) {
   const precise = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 8 });
   const transactionLabels = {
@@ -277,11 +402,11 @@ function KarshaWallet({ wallet }) {
   </div>;
 }
 
-export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, selectedStatus, selectedOrder, orderDetail, children }) {
+export default function PartnerDashboard({ profile, section, result, data, dataError, unavailable, page, offerCatalog, locations, overviewData, selectedStatus, selectedOrder, orderDetail, children }) {
   const info = sections[section];
   const visibleSections = Object.entries(sections).filter(([key]) => key !== 'products' || profile.capabilities?.sell)
     .filter(([key]) => key !== 'bulletin' || profile.capabilities?.drive);
-  const message = result === 'saved' && section === 'bulletin' ? 'درخواست حمل برای بررسی مدیریت ثبت شد.'
+  const message = result === 'updated' ? 'مرحله سفارش با موفقیت به‌روزرسانی شد.' : result === 'conflict' ? 'این مرحله هنوز قابل انجام نیست؛ وضعیت سفارش یا پرداخت را بررسی کنید.' : result === 'forbidden' ? 'دسترسی لازم برای این عملیات فعال نیست.' : result === 'saved' && section === 'bulletin' ? 'درخواست حمل برای بررسی مدیریت ثبت شد.'
     : typeof result === 'string' && Object.hasOwn(feedback, result) ? feedback[result] : '';
   return <div className="catalog-page partners-page partner-dashboard" dir="rtl">
     <div className="catalog-wrap">
@@ -299,7 +424,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
               : <small>با تکمیل مدارک و تأیید اولین درخواست، ۱ کارسا هدیه دریافت می‌کنید.</small>}
             {!profile.onboardingKarshaAwarded && <Link href={partnerHref('profile')}>تکمیل مدارک و دریافت هدیه ←</Link>}
           </div>
-          <nav aria-label="منوی پنل همکاران">
+          <nav aria-label="منوی اصلی پنل ساری‌چین">
             {visibleSections.map(([key, item]) => <Link key={key} href={partnerHref(key)}
               aria-current={key === section ? 'page' : undefined} prefetch={false}>
               <FontAwesomeIcon icon={icons[item.icon]} /><span>{item.label}</span>
@@ -322,7 +447,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
             </Link>)}
           </div>}
           {section === 'profile' && children}
-          {section === 'wallet' && <KarshaWallet wallet={data} />}
+          {section === 'wallet' && <KarshaWallet wallet={data} />}\n          {section === 'fulfillment' && <SellerOrders data={data} result={result} />}
           {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
           {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && section !== 'wallet' && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
