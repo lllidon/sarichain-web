@@ -73,9 +73,9 @@ export default function ProductOfferForm({ products, categories, brands, locatio
           <input type="date" name="harvestDate" lang="fa-IR" value={fields.harvestDate} onChange={changeField} />
         </label>
       </div>
-      <label>موقعیت مکانی عرضه (اختیاری)
-        <select name="locationId" value={fields.locationId} onChange={changeField} disabled={!locations?.length}>
-          <option value="">{locations === null ? 'دریافت موقعیت‌ها ممکن نبود' : 'انتخاب موقعیت'}</option>
+      <label>موقعیت مکانی بارگیری <span aria-hidden="true">*</span>
+        <select name="locationId" value={fields.locationId} onChange={changeField} disabled={!locations?.length} required>
+          <option value="">{locations === null ? 'دریافت موقعیت‌ها ممکن نبود' : locations?.length ? 'انتخاب محل بارگیری محصول' : 'ابتدا یک موقعیت مکانی ثبت کنید'}</option>
           {locations?.map(item => <option key={item.id} value={item.id}>{item.title}{item.city ? ' · ' + item.city : ''}</option>)}
         </select>
       </label>
@@ -85,6 +85,6 @@ export default function ProductOfferForm({ products, categories, brands, locatio
       </label>
     </> : <p>برای ورود مشخصات عرضه، یک محصول انتخاب کنید.</p>}
     {error && <p className="partner-dash-feedback" role="alert">{error}</p>}
-    <button type="submit" className="partner-primary" disabled={!selected || pending}>{pending ? 'در حال ثبت…' : 'ثبت عرضه'}</button>
+    <button type="submit" className="partner-primary" disabled={!selected || !fields.locationId || pending}>{pending ? 'در حال ثبت…' : 'ثبت عرضه'}</button>
   </form>;
 }
