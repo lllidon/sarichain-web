@@ -16,7 +16,11 @@ export default function LocationMap({ point, onPick }) {
     let disposed = false;
     import('leaflet').then(({ default: L }) => {
       if (disposed) return;
-      map = L.map(host.current, { scrollWheelZoom: false, maxBounds: [[-85, -180], [85, 180]] }).setView([32.5, 53.5], 5);
+      const initialLatitude = point.latitude === '' ? NaN : Number(point.latitude);
+      const initialLongitude = point.longitude === '' ? NaN : Number(point.longitude);
+      const hasInitialPoint = Number.isFinite(initialLatitude) && Math.abs(initialLatitude) <= 90 && Number.isFinite(initialLongitude) && Math.abs(initialLongitude) <= 180;
+      map = L.map(host.current, { scrollWheelZoom: false, maxBounds: [[-85, -180], [85, 180]] })
+        .setView(hasInitialPoint ? [initialLatitude, initialLongitude] : [32.5, 53.5], hasInitialPoint ? 14 : 5);
       const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19, noWrap: true,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
