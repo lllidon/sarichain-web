@@ -146,7 +146,7 @@ function CategoryList({ categories }) {
     <ul className="market-home-categories">
       {links.map(({ name, href, image }, index) => <li key={href}>
         <Link href={href} prefetch={false}>
-          <span className="market-home-category-image"><img src={image} alt="" loading="lazy" onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = '/img/catalog/field.webp'; }}/></span>
+          <span className="market-home-category-image"><img src={image || '/img/catalog/field.webp'} alt="" loading="lazy"/></span>
           <span className="market-home-category-meta"><strong>{name}</strong><small>مشاهده عرضه‌ها</small></span>
           <i><FontAwesomeIcon icon={icons[index % icons.length]}/></i>
         </Link>
