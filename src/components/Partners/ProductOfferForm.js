@@ -2,13 +2,13 @@
 
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { saveProductOffer } from '../../app/(workspace)/partners/actions';
+import { requestProductCategoryUpgrade, saveProductOffer } from '../../app/(workspace)/partners/actions';
 import { categoryContains, normalizeCatalogSearch } from '../Products/catalog';
 import { partnerHref } from './workspaceSections';
 
 const resultPageSize = 8;
 
-export default function ProductOfferForm({ products, categories, brands, locations }) {
+export default function ProductOfferForm({ products, categories, brands, locations, allowedCategoryIds = [], pendingCategoryIds = [] }) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [brand, setBrand] = useState('');
@@ -16,6 +16,7 @@ export default function ProductOfferForm({ products, categories, brands, locatio
   const [selected, setSelected] = useState(null);
   const [fields, setFields] = useState({ price: '', stock: '', harvestDate: '', notes: '', locationId: '' });
   const [error, action, pending] = useActionState(saveProductOffer, null);
+  const [upgradeMessage, upgradeAction, upgradePending] = useActionState(requestProductCategoryUpgrade, null);
   const query = normalizeCatalogSearch(search);
   const matches = products.filter(product =>
     (!category || categoryContains(categories, category, product.category)) &&
@@ -23,6 +24,7 @@ export default function ProductOfferForm({ products, categories, brands, locatio
     normalizeCatalogSearch([product.name, product.code, product.brand].join(' ')).includes(query));
   const changeFilter = set => event => { set(event.target.value); setLimit(resultPageSize); };
   const changeField = event => setFields({ ...fields, [event.target.name]: event.target.value });
+  const allowed = product => allowedCategoryIds.includes(product.category);
   const categoryName = id => {
     const item = categories[id];
     const parent = categories[item.parentId];
@@ -53,14 +55,26 @@ export default function ProductOfferForm({ products, categories, brands, locatio
         <button type="button" aria-pressed={selected?.id === product.id}
           onClick={() => setSelected(product)}>
           <strong>{product.name}</strong>
-          <small>{[product.code, product.brand, categories[product.category]?.name].filter(Boolean).join(' · ')}</small>
+          <small>{[product.code, product.brand, categories[product.category]?.name].filter(Boolean).join(' · ')}{allowed(product) ? '' : ' · مشاهده فقط'}</small>
         </button>
       </li>)}
     </ul>
     {!matches.length && <p role="status">محصولی با این فیلترها یافت نشد.</p>}
     {matches.length > limit && <button type="button" className="partner-secondary" onClick={() => setLimit(limit + resultPageSize)}>نمایش محصولات بیشتر</button>}
     <input type="hidden" name="productId" value={selected?.id ?? ''} />
-    {selected ? <>
+    {selected && !allowed(selected) ? <section className="partner-category-upgrade" aria-live="polite">
+      <p><strong>{selected.name}</strong> در دسته‌بندی «{categoryName(selected.category)}» قرار دارد.</p>
+      <p>مشاهده این محصول آزاد است؛ برای ثبت قیمت و موجودی باید دسترسی این دسته‌بندی تأیید شود.</p>
+      {pendingCategoryIds.includes(selected.category)
+        ? <p className="partner-message" role="status">درخواست دسترسی این دسته‌بندی در انتظار بررسی مدیریت است.</p>
+        : <>
+          <input type="hidden" name="categoryIds" value={JSON.stringify([selected.category])} />
+          <button type="submit" formAction={upgradeAction} className="partner-secondary" disabled={upgradePending}>
+            {upgradePending ? 'در حال ارسال…' : 'درخواست ارتقای سطح دسترسی'}
+          </button>
+        </>}
+      {upgradeMessage && <p className="partner-dash-feedback" role="status">{upgradeMessage}</p>}
+    </section> : selected ? <>
       <p className="partner-offer-selected" role="status"><strong>محصول انتخاب‌شده</strong> {selected.name} · <bdi>{selected.code}</bdi></p>
       <div className="partner-offer-filters">
         <label>قیمت هر {selected.unit} (کارسا)
