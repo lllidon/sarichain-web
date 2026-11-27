@@ -67,3 +67,26 @@
 .account-upgrade-history article { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:10px; border:1px solid var(--catalog-line); border-radius:9px; }
 .account-upgrade-history p { width:100%; margin:0; font-size:12px; }
 @media(max-width:700px) { .account-upgrade-grid { grid-template-columns:1fr; } }
+
+.customer-address-book { display:grid; gap:12px; margin-top:18px; padding:15px; border:1px solid var(--catalog-line); border-radius:12px; background:#fbfcfa; }
+.customer-address-book > header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.customer-address-book > header h3 { margin:0 0 4px; color:var(--catalog-green); font-size:16px; }
+.customer-address-book > header p,.customer-address-map > p { margin:0; color:var(--catalog-muted); font-size:12px; line-height:1.9; }
+.customer-address-empty { margin:0; padding:12px; color:var(--catalog-muted); font-size:12px; border:1px dashed var(--catalog-line); border-radius:8px; }
+.customer-address-list { display:grid; gap:8px; }
+.customer-address-card { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:11px; border:1px solid var(--catalog-line); border-radius:9px; background:#fff; }
+.customer-address-card > div:first-child { display:grid; gap:4px; min-width:0; }
+.customer-address-card strong { color:var(--catalog-ink); font-size:13px; }
+.customer-address-card span,.customer-address-card p,.customer-address-card small { margin:0; color:var(--catalog-muted); font-size:11px; line-height:1.8; overflow-wrap:anywhere; }
+.customer-address-card small { color:var(--catalog-green); }
+.customer-address-actions { display:flex; flex-wrap:wrap; gap:7px; }
+.customer-address-editor { display:grid; gap:12px; padding:13px; border:1px solid var(--catalog-line); border-radius:10px; background:#fff; }
+.customer-address-editor h4 { margin:0; color:var(--catalog-green); font-size:14px; }
+.customer-address-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.customer-address-wide { grid-column:1/-1; }
+.customer-address-map { display:grid; gap:8px; }
+.customer-address-map > strong { font-size:13px; }
+.customer-address-map .partner-map-picker { min-width:0; }
+.customer-address-coordinates { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.customer-address-coordinates input { direction:ltr; }
+@media(max-width:540px) { .customer-address-fields,.customer-address-coordinates { grid-template-columns:1fr; } }
