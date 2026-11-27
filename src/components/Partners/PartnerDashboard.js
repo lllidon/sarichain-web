@@ -341,7 +341,7 @@ function DashboardOverview({ profile, overviewData }) {
       <Link href={partnerHref('fulfillment')}><span>سفارش‌های در جریان</span><strong>{number.format(activeOrders)}</strong><small>نیازمند اقدام شما</small></Link>
       <Link href={partnerHref('fulfillment')}><span>در انتظار بررسی</span><strong>{number.format(orders.counts?.pending || 0)}</strong><small>سفارش جدید</small></Link>
       <Link href={partnerHref('fulfillment')}><span>در حال آماده‌سازی</span><strong>{number.format(orders.counts?.preparing || 0)}</strong><small>در حال انجام</small></Link>
-      <Link href={partnerHref('products')}><span>عرضه‌های فعال</span><strong>{number.format(offers)}</strong><small>محصولات ثبت‌شده</small></Link>
+      {profile.producerType ? <Link href={partnerHref('products')}><span>عرضه‌های فعال</span><strong>{number.format(offers)}</strong><small>محصولات ثبت‌شده</small></Link> : <Link href={partnerHref('profile')}><span>کارهای نیازمند پیگیری</span><strong>{number.format(tasks.length)}</strong><small>پیش‌نیازهای حساب</small></Link>}
     </section>
     <div className="partner-overview-columns">
       <section className="partner-task-panel"><header><div><h3>کارهای بعدی من</h3><p>اقدام‌هایی که برای تکمیل فعالیت یا پیشبرد سفارش لازم است</p></div><span>{number.format(tasks.length)} مورد</span></header>
