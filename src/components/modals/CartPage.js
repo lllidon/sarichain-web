@@ -88,7 +88,7 @@ function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, 
         return <label key={method.id} className="checkout-method">
           <input type="radio" name="cart-delivery-method" checked={method.id === selected.id}
             onChange={() => setSelected(method.id)} />
-          <span><strong>{method.label}</strong><small>تحویل برآوردی {showDate((method.windows.find(window => window.dispatchDate === date) ?? method.windows[0]).deliveryDate)}</small><small>{method.routeLabel} · حدود {number.format(method.distanceKm)} کیلومتر</small><small>{method.routingPending ? 'فاصله تخمینی؛ مسیریابی جاده‌ای در دسترس نیست' : 'برآورد بر اساس مسیر جاده‌ای'}</small>
+          <span><strong>{method.label}</strong><small>تحویل برآوردی {showDate((method.windows.find(window => window.dispatchDate === date) ?? method.windows[0]).deliveryDate)}</small><small>زمان تخمینی است و پس از تأیید ظرفیت حمل قطعی می‌شود.</small><small>{method.routeLabel} · حدود {number.format(method.distanceKm)} کیلومتر</small><small>{method.routingPending ? 'فاصله تخمینی؛ مسیریابی جاده‌ای در دسترس نیست' : 'برآورد بر اساس مسیر جاده‌ای'}</small>
             {saving > 0 && <small className="checkout-savings">{formatPrice(cost(saving))} صرفه‌جویی نسبت به ارسال سریع</small>}
           </span>
           <b>{formatPrice(cost(method.fee))}</b>
