@@ -52,13 +52,14 @@ export default function HomeHeroCarousel({ slides: managedSlides = [] }) {
   }, [paused, slides.length]);
 
   const slide = slides[active];
+  const imageSrc = slide.imageUrl || slide.image;
   return <section className="market-home-carousel" aria-roledescription="اسلایدر" aria-label="معرفی ساری‌چین"
     onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
     onFocusCapture={() => setPaused(true)} onBlurCapture={(event) => {
       if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
     }}>
-    <div className="market-home-slide-image" key={slide.image}>
-      <img src={slide.image} alt={slide.imageAlt} fetchPriority={active === 0 ? 'high' : 'auto'} />
+    <div className="market-home-slide-image" key={imageSrc}>
+      <img src={imageSrc} alt={slide.imageAlt} fetchPriority={active === 0 ? 'high' : 'auto'} />
     </div>
     <div className="market-home-slide-shade" />
     <div className="market-home-slide-content" key={active}>
