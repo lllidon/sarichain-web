@@ -10,11 +10,12 @@ import { readCatalog } from '../../../components/Products/catalog-data';
 export const metadata = { title: 'فروشندگان و همکاران ساری‌چین', robots: { index: false, follow: true } };
 
 export default async function PartnersPage({ searchParams }) {
-  const { login, returnTo, section: selected, page: requestedPage, result: feedback, status: selectedStatus, order: selectedOrder } = await searchParams;
+  const { login, returnTo, section: selected, page: requestedPage, result: feedback, status: selectedStatus, fulfillmentStatus: requestedFulfillmentStatus, order: selectedOrder } = await searchParams;
   const returnToCart = returnTo === 'cart';
   const section = typeof selected === 'string' && Object.hasOwn(sections, selected) ? selected : 'overview';
   const page = typeof requestedPage === 'string' && /^[1-9]\d{0,3}$/.test(requestedPage) ? Number(requestedPage) : 1;
   const status = ['current', 'completed', 'returned', 'cancelled'].includes(selectedStatus) ? selectedStatus : 'current';
+  const fulfillmentStatus = ['active', 'completed'].includes(requestedFulfillmentStatus) ? requestedFulfillmentStatus : 'active';
   const orderId = typeof selectedOrder === 'string' && /^[a-f0-9]{64}$/.test(selectedOrder) ? selectedOrder : '';
   if (typeof login === 'string' && Object.hasOwn(loginMessages, login)) {
     return <PartnerProfile returnToCart={returnToCart} initialMessage={loginMessages[login]} />;
@@ -57,7 +58,7 @@ export default async function PartnersPage({ searchParams }) {
   if (isList) {
     try {
       const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : section === 'wallet' ? '/web/karsha' : section === 'fulfillment' ? '/web/workspace/seller-orders' : '/web/workspace/' + section;
-      const query = new URLSearchParams({ page, limit: 10, ...(section === 'orders' && { status }), ...(section === 'fulfillment' && { status: 'active' }) });
+      const query = new URLSearchParams({ page, limit: 10, ...(section === 'orders' && { status }), ...(section === 'fulfillment' && { status: fulfillmentStatus }) });
       const result = await partnerBackend(path, { token, query: query.toString() });
       if (result.status === 401) return <PartnerProfile returnToCart={returnToCart} initialMessage="نشست پایان یافته است. دوباره وارد شوید." />;
       if (result.ok) {
@@ -100,7 +101,7 @@ export default async function PartnersPage({ searchParams }) {
     }
   }
   return <PartnerDashboard profile={profile} section={section} data={data} dataError={dataError} page={page} result={feedback}
-    selectedStatus={status} selectedOrder={orderId} orderDetail={orderDetail} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
+    selectedStatus={status} selectedFulfillmentStatus={fulfillmentStatus} selectedOrder={orderId} orderDetail={orderDetail} locations={await locations} overviewData={overviewData} unavailable={isList && !data}>
     {section === 'profile' && <PartnerProfileEditor initialProfile={profile} categories={upgradeCategories} />}
   </PartnerDashboard>;
 }
