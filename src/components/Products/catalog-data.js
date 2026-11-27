@@ -28,7 +28,7 @@ export const readCatalog = cache(async (mode) => {
       const [form, detail] = (product.shortDescription || '').split(' · ');
       const gallery = product.gallery || [];
       const item = {
-        id: product._id, code: product.sku, name: product.name, category: categories[product.categoryId] ? product.categoryId : 'uncategorized',
+        id: product._id, code: product.sku, name: product.name, category: categories[product.categoryId] ? product.categoryId : (parent?.category || 'uncategorized'),
         offers: product.offers ?? [],
         isVariant: product.kind === 'variant',
         parentCode: parent?.code,
