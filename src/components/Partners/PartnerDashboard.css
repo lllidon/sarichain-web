@@ -679,3 +679,16 @@
 .seller-fulfillment-tabs a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; color:var(--dash-muted); text-decoration:none; font-size:.78rem; }
 .seller-fulfillment-tabs a.active { color:var(--dash-brand); border-bottom:2px solid var(--dash-brand); font-weight:800; }
 .seller-fulfillment-tabs a b { padding:2px 7px; border-radius:999px; background:#edf3ef; font-size:.7rem; }
+
+
+.partner-category-upgrade {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #d9e7d3;
+  border-radius: 12px;
+  background: #f6f9f3;
+}
+.partner-category-upgrade p { margin: 0; line-height: 1.9; }
+.partner-category-upgrade .partner-secondary { justify-self: start; }
+.partner-offer-results button[aria-pressed="false"] small { display: block; }
