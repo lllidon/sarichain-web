@@ -69,7 +69,7 @@ export async function saveProductOffer(_state, formData) {
     return 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.';
   }
   if (result.status === 401) redirect('/partners');
-  if (result.status === 403) return 'ثبت عرضه برای حساب دارای نقش تولیدکننده فعال است.';
+  if (result.status === 403) return 'برای ثبت این عرضه مجوز ندارید؛ تأیید نقش تولیدکننده و دسته‌بندی‌های مجاز حساب خود را بررسی کنید. در صورت نیاز، از بخش پروفایل درخواست تغییر دسته‌بندی ثبت کنید.';
   if (result.status === 400) return invalid;
   if (!result.ok) return 'ثبت عرضه انجام نشد. دوباره تلاش کنید.';
   redirect(partnerHref('products') + '&result=saved');
