@@ -374,3 +374,114 @@
 @media(prefers-reduced-motion:reduce) {
   .market-home-carousel *, .market-home * { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; transition-duration:.01ms!important; }
 }
+
+
+/* Refined homepage carousel and category cards */
+.market-home-carousel {
+  height:360px;
+  min-height:360px;
+  max-height:360px;
+  margin-block:18px 24px;
+  border-radius:18px;
+}
+.market-home-slide-image img { object-fit:cover; object-position:center 48%; }
+.market-home-slide-content { width:min(650px,68%); padding-block:38px 58px; }
+.market-home-slide-content h1 { font-size:clamp(1.9rem,3.35vw,3.05rem); line-height:1.3; }
+.market-home-slide-content > p { margin-block:11px 15px; max-width:470px; font-size:13px; line-height:1.85; }
+.market-home-slide-eyebrow { margin-bottom:11px; }
+.market-home-carousel-controls { inset-inline:0; bottom:18px; justify-content:center; }
+.market-home-carousel-dots { gap:9px; padding:7px 12px; border:1px solid rgba(255,255,255,.2); border-radius:30px; background:rgba(16,39,26,.22); backdrop-filter:blur(8px); }
+.market-home-carousel-dots button { width:8px; height:8px; }
+.market-home-carousel-dots button.active { width:25px; }
+.market-home-slide-count { display:none; }
+
+.market-home-category-section {
+  padding:clamp(18px,2.5vw,28px);
+  border:1px solid #e6ebe2;
+  border-radius:18px;
+  background:linear-gradient(135deg,#f5f8f1 0%,#f9faf6 100%);
+}
+.market-home-category-section .market-home-section-heading { margin-bottom:20px; }
+.market-home-categories {
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));
+  gap:13px;
+}
+.market-home-categories li { min-width:0; }
+.market-home-categories a {
+  display:grid;
+  grid-template-columns:116px minmax(0,1fr);
+  align-items:center;
+  gap:15px;
+  min-height:126px;
+  padding:10px;
+  border:1px solid #e4eae0;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(30,58,37,.025);
+  transition:transform .22s,border-color .22s,box-shadow .22s;
+}
+.market-home-categories a:hover {
+  transform:translateY(-3px);
+  border-color:#afc4a9;
+  box-shadow:0 10px 22px rgba(30,58,37,.08);
+}
+.market-home-categories a > .market-home-category-image {
+  display:block;
+  width:116px;
+  height:104px;
+  aspect-ratio:auto;
+  overflow:hidden;
+  border-radius:10px;
+  background:#edf2e9;
+  color:inherit;
+}
+.market-home-category-image img { display:block; width:100%; height:100%; object-fit:cover; }
+.market-home-categories a > .market-home-category-meta {
+  display:grid;
+  align-content:center;
+  justify-items:start;
+  width:auto;
+  height:auto;
+  min-width:0;
+  aspect-ratio:auto;
+  padding:0;
+  border-radius:0;
+  background:transparent;
+  color:inherit;
+  gap:7px;
+}
+.market-home-category-meta strong {
+  display:block;
+  overflow:visible;
+  color:#263d2e;
+  font-size:14px;
+  line-height:1.7;
+  text-overflow:clip;
+  white-space:normal;
+}
+.market-home-category-meta small { color:#849187; font-size:11px; }
+.market-home-categories a > i { display:none; }
+
+@media(max-width:980px) {
+  .market-home-carousel { height:340px; min-height:340px; max-height:340px; }
+  .market-home-categories { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .market-home-categories a { grid-template-columns:96px minmax(0,1fr); min-height:112px; gap:11px; }
+  .market-home-categories a > .market-home-category-image { width:96px; height:92px; }
+}
+@media(max-width:680px) {
+  .market-home-carousel { height:390px; min-height:390px; max-height:390px; margin-block:12px 20px; }
+  .market-home-slide-content { width:100%; padding:54px 20px 82px; }
+  .market-home-slide-content h1 { font-size:clamp(1.8rem,7.5vw,2.4rem); }
+  .market-home-slide-content > p { max-width:100%; font-size:12px; }
+  .market-home-carousel-controls { bottom:13px; }
+  .market-home-category-section { padding:14px; }
+  .market-home-categories { grid-template-columns:1fr; gap:9px; }
+  .market-home-categories a { grid-template-columns:88px minmax(0,1fr); min-height:104px; padding:8px; }
+  .market-home-categories a > .market-home-category-image { width:88px; height:86px; }
+  .market-home-category-meta strong { font-size:12px; }
+}
+@media(max-width:390px) {
+  .market-home-carousel { height:390px; min-height:390px; max-height:390px; }
+  .market-home-categories a { grid-template-columns:80px minmax(0,1fr); }
+  .market-home-categories a > .market-home-category-image { width:80px; height:80px; }
+}
