@@ -164,7 +164,7 @@ export default function CartPage({ initialMessage = '' }) {
   const quoteSignature = JSON.stringify(quoteLines);
   useEffect(() => {
     if (!hasItems) return;
-    if (!destination.latitude || !destination.longitude) {
+    if (!destination || !Number.isFinite(Number(destination.latitude)) || !Number.isFinite(Number(destination.longitude))) {
       setOptions(null); setFailed(false); setQuoteError(selectedAddress ? 'موقعیت جغرافیایی این نشانی ثبت نشده است. از بخش اطلاعات حساب، نشانی را ویرایش و موقعیت تحویل را روی نقشه مشخص کنید.' : 'ابتدا یکی از نشانی‌های ذخیره‌شده را انتخاب کنید یا از بخش اطلاعات حساب نشانی جدید بسازید.');
       return;
     }
