@@ -73,6 +73,7 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
                 <button className="partner-remove" aria-label={`حذف ${item.title}`}>حذف</button>
               </form>}
             </div>
+            {item.offer && !item.offer.locationTitle && <p className="partner-dash-feedback" role="note">برای محاسبه خودکار هزینه حمل، این عرضه باید موقعیت بارگیری داشته باشد؛ عرضه قبلی را حذف و دوباره با انتخاب موقعیت ثبت کنید.</p>}
             {item.offer && <dl className="partner-offer-summary">
               <div><dt>قیمت هر {item.offer.unit}</dt><dd>{offerPrice.format(item.offer.price)} کارسا</dd></div>
               <div><dt>موجودی تقریبی</dt><dd>{number.format(item.offer.stock)} {item.offer.unit}</dd></div>
