@@ -62,6 +62,16 @@ flowchart TD
 - Material supplier directory: backend `/directory/material-suppliers` through the website server-side integration.
 - Set `BACKEND_URL` in the Next.js server environment; do not put backend secrets or tokens in client bundles.
 
+## Producer category permissions and offer entry
+
+- `src/components/Partners/AccountUpgradeCenter.js` exposes `ProducerCategoryEditor` to an already-approved producer. It submits the complete desired category-ID set; at least one category must remain selected. The current permissions remain active while the request is pending.
+- The editor sends `POST /web/account-upgrades/producer-categories` through the website's `api()` helper.
+- `src/app/web/account-upgrades/producer-categories/route.js` is the dedicated Next.js server route for that nested path. It requires JSON, rejects cross-site requests, reads the HttpOnly partner session cookie, and forwards the request to the backend endpoint using `partnerBackend`. Do not assume the generic one-segment `/web/[resource]` handler covers this nested route.
+- `src/app/(workspace)/partners/page.js` derives the producer's allowed category IDs from `profile.allowedProductCategoryIds`, then passes only matching categories and products to `PartnerDashboard`. Brand choices are further limited to brands referenced by those products.
+- `src/components/Partners/PartnerDashboard.js` passes those scoped arrays to `ProductOfferForm`; the offer form must not be given the full catalog for producer selection.
+- Related backend and admin-panel behavior is documented in their respective `docs/KNOWLEDGE_GRAPH.md` files. Contract chain: producer editor → Next.js proxy → backend request/review → member's `allowedProductCategoryIds` → scoped offer form.
+- Relevant changes: website PR #6 (category-change UI), PR #8 (nested proxy route), and the producer catalog visibility change on `main`. These changes were merged; deploy the web app to make them live.
+
 ## Change-impact guide
 - Homepage sections and composition: `src/app/(home)/page.js` and colocated `home.css`.
 - Global metadata, RTL and root styling: `src/app/layout.js`, `src/App.css`.
