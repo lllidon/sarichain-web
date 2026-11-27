@@ -418,3 +418,9 @@
   .partner-excel-actions { width: 100%; margin-inline-start: 0; }
   .partner-excel-actions form, .partner-excel-button { flex: 1 1 0; }
 }
+
+.partner-offer-location-form { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:8px; margin:10px 0; padding:10px; border:1px solid var(--catalog-line); border-radius:9px; background:#f7faf6; }
+.partner-offer-location-form label { display:grid; gap:5px; color:var(--catalog-muted); font-size:11px; }
+.partner-offer-location-form select { width:100%; min-width:0; padding:7px 8px; border:1px solid var(--catalog-line); border-radius:7px; background:#fff; color:var(--catalog-ink); }
+.partner-offer-location-form button { white-space:nowrap; }
+@media(max-width:560px) { .partner-offer-location-form { grid-template-columns:1fr; } }
