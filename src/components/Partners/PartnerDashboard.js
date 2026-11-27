@@ -293,6 +293,7 @@ function DashboardOverview({ profile, overviewData }) {
   const addTask = (id,title,description,href,priority='normal') => tasks.push({id,title,description,href,priority});
   if (!profile.fullName || !profile.city || !profile.email) addTask('profile','تکمیل اطلاعات پایه','نام، شهر و راه ارتباطی حساب را بررسی کنید.',partnerHref('profile'),'high');
   if (!profile.customerType) addTask('buyer','تعیین نوع مشتری','نوع خرید خود را مشخص کنید تا خدمات متناسب نمایش داده شود.',partnerHref('profile'));
+  else if (!profile.deliveryAddresses?.length) addTask('delivery-address','ثبت نشانی تحویل','برای خرید و دریافت سفارش، دست‌کم یک نشانی تحویل ثبت کنید.',partnerHref('profile'));
   if (profile.producerType) {
     if (profile.sellerStatus === 'pending') addTask('seller-review','تأیید نقش تولیدکننده','درخواست تولیدکنندگی در انتظار بررسی مدیریت است.',partnerHref('profile'));
     else if (profile.sellerStatus === 'rejected') addTask('seller-fix','اصلاح مدارک تولیدکننده','درخواست تولیدکنندگی نیازمند اصلاح یا تکمیل اطلاعات است.',partnerHref('profile'),'high');
