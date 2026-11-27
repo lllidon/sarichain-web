@@ -14,6 +14,8 @@ export default async function PartnersPage({ searchParams }) {
   const returnToCart = returnTo === 'cart';
   const section = typeof selected === 'string' && Object.hasOwn(sections, selected) ? selected : 'overview';
   const page = typeof requestedPage === 'string' && /^[1-9]\d{0,3}$/.test(requestedPage) ? Number(requestedPage) : 1;
+  const status = ['current', 'completed', 'returned', 'cancelled'].includes(selectedStatus) ? selectedStatus : 'current';
+  const orderId = typeof selectedOrder === 'string' && /^[a-f0-9]{64}$/.test(selectedOrder) ? selectedOrder : '';
   if (typeof login === 'string' && Object.hasOwn(loginMessages, login)) {
     return <PartnerProfile returnToCart={returnToCart} initialMessage={loginMessages[login]} />;
   }
