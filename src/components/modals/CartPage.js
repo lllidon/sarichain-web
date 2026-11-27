@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,6 +12,7 @@ import { submitOrder } from '../Products/submitOrder';
 import { useCartCommands, useCatalogCart } from './cartStore';
 import { displayCart } from './cartPresentation';
 import CartNotices from './CartNotices';
+import LocationMap from '../Partners/LocationMap';
 import { useAccountWeeklyBasket } from './AccountWeeklyBasketProvider';
 import './cart.css';
 
@@ -78,7 +79,7 @@ function CartLines({ items, busy, update, add }) {
 }
 
 function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, setSlot, busy }) {
-  const fastest = options[0];
+  const fastest = options.find(option => option.id === 'urgent') ?? options[options.length - 1];
   return <div className="checkout-shipping">
     <fieldset disabled={busy}>
       <legend><FontAwesomeIcon icon={faTruck} /> روش ارسال</legend>
@@ -87,7 +88,7 @@ function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, 
         return <label key={method.id} className="checkout-method">
           <input type="radio" name="cart-delivery-method" checked={method.id === selected.id}
             onChange={() => setSelected(method.id)} />
-          <span><strong>{method.label}</strong><small>تحویل برآوردی {showDate((method.windows.find(window => window.dispatchDate === date) ?? method.windows[0]).deliveryDate)}</small>
+          <span><strong>{method.label}</strong><small>تحویل برآوردی {showDate((method.windows.find(window => window.dispatchDate === date) ?? method.windows[0]).deliveryDate)}</small><small>{method.routeLabel} · حدود {number.format(method.distanceKm)} کیلومتر</small>
             {saving > 0 && <small className="checkout-savings">{formatPrice(cost(saving))} صرفه‌جویی نسبت به ارسال سریع</small>}
           </span>
           <b>{formatPrice(cost(method.fee))}</b>
@@ -123,25 +124,40 @@ export default function CartPage({ initialMessage = '' }) {
   const [method, setMethod] = useState('standard');
   const [requestedDate, setDate] = useState('');
   const [requestedSlot, setSlot] = useState('');
+  const [destination, setDestination] = useState({ latitude: '', longitude: '' });
+  const [quoteError, setQuoteError] = useState('');
+  const pickDestination = useCallback(point => setDestination(point), []);
 
   const hasItems = cart.length > 0;
+  const quoteLines = cart.map(item => ({
+    productId: item.productId, quantity: item.quantity, unitId: item.unitId ?? item.packId ?? 'unit',
+    ...(item.offerId && { offerId: item.offerId }),
+  }));
+  const quoteSignature = JSON.stringify(quoteLines);
   useEffect(() => {
     if (!hasItems) return;
+    if (!destination.latitude || !destination.longitude) {
+      setOptions(null); setFailed(false); setQuoteError('برای محاسبه مسیر و هزینه، مقصد را روی نقشه انتخاب کنید.');
+      return;
+    }
     const controller = new AbortController();
-    setOptions(null);
-    setFailed(false);
-    fetch('/web/delivery-options', { cache: 'no-store', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]) })
-      .then(response => {
-        if (!response.ok) throw Error();
-        return response.json();
-      })
-      .then(({ methods }) => {
-        if (!methods?.length) throw Error();
-        if (!controller.signal.aborted) setOptions(methods);
-      })
-      .catch(() => { if (!controller.signal.aborted) setFailed(true); });
+    setOptions(null); setFailed(false); setQuoteError('');
+    fetch('/web/delivery-options', {
+      method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: JSON.parse(quoteSignature), destination: { latitude: Number(destination.latitude), longitude: Number(destination.longitude) } }),
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]),
+    }).then(async response => {
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw Error(Array.isArray(result.message) ? result.message.join('، ') : result.message || 'محاسبه هزینه حمل انجام نشد.');
+      return result;
+    }).then(({ methods }) => {
+      if (!methods?.length) throw Error('برای این سبد گزینه حمل قابل محاسبه نیست. مشخصات فیزیکی کالا و موقعیت بارگیری تولیدکنندگان را بررسی کنید.');
+      if (!controller.signal.aborted) setOptions(methods);
+    }).catch(error => {
+      if (!controller.signal.aborted) { setFailed(true); setQuoteError(error.message || 'محاسبه هزینه حمل انجام نشد.'); }
+    });
     return () => controller.abort();
-  }, [hasItems, revision]);
+  }, [hasItems, revision, quoteSignature, destination.latitude, destination.longitude]);
 
   const items = displayCart(cart, catalog, account);
   const changes = cart.filter(item => item.notice);
@@ -187,7 +203,10 @@ export default function CartPage({ initialMessage = '' }) {
     try {
       const result = await submitOrder(items.map(item => ({
         productId: item.productId, quantity: item.quantity, unitId: item.pack.id, offerId: item.offerId,
-      })), orderRequest, { method: selected.id, dispatchDate: date, slot }, account.revision);
+      })), orderRequest, {
+        method: selected.id, dispatchDate: date, slot,
+        destination: { latitude: Number(destination.latitude), longitude: Number(destination.longitude) },
+      }, account.revision);
       setMessage('درخواست ثبت شد. کد پیگیری ' + result.id);
       await account.request().catch(() => {});
     } catch (error) {
@@ -228,10 +247,19 @@ export default function CartPage({ initialMessage = '' }) {
       </section>
       <aside className="checkout-card checkout-summary" aria-labelledby="checkout-summary-title">
         <h3 id="checkout-summary-title">خلاصهٔ سبد و ارسال</h3>
+        <section className="checkout-destination">
+          <strong>مقصد تحویل سفارش</strong>
+          <p>برای محاسبه دقیق مسافت و مقایسه ارسال مستقیم با تجمیع، محل تحویل را روی نقشه مشخص کنید.</p>
+          <LocationMap point={destination} onPick={pickDestination} />
+          <div className="checkout-destination-coordinates">
+            <label>عرض جغرافیایی<input type="number" step="0.000001" value={destination.latitude} onChange={event=>setDestination(current=>({...current,latitude:event.target.value}))}/></label>
+            <label>طول جغرافیایی<input type="number" step="0.000001" value={destination.longitude} onChange={event=>setDestination(current=>({...current,longitude:event.target.value}))}/></label>
+          </div>
+        </section>
         {selected ? <DeliveryOptions options={options} selected={selected} setSelected={setMethod} date={date} setDate={setDate}
           slot={slot} setSlot={setSlot} busy={busy} /> : failed ?
-          <div className="checkout-warning" role="alert">دریافت روش‌های ارسال انجام نشد. <button type="button" onClick={() => retry(value => value + 1)}>تلاش دوباره</button></div> :
-          <p role="status">در حال دریافت روش‌های ارسال…</p>}
+          <div className="checkout-warning" role="alert">{quoteError} <button type="button" onClick={() => retry(value => value + 1)}>تلاش دوباره</button></div> :
+          <p role="status">{quoteError || 'در انتظار انتخاب مقصد برای محاسبه هزینه حمل…'}</p>}
         <dl className="checkout-totals">
           <div><dt>جمع کالاها</dt><dd>{formatPrice(subtotal)}</dd></div>
           <div><dt>هزینهٔ ارسال</dt><dd>{selected ? formatPrice(cost(selected.fee)) : '—'}</dd></div>
