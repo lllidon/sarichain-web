@@ -440,16 +440,11 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
             {section === 'products' && profile.capabilities?.sell && <PartnerOfferExcelActions importAction={importProductOffers} />}
           </header>
           {message && <p className="partner-dash-feedback" role={result === 'error' || result === 'invalid' ? 'alert' : 'status'}>{message}</p>}
-          {section === 'overview' && <div className="partner-dash-grid">
-            {visibleSections.filter(([key]) => key !== 'overview').map(([key, item]) => <Link key={key} href={partnerHref(key)} prefetch={false}>
-              <span><FontAwesomeIcon icon={icons[item.icon]} /></span>
-              <strong>{item.label}</strong><FontAwesomeIcon icon={faArrowLeft} />
-            </Link>)}
-          </div>}
+          {section === 'overview' && <DashboardOverview profile={profile} overviewData={overviewData} />}
           {section === 'profile' && children}
           {section === 'wallet' && <KarshaWallet wallet={data} />}\n          {section === 'fulfillment' && <SellerOrders data={data} result={result} />}
           {unavailable && <div className="partner-empty" role="alert"><p>دریافت اطلاعات انجام نشد.</p>{dataError && <p>{dataError}</p>}<Link href={partnerHref(section)}>تلاش دوباره</Link></div>}
-          {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && section !== 'wallet' && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
+          {section === 'bulletin' ? <TransportBulletin items={data?.items || []} /> : data && !['wallet', 'fulfillment'].includes(section) && (section === 'orders' ? <Orders items={data.items} counts={data.counts} selectedStatus={selectedStatus || 'current'} selectedOrder={selectedOrder} orderDetail={orderDetail} /> :
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
