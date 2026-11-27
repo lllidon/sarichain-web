@@ -301,6 +301,7 @@ function DashboardOverview({ profile, overviewData }) {
     else if (profile.sellerStatus === 'approved') {
       if (!locations) addTask('location','ثبت محل تولید یا بارگیری','برای عرضه محصولات، باغ، مزرعه، دامداری یا انبار خود را ثبت کنید.',partnerHref('orchards'),'high');
       if (!offers) addTask('offer','ثبت اولین عرضه محصول','محصول، قیمت و موجودی قابل فروش خود را معرفی کنید.',partnerHref('products'));
+      else if ((overviewData?.offers?.items || []).some(item => item.offer && !item.offer.locationTitle)) addTask('offer-location','تعیین محل بارگیری عرضه‌ها','برای عرضه‌های ثبت‌شده، محل بارگیری را مشخص کنید تا هماهنگی حمل دقیق‌تر انجام شود.',partnerHref('products'));
     }
   }
   const services = profile.serviceTypes || [];
