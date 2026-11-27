@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBasketShopping } from '@fortawesome/free-solid-svg-icons';
 import '../Products/CategoriesPage.css';
 import './PartnerProfile.css';
 import AccountUpgradeCenter from './AccountUpgradeCenter';
+import LocationMap from './LocationMap';
 
 const buyers = { consumer: 'خریدار نهایی', retailer: 'مغازه‌دار', wholesaler: 'خریدار عمده', other: 'سایر' };
 
@@ -85,6 +86,106 @@ export function ProfileLocation({ profile, required = false }) {
   );
 }
 
+function DeliveryAddresses({ initialAddresses = [], onExpired }) {
+  const [addresses, setAddresses] = useState(initialAddresses);
+  const [editing, setEditing] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [draft, setDraft] = useState(null);
+  const pickPoint = useCallback(point => setDraft(current => ({ ...current, ...point })), []);
+
+  function startNew() {
+    setError(''); setMessage('');
+    setEditing('new');
+    setDraft({ id: crypto.randomUUID(), title: '', recipientName: '', phone: '', address: '', province: '', city: '', postalCode: '', latitude: '', longitude: '' });
+  }
+  function startEdit(address) {
+    setError(''); setMessage('');
+    setEditing(address.id);
+    setDraft({ ...address, latitude: address.latitude ?? '', longitude: address.longitude ?? '' });
+  }
+  function change(key, value) { setDraft(current => ({ ...current, [key]: value })); }
+
+  async function save(event) {
+    event.preventDefault();
+    if (!draft) return;
+    if (!draft.latitude || !draft.longitude) {
+      setError('برای ذخیره نشانی تحویل، موقعیت جغرافیایی آن را روی نقشه مشخص کنید.');
+      return;
+    }
+    setBusy(true); setError(''); setMessage('');
+    const next = editing === 'new' ? [...addresses, draft] : addresses.map(item => item.id === editing ? draft : item);
+    try {
+      const updated = await request('profile', { method: 'PATCH', body: { deliveryAddresses: next } });
+      setAddresses(updated.deliveryAddresses ?? next);
+      setEditing(null); setDraft(null); setMessage('نشانی تحویل ذخیره شد.');
+    } catch (failure) {
+      if (failure.status === 401) onExpired();
+      else setError(failure.message || 'ذخیره نشانی انجام نشد.');
+    } finally { setBusy(false); }
+  }
+
+  async function remove(id) {
+    setBusy(true); setError(''); setMessage('');
+    try {
+      const updated = await request('profile', { method: 'PATCH', body: { deliveryAddresses: addresses.filter(item => item.id !== id) } });
+      setAddresses(updated.deliveryAddresses ?? addresses.filter(item => item.id !== id));
+      if (editing === id) { setEditing(null); setDraft(null); }
+      setMessage('نشانی حذف شد.');
+    } catch (failure) {
+      if (failure.status === 401) onExpired();
+      else setError(failure.message || 'حذف نشانی انجام نشد.');
+    } finally { setBusy(false); }
+  }
+
+  return <section className="customer-address-book">
+    <header><div><h3>نشانی‌های تحویل</h3><p>چند نشانی ذخیره کنید تا هنگام خرید فقط مقصد موردنظر را انتخاب کنید.</p></div>
+      <button type="button" className="partner-secondary" disabled={busy || addresses.length >= 20} onClick={startNew}>افزودن نشانی</button>
+    </header>
+    {message && <p className="partner-message" role="status">{message}</p>}
+    {error && <p className="partner-message partner-error" role="alert">{error}</p>}
+    {!addresses.length && !draft && <p className="customer-address-empty">هنوز نشانی تحویلی ثبت نشده است.</p>}
+    <div className="customer-address-list">
+      {addresses.map(address => <article key={address.id} className="customer-address-card">
+        <div><strong>{address.title}</strong><span>{address.recipientName}{address.phone ? ' · ' + address.phone : ''}</span>
+          <p>{[address.province, address.city, address.address, address.postalCode].filter(Boolean).join('، ')}</p>
+          <small>{address.latitude != null && address.longitude != null ? 'موقعیت روی نقشه ثبت شده' : 'موقعیت جغرافیایی ثبت نشده'}</small>
+        </div>
+        <div className="customer-address-actions">
+          <button type="button" className="partner-secondary" disabled={busy} onClick={() => startEdit(address)}>ویرایش و موقعیت</button>
+          <button type="button" className="partner-secondary" disabled={busy} onClick={() => remove(address.id)}>حذف</button>
+        </div>
+      </article>)}
+    </div>
+    {draft && <form className="customer-address-editor" onSubmit={save}>
+      <h4>{editing === 'new' ? 'نشانی جدید' : 'ویرایش نشانی'}</h4>
+      <div className="customer-address-fields">
+        <label>عنوان نشانی<input value={draft.title} onChange={e => change('title', e.target.value)} required maxLength={80} placeholder="مثلاً منزل، محل کار" /></label>
+        <label>نام تحویل‌گیرنده<input value={draft.recipientName} onChange={e => change('recipientName', e.target.value)} required maxLength={160} /></label>
+        <label>شماره تماس تحویل‌گیرنده<input dir="ltr" value={draft.phone} onChange={e => change('phone', e.target.value)} maxLength={32} /></label>
+        <label>استان<input value={draft.province} onChange={e => change('province', e.target.value)} maxLength={100} /></label>
+        <label>شهر<input value={draft.city} onChange={e => change('city', e.target.value)} maxLength={100} /></label>
+        <label>کد پستی<input value={draft.postalCode} onChange={e => change('postalCode', e.target.value)} maxLength={20} /></label>
+        <label className="customer-address-wide">نشانی کامل و پلاک<input value={draft.address} onChange={e => change('address', e.target.value)} required maxLength={500} /></label>
+      </div>
+      <div className="customer-address-map">
+        <strong>موقعیت جغرافیایی تحویل</strong>
+        <p>نقطه دقیق تحویل این نشانی را روی نقشه انتخاب کنید. بدون ثبت موقعیت، این نشانی برای ارسال قابل انتخاب نخواهد بود.</p>
+        <LocationMap point={draft} onPick={pickPoint} />
+        <div className="customer-address-coordinates">
+          <label>عرض جغرافیایی<input value={draft.latitude} readOnly /></label>
+          <label>طول جغرافیایی<input value={draft.longitude} readOnly /></label>
+        </div>
+      </div>
+      <div className="customer-address-actions">
+        <button type="submit" className="partner-primary" disabled={busy}>{busy ? 'در حال ذخیره…' : 'ذخیره نشانی'}</button>
+        <button type="button" className="partner-secondary" disabled={busy} onClick={() => { setEditing(null); setDraft(null); }}>انصراف</button>
+      </div>
+    </form>}
+  </section>;
+}
+
 function ProfileForm({ profile, categories = [], onSaved, onExpired }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -130,6 +231,7 @@ function ProfileForm({ profile, categories = [], onSaved, onExpired }) {
       {error && <p className="partner-message partner-error" role="alert">{error}</p>}
       <button className="partner-primary" disabled={busy} type="submit">{busy ? 'در حال ذخیره…' : 'ذخیره پروفایل'}</button>
     </form>
+    <DeliveryAddresses initialAddresses={profile.deliveryAddresses ?? []} onExpired={() => { setError('نشست پایان یافته است. دوباره وارد شوید.'); }} />
     <AccountUpgradeCenter profile={profile} categories={categories} />
     </>
   );
