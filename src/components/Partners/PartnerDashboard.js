@@ -1,7 +1,7 @@
 import { formatPrice } from '../Products/price';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen, faWallet, faTruckFast, faCircleCheck, faClock, faClipboardCheck, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen, faWallet, faTruckFast, faCircleCheck, faClipboardCheck, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { importProductOffers, leaveWorkspace, saveProductOfferLocation, saveWorkspaceEntry, updateSellerOrderStatus } from '../../app/(workspace)/partners/actions';
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
@@ -272,7 +272,7 @@ function SellerOrderCard({ order }) {
     {!step && <p className="seller-order-done"><FontAwesomeIcon icon={faCircleCheck}/> تحویل به حمل‌کننده ثبت شده است.</p>}
   </article>;
 }
-function SellerOrders({ data, result }) {
+function SellerOrders({ data }) {
   const tabs = [['active','در جریان',data?.counts?.active || 0],['completed','تحویل به حمل',data?.counts?.handed_over || 0]];
   return <section className="seller-fulfillment">
     <div className="seller-fulfillment-intro"><div><h2>سفارش‌هایی که باید آماده و تحویل دهید</h2>
