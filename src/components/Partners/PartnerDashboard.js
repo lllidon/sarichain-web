@@ -8,6 +8,7 @@ import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
 import TransportBulletin from './TransportBulletin';
 import PartnerOfferExcelActions from './PartnerOfferExcelActions';
+import './PartnerDashboard.css';
 
 const icons = {
   grid: faBorderAll, orders: faClipboardList, products: faBox,
