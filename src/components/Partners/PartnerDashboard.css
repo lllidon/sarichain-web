@@ -675,3 +675,7 @@
   .partner-task-panel li { grid-template-columns:28px minmax(0,1fr); }
   .partner-task-panel li > a { grid-column:2; }
 }
+
+.seller-fulfillment-tabs a { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; color:var(--dash-muted); text-decoration:none; font-size:.78rem; }
+.seller-fulfillment-tabs a.active { color:var(--dash-brand); border-bottom:2px solid var(--dash-brand); font-weight:800; }
+.seller-fulfillment-tabs a b { padding:2px 7px; border-radius:999px; background:#edf3ef; font-size:.7rem; }
