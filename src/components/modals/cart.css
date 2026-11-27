@@ -418,7 +418,7 @@
 }
 
 .checkout-destination { display:grid; gap:9px; margin:12px 0 16px; padding:12px; border:1px solid var(--cart-border); border-radius:12px; background:#fbfcf9; }
-.checkout-destination > strong { color:var(--cart-text); font-size:13px; }
+.checkout-destination > strong { color:var(--cart-ink); font-size:13px; }
 .checkout-destination > p { margin:0; color:var(--cart-muted); font-size:11px; line-height:1.8; }
 .checkout-destination .partner-map-picker { display:grid; gap:7px; }
 .checkout-destination .partner-location-map { width:100%; height:240px; border:1px solid var(--cart-border); border-radius:9px; background:#eef2eb; z-index:0; }
