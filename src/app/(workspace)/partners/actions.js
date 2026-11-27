@@ -234,3 +234,30 @@ export async function importProductOffers(formData) {
   const result = await response.json();
   redirect(href + '&result=' + (result.updated === result.total ? 'saved' : 'partial'));
 }
+
+
+export async function updateSellerOrderStatus(formData) {
+  const token = (await cookies()).get(partnerSessionCookie)?.value;
+  if (!token) redirect('/partners');
+  const orderId = formData.get('orderId');
+  const status = formData.get('status');
+  if (typeof orderId !== 'string' || !/^[a-f0-9]{64}$/i.test(orderId) ||
+      !['accepted', 'preparing', 'ready', 'handed_over'].includes(status)) {
+    redirect(partnerHref('fulfillment') + '&result=invalid');
+  }
+  let response;
+  try {
+    response = await partnerBackend('/web/workspace/seller-orders/' + orderId + '/status', {
+      token, method: 'PATCH', body: JSON.stringify({ status }),
+    });
+  } catch {
+    redirect(partnerHref('fulfillment') + '&result=error');
+  }
+  if (response.status === 401) redirect('/partners');
+  if (!response.ok) {
+    const problem = await response.json().catch(() => null);
+    const code = response.status === 409 ? 'conflict' : response.status === 403 ? 'forbidden' : 'error';
+    redirect(partnerHref('fulfillment') + '&result=' + code);
+  }
+  redirect(partnerHref('fulfillment') + '&result=updated');
+}
