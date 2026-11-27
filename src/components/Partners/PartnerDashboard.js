@@ -453,7 +453,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
             <WorkspaceEntries section={section} items={data.items} offerCatalog={offerCatalog} locations={locations} profile={profile} result={result} />)}
           {data && (page > 1 || page * data.limit < data.total) &&
             <nav className="partner-pagination" aria-label="صفحه‌بندی">
-              {page > 1 && <Link href={partnerHref(section) + (section === 'orders' ? '&status=' + (selectedStatus || 'current') : '') + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
+              {page > 1 && <Link href={partnerHref(section) + (section === 'orders' ? '&status=' + (selectedStatus || 'current') : section === 'fulfillment' ? '&fulfillmentStatus=' + (selectedFulfillmentStatus || 'active') : '') + '&page=' + (page - 1)}>صفحهٔ قبل</Link>}
               <span>{number.format(page)}</span>
               {page * data.limit < data.total && <Link href={partnerHref(section) + (section === 'orders' ? '&status=' + (selectedStatus || 'current') : '') + '&page=' + (page + 1)}>صفحهٔ بعد</Link>}
             </nav>}
