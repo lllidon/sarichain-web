@@ -46,10 +46,6 @@ export default async function PartnersPage({ searchParams }) {
   const upgradeCategories = upgradeCatalog ? Object.entries(upgradeCatalog.categories)
     .filter(([, category]) => category.parentId)
     .map(([id, category]) => ({ _id: id, name: category.name, parentId: category.parentId })) : [];
-  const allowedCategoryIds = new Set(profile.allowedProductCategoryIds || []);
-  const producerCategories = offerCatalog ? offerCatalog.categories : {};
-  const producerProducts = offerCatalog ? offerCatalog.catalog.flatMap(product => [product, ...product.variants])
-    .map(({ id, name, code, brand, brandId, category, unit }) => ({ id, name, code, brand, brandId, category, unit })) : [];
   const [locations, categoryUpgradeRequests] = canOffer ? await Promise.all([
     partnerBackend('/web/workspace/orchards/options', { token }).then(response => response.ok ? response.json() : null).catch(() => null),
     partnerBackend('/web/account-upgrades', { token }).then(response => response.ok ? response.json() : { items: [] }).catch(() => ({ items: [] })),
