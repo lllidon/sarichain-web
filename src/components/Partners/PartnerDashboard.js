@@ -2,7 +2,7 @@ import { formatPrice } from '../Products/price';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBorderAll, faBox, faBullhorn, faClipboardList, faLeaf, faMessage, faUserPen } from '@fortawesome/free-solid-svg-icons';
-import { importProductOffers, leaveWorkspace, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
+import { importProductOffers, leaveWorkspace, saveProductOfferLocation, saveWorkspaceEntry } from '../../app/(workspace)/partners/actions';
 import { locationTypes, partnerHref, sections } from './workspaceSections';
 import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
@@ -14,7 +14,7 @@ const icons = {
   bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
 };
 const feedback = {
-  saved: 'رکورد ثبت شد.', partial: 'بخشی از ردیف‌ها به‌روزرسانی شد؛ ردیف‌های نامعتبر را بررسی کنید.', accepted: 'سفارش حمل با موفقیت پذیرفته شد.', removed: 'رکورد حذف شد.',
+  saved: 'رکورد ثبت شد.', locationSaved: 'موقعیت بارگیری عرضه به‌روزرسانی شد.', locationError: 'به‌روزرسانی موقعیت بارگیری انجام نشد.', partial: 'بخشی از ردیف‌ها به‌روزرسانی شد؛ ردیف‌های نامعتبر را بررسی کنید.', accepted: 'سفارش حمل با موفقیت پذیرفته شد.', removed: 'رکورد حذف شد.',
   invalid: 'لطفاً اطلاعات فرم را بررسی کنید.', error: 'عملیات انجام نشد. دوباره تلاش کنید.',
 };
 const statuses = { pending: 'در انتظار بررسی', confirmed: 'تأیید شده', processing: 'در حال آماده‌سازی', shipped: 'ارسال شده' };
@@ -73,7 +73,17 @@ function WorkspaceEntries({ section, items, offerCatalog, locations, profile, re
                 <button className="partner-remove" aria-label={`حذف ${item.title}`}>حذف</button>
               </form>}
             </div>
-            {item.offer && !item.offer.locationTitle && <p className="partner-dash-feedback" role="note">برای محاسبه خودکار هزینه حمل، این عرضه باید موقعیت بارگیری داشته باشد؛ عرضه قبلی را حذف و دوباره با انتخاب موقعیت ثبت کنید.</p>}
+            {item.offer && !item.offer.locationTitle && <form className="partner-offer-location-form" action={saveProductOfferLocation}>
+              <input type="hidden" name="offerId" value={item.id} />
+              <label>تعیین موقعیت بارگیری برای محاسبه خودکار حمل
+                <select name="locationId" required disabled={!locations?.length}>
+                  <option value="">{locations?.length ? 'انتخاب باغ، مزرعه یا انبار' : 'ابتدا یک موقعیت مکانی ثبت کنید'}</option>
+                  {locations?.map(location => <option key={location.id} value={location.id}>{location.title}{location.city ? ' · ' + location.city : ''}</option>)}
+                </select>
+              </label>
+              {!locations?.length && <Link className="partner-location-link" href={partnerHref('orchards')}>ثبت موقعیت مکانی</Link>}
+              <button className="partner-secondary" type="submit" disabled={!locations?.length}>ذخیره موقعیت بارگیری</button>
+            </form>}
             {item.offer && <dl className="partner-offer-summary">
               <div><dt>قیمت هر {item.offer.unit}</dt><dd>{offerPrice.format(item.offer.price)} کارسا</dd></div>
               <div><dt>موجودی تقریبی</dt><dd>{number.format(item.offer.stock)} {item.offer.unit}</dd></div>
