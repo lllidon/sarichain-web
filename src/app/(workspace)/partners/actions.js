@@ -121,7 +121,6 @@ export async function saveWorkspaceLocation(_state, formData) {
   }
   if (response.status === 401) redirect('/partners');
   if (response.status === 400) {
-    const problem = await response.json().catch(() => null);
     return typeof problem?.message === 'string' ? problem.message : 'نام، نوع، شهر و مختصات موقعیت را بررسی کنید.';
   }
   if (!response.ok) return 'موقعیت ذخیره نشد. دوباره تلاش کنید.';
