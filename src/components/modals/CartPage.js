@@ -80,6 +80,7 @@ function CartLines({ items, busy, update, add }) {
 
 function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, setSlot, busy }) {
   const fastest = options.find(option => option.id === 'urgent') ?? options[options.length - 1];
+  const currentWindow = selected.windows.find(window => window.dispatchDate === date) ?? selected.windows[0];
   return <div className="checkout-shipping">
     <fieldset disabled={busy}>
       <legend><FontAwesomeIcon icon={faTruck} /> روش ارسال</legend>
@@ -100,8 +101,9 @@ function DeliveryOptions({ options, selected, setSelected, date, setDate, slot, 
       <label>روز ارسال<select value={date} onChange={event => setDate(event.target.value)}>
         {selected.windows.map(({ dispatchDate }) => <option key={dispatchDate} value={dispatchDate}>{showDate(dispatchDate)}</option>)}
       </select></label>
-      <label>بازهٔ زمانی ارسال<select value={slot} onChange={event => setSlot(event.target.value)}>
-        {selected.slots.map(time => <option key={time.id} value={time.id}>{time.label}</option>)}
+      <label>بازهٔ زمانی ارسال<select value={slot ?? ''} onChange={event => setSlot(event.target.value)}>
+        {!currentWindow?.slots.length && <option value="">برای این روز بازه‌ای باقی نمانده</option>}
+        {currentWindow?.slots.map(time => <option key={time.id} value={time.id}>{time.label}</option>)}
       </select></label>
     </fieldset>
   </div>;
@@ -169,7 +171,7 @@ export default function CartPage({ initialMessage = '' }) {
   const selected = options?.find(option => option.id === method) ?? options?.[0];
   const window = selected?.windows.find(item => item.dispatchDate === requestedDate) ?? selected?.windows[0];
   const date = window?.dispatchDate;
-  const slot = selected?.slots.some(time => time.id === requestedSlot) ? requestedSlot : selected?.slots[0]?.id;
+  const slot = window?.slots.some(time => time.id === requestedSlot) ? requestedSlot : window?.slots[0]?.id;
   const total = selected ? sumPrices([subtotal, cost(selected.fee)]) : subtotal;
 
   async function update(item, quantity) {
