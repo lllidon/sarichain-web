@@ -12,6 +12,11 @@ function resolveBackendImage(value) {
   return value;
 }
 
+function resolveProductImage(value) {
+  const image = resolveBackendImage(value);
+  return image?.startsWith('/catalog-demo/') ? '/web' + image : image;
+}
+
 export const readProductImageMap = cache(async (rawIds = []) => {
   const ids = [...new Set((Array.isArray(rawIds) ? rawIds : [])
     .filter(id => typeof id === 'string' && /^[a-f0-9]{24}$/i.test(id)))].slice(0, 100);
@@ -26,13 +31,13 @@ export const readProductImageMap = cache(async (rawIds = []) => {
     const result = await response.json();
     const images = {};
     for (const product of result.items ?? []) {
-      const parentImage = resolveBackendImage(
+      const parentImage = resolveProductImage(
         product.gallery?.[0] || product.thumbnailUrl || product.imageUrl,
       ) || null;
       if (parentImage) images[String(product._id)] = parentImage;
 
       for (const variant of product.variants ?? []) {
-        const image = resolveBackendImage(
+        const image = resolveProductImage(
           variant.gallery?.[0] || variant.thumbnailUrl || variant.imageUrl,
         ) || parentImage;
         if (image) images[String(variant._id)] = image;
