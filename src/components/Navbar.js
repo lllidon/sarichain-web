@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass, faBasketShopping, faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
 import SearchModal from './modals/SearchModal';
 import ProductMegaMenu from './Products/ProductMegaMenu';
@@ -11,7 +11,6 @@ import SolutionsMegaMenu from './SolutionsMegaMenu';
 import NavQuickActions from './NavQuickActions';
 
 const Navbar = ({ session, profile = null, wallet = null }) => {
-  const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
