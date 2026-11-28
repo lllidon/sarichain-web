@@ -15,7 +15,8 @@ import {
   faWallet,
   faClipboardList,
   faBox,
-  faSignOutAlt
+  faSignOutAlt,
+  faTruck
 } from '@fortawesome/free-solid-svg-icons';
 import SearchModal from '../modals/SearchModal';
 import { useCatalog } from '../Products/CatalogProvider';
@@ -142,8 +143,10 @@ const BottomNavbar = ({ session, profile = null, wallet = null }) => {
               <nav className="mobile-account-links" aria-label="دسترسی سریع حساب">
                 <Link href="/partners" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faHome} /> داشبورد من</Link>
                 <Link href="/partners?section=orders" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faClipboardList} /> سفارش‌های من</Link>
+                <Link href="/weekly-basket" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faShoppingCart} /> سبد خرید هفتگی</Link>
                 <Link href="/partners?section=wallet" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faWallet} /> کیف پول کارسا</Link>
                 {profile?.capabilities?.sell && <Link href="/partners?section=products" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faBox} /> محصولات من</Link>}
+                {profile?.capabilities?.drive && <Link href="/partners?section=bulletin" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faTruck} /> بولتن حمل‌ونقل</Link>}
                 <Link href="/partners?section=profile" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faUser} /> پروفایل و دسترسی‌ها</Link>
               </nav>
               <form action={leaveWorkspace} className="mobile-account-logout">
