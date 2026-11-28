@@ -7,10 +7,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faAppleWhole, faArrowLeft, faBasketShopping, faBox, faLeaf, faMagnifyingGlass,
+  faAppleWhole, faArrowLeft, faBasketShopping, faBox, faImage, faLeaf, faMagnifyingGlass,
   faSeedling, faStore, faUser, faWheatAwn, faTractor, faTruckFast, faShieldHalved, faHandshake,
 } from '@fortawesome/free-solid-svg-icons';
-import { readCatalog } from '../../components/Products/catalog-data';
+import { readCatalog, readProductImageMap } from '../../components/Products/catalog-data';
 import { cheapestVariant, productHref, productImage } from '../../components/Products/catalog';
 import { cartCookie, parseCart } from '../../components/Products/cartData';
 import { formatPrice } from '../../components/Products/price';
@@ -34,7 +34,7 @@ const examples = [
   { name: 'عصارهٔ جلبک', image: '/img/catalog/kelp.webp', detail: 'تغذیهٔ گیاه' },
 ];
 
-function HomeHeader({ catalogData, initialCart, accountCart, accountMenu }) {
+function HomeHeader({ catalogData, initialCart, accountCart, accountMenu, productImages = {} }) {
   const profile = accountMenu?.profile ?? null;
   return <CatalogProvider value={{ ...catalogData, initialCart, brands: [], unavailable: false }}>
     <AccountCartProvider initial={accountCart}>
@@ -51,7 +51,7 @@ function HomeHeader({ catalogData, initialCart, accountCart, accountMenu }) {
               <button type="submit">جستجو</button>
             </form>
             <div className="market-home-actions">
-              <NavQuickActions session={Boolean(profile || accountCart)} profile={profile} wallet={accountMenu?.wallet} />
+              <NavQuickActions session={Boolean(profile || accountCart)} profile={profile} wallet={accountMenu?.wallet} productImages={productImages} />
             </div>
           </div>
           <nav aria-label="منوی اصلی" className="market-home-nav">
@@ -69,29 +69,52 @@ function HomeHeader({ catalogData, initialCart, accountCart, accountMenu }) {
   </CatalogProvider>;
 }
 
-function WeeklyBasket({ basket, catalog = [] }) {
-  const selected = (basket?.items || []).map(item =>
-    catalog.find(product => String(product.id) === String(item.productId))
-  ).filter(Boolean);
-  const catalogFallback = catalog.filter(product => product.image).slice(0, 3);
-  const fallback = catalogFallback.length ? catalogFallback : examples.slice(0, 3);
-  const products = (selected.length ? selected : fallback).slice(0, 3);
-  const remaining = selected.length ? Math.max(0, (basket?.items?.length || selected.length) - 3) : 0;
+function WeeklyBasket({ basket, catalog = [], productImages = {} }) {
+  const basketItems = basket?.items ?? [];
+  const total = basketItems.length;
+  const catalogById = new Map(catalog.flatMap(product => [
+    [String(product.id), product],
+    ...(product.variants ?? []).map(variant => [String(variant.id), variant]),
+  ]));
+  const products = basketItems.slice(0, 3).map(item => {
+    const id = String(item.productId);
+    const product = catalogById.get(id);
+    const catalogImage = product?.image && !product.image.endsWith('/img/catalog/field.webp')
+      ? productImage(product) : null;
+    return { id, image: productImages[id] || catalogImage };
+  });
+  const remaining = Math.max(0, total - products.length);
 
   return <section id="weekly-basket" className="market-home-weekly" aria-labelledby="market-weekly-title">
     <div className="market-home-weekly-icon"><FontAwesomeIcon icon={faBasketShopping} /></div>
     <div className="market-home-weekly-copy">
-      <h2 id="market-weekly-title">سبد خرید هفتگی</h2>
-      <p>پیش‌نمایش سبد خانوار برای مرور ترکیب فصلی، مقدار اقلام و زمان تحویل.</p>
+      <div className="market-home-weekly-heading">
+        <h2 id="market-weekly-title">سبد خرید هفتگی</h2>
+        {total > 0 && <span className="market-home-weekly-count">{number.format(total)} قلم</span>}
+      </div>
+      <p>{total > 0
+        ? 'پیش‌نمایش محصولات انتخاب‌شده شما برای خرید هفتگی.'
+        : 'هنوز محصولی به سبد هفتگی اضافه نشده است.'}</p>
+      <Link href="/weekly-basket" prefetch={false} className="market-home-button">
+        {total > 0 ? 'مشاهده و مدیریت سبد' : 'ساخت سبد هفتگی'}
+        <FontAwesomeIcon icon={faArrowLeft} />
+      </Link>
     </div>
-    <div className="market-home-weekly-products" aria-label={products.length ? `${number.format(products.length)} تصویر از محصولات سبد هفتگی` : 'تصاویر محصولات سبد هفتگی'}>
-      {products.map((product, index) => <span className="market-home-weekly-product" key={product.id || index}
-        style={{ zIndex: products.length - index }}>
-        <img src={productImage(product)} alt="" loading="lazy" />
+    <div className="market-home-weekly-products" aria-label={total > 0
+      ? `${number.format(total)} قلم در سبد خرید هفتگی`
+      : 'سبد خرید هفتگی خالی است'}>
+      {products.map((product, index) => <span className="market-home-weekly-product" key={product.id}
+        style={{ zIndex: index + 1 }}>
+        {product.image
+          ? <img src={product.image} alt="" loading="lazy" />
+          : <span className="market-home-weekly-image-placeholder"><FontAwesomeIcon icon={faImage} /></span>}
       </span>)}
-      {remaining > 0 && <span className="market-home-weekly-more">+{number.format(remaining)}</span>}
+      {remaining > 0 && <span className="market-home-weekly-more" style={{ zIndex: 5 }}>+{number.format(remaining)}</span>}
+      {total === 0 && <div className="market-home-weekly-empty">
+        <FontAwesomeIcon icon={faBasketShopping} />
+        <span>سبد خالی</span>
+      </div>}
     </div>
-    <Link href="/weekly-basket" prefetch={false} className="market-home-button">پیش‌نمایش سبد <FontAwesomeIcon icon={faArrowLeft} /></Link>
   </section>;
 }
 
@@ -287,12 +310,16 @@ export default async function HomePage() {
     token ? readAccountMenu(token) : null,
   ]);
   const initialCart = parseCart(jar.get(cartCookie)?.value);
+  const productImages = await readProductImageMap([
+    ...(accountCart?.items ?? []).map(item => item.productId),
+    ...(weeklyBasket?.items ?? []).map(item => item.productId),
+  ]);
   return <div className="market-home">
-    <HomeHeader catalogData={catalogData} initialCart={initialCart} accountCart={accountCart} accountMenu={accountMenu} />
+    <HomeHeader catalogData={catalogData} initialCart={initialCart} accountCart={accountCart} accountMenu={accountMenu} productImages={productImages} />
     <main className="market-home-shell">
       <HomeHeroCarousel slides={slides} />
       <div className="market-home-paths">
-        <WeeklyBasket basket={weeklyBasket} catalog={catalogData.catalog} />
+        <WeeklyBasket basket={weeklyBasket} catalog={catalogData.catalog} productImages={productImages} />
         <AccountSection profile={accountMenu?.profile} />
       </div>
       <Suspense fallback={<p className="market-home-catalog-loading" role="status">در حال دریافت کاتالوگ…</p>}><HomeCatalog catalogData={catalogData} /></Suspense>
