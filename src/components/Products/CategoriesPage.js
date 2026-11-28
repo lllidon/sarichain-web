@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faMagnifyingGlass, faMinus, faPlus, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faChevronLeft, faChevronRight, faMagnifyingGlass, faMinus, faPlus, faSeedling, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './CatalogProvider';
 import { categoryContains, cheapestVariant, normalizeCatalogSearch as normalize, productImage, productHref } from './catalog';
 import ProductPurchase from './ProductPurchase';
@@ -13,6 +13,13 @@ import './CategoriesPage.css';
 
 const pageSize = 12;
 const number = new Intl.NumberFormat('fa-IR');
+
+function paginationItems(current, total) {
+  if (total <= 15) return Array.from({ length: total }, (_, index) => index + 1);
+  if (current <= 5) return [...Array.from({ length: 7 }, (_, index) => index + 1), 'ellipsis-end', total];
+  if (current >= total - 4) return [1, 'ellipsis-start', ...Array.from({ length: 7 }, (_, index) => total - 6 + index)];
+  return [1, 'ellipsis-start', current - 1, current, current + 1, 'ellipsis-end', total];
+}
 
 function CategoryTreeItem({ node, depth = 0, expandedPath, selected, counts, onSelect, onToggle }) {
   const isExpanded = expandedPath[depth] === node.id;
@@ -306,14 +313,25 @@ export default function CategoriesPage({ initialCategory = 'all', initialDetail 
             )}
             {pageCount > 1 && (
               <nav className="catalog-pagination" aria-label="صفحه‌بندی محصولات">
-                <button type="button" disabled={page === 1} onClick={() => changePage(page - 1)}>قبلی</button>
-                {Array.from({ length: pageCount }, (_, index) => index + 1).map(value => (
-                  <button key={value} type="button" aria-label={`صفحه ${number.format(value)}`}
-                    aria-current={value === page ? 'page' : undefined} onClick={() => changePage(value)}>
-                    {number.format(value)}
-                  </button>
-                ))}
-                <button type="button" disabled={page === pageCount} onClick={() => changePage(page + 1)}>بعدی</button>
+                <button className="catalog-pagination-step" type="button" disabled={page <= 1}
+                  aria-label="رفتن به صفحه قبلی" onClick={() => changePage(Math.max(1, page - 1))}>
+                  <FontAwesomeIcon icon={faChevronRight} /> قبلی
+                </button>
+                <div className="catalog-pagination-pages" aria-label="شماره صفحات">
+                  {paginationItems(page, pageCount).map(value => typeof value === 'number' ? (
+                    <button key={value} className="catalog-pagination-page" type="button"
+                      aria-label={`رفتن به صفحه ${number.format(value)}`}
+                      aria-current={value === page ? 'page' : undefined} onClick={() => changePage(value)}>
+                      {number.format(value)}
+                    </button>
+                  ) : (
+                    <span key={value} className="catalog-pagination-ellipsis" aria-hidden="true">…</span>
+                  ))}
+                </div>
+                <button className="catalog-pagination-step" type="button" disabled={page >= pageCount}
+                  aria-label="رفتن به صفحه بعدی" onClick={() => changePage(Math.min(pageCount, page + 1))}>
+                  بعدی <FontAwesomeIcon icon={faChevronLeft} />
+                </button>
               </nav>
             )}
           </div>
