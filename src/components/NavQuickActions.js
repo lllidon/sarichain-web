@@ -84,7 +84,8 @@ export default function NavQuickActions({ session = false, profile = null, walle
               const name = product?.name || item.name || 'محصول';
               const catalogImage = product?.image && !product.image.endsWith('/img/catalog/field.webp')
                 ? productImage(product) : null;
-              const image = productImages?.[String(item.productId)] || item.image || catalogImage;
+              const savedImage = item.image && !item.image.endsWith('/img/catalog/field.webp') ? item.image : null;
+              const image = productImages?.[String(item.productId)] || savedImage || catalogImage;
               const href = product ? productHref(product) : '/categories';
               const lineTotal = item.pack?.price ? formatPrice(scalePrice(item.pack.price, item.quantity)) : 'قیمت اعلام نشده';
               return <li key={item.id}>
