@@ -48,3 +48,7 @@
 .inspection-approved p{line-height:1.8;color:var(--muted,#718078);font-size:.85rem}
 @media(max-width:900px){.inspection-layout{grid-template-columns:1fr}}
 @media(max-width:560px){.inspection-overview-stats{grid-template-columns:1fr 1fr}.inspection-form-grid,.inspection-specialties{grid-template-columns:1fr}.inspection-intro{padding:17px;flex-direction:column}.inspection-card{padding:15px}.inspection-assignment>header{flex-direction:column}}
+
+.inspection-assignment-contact{margin:0;color:var(--muted,#718078);font-size:.82rem;line-height:1.8}
+.inspection-map-link{color:#287849;font-size:.83rem;font-weight:800;text-decoration:none}
+.inspection-map-link:hover{text-decoration:underline}

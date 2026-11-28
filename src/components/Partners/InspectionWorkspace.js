@@ -193,6 +193,13 @@ function InspectorAssignment({ assignment, onChanged }) {
       <span>پاداش: <b>{number.format(request?.rewardKarsha || 0)} کارسا</b></span>
       <span>تولید برآوردی: <b>{request?.expectedProductionKg ? number.format(request.expectedProductionKg) + ' کیلوگرم' : 'ثبت نشده'}</b></span>
     </div>
+    {request?.producer && <p className="inspection-assignment-contact">تولیدکننده: <b>{request.producer.fullName || 'عضو ساری‌چین'}</b>{request.producer.phone ? ' · ' + request.producer.phone : ''}</p>}
+    {request?.locationDetails && <p className="inspection-assignment-contact">راهنمای محل: {request.locationDetails}</p>}
+    {request?.location?.latitude != null && request?.location?.longitude != null &&
+      <a className="inspection-map-link" href={'https://www.openstreetmap.org/?mlat=' + request.location.latitude + '&mlon=' + request.location.longitude + '#map=16/' + request.location.latitude + '/' + request.location.longitude}
+        target="_blank" rel="noopener noreferrer">مشاهده محل تولید روی نقشه ←</a>}
+    {assignment.status === 'accepted' && request?.scheduledVisit &&
+      <p className="inspection-assignment-contact">زمان قطعی بازدید: <b>{request.scheduledVisit.date} · {request.scheduledVisit.startTime} تا {request.scheduledVisit.endTime}</b></p>}
     {assignment.status === 'offered' && <>
       <label className="inspection-inline-label">زمان بازدید را انتخاب کنید
         <select value={availabilityIndex} onChange={e => setAvailabilityIndex(e.target.value)}>
