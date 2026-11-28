@@ -1196,3 +1196,12 @@
     width: calc(100vw - 20px);
   }
 }
+
+@media (max-width: 992px) {
+  .market-home-actions .nav-cart-preview { width: min(440px, calc(100vw - 24px)); }
+  .market-home-actions .nav-account-menu { width: min(300px, calc(100vw - 24px)); }
+}
+@media (max-width: 540px) {
+  .market-home-actions .nav-cart-preview { width: calc(100vw - 20px); }
+  .market-home-actions .nav-account-menu { width: min(300px, calc(100vw - 20px)); }
+}
