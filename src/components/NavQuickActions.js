@@ -36,7 +36,7 @@ export default function NavQuickActions({ session = false, profile = null, walle
   const pricedLines = lines.filter(item => item.pack?.price && Number.isFinite(Number(item.pack.price.min)));
   const subtotal = sumPrices(pricedLines.map(item => scalePrice(item.pack.price, item.quantity)));
   const balance = wallet?.balance ?? profile?.karshaBalance ?? 0;
-  const firstName = profile?.fullName?.trim().split(/\\s+/)[0] || 'حساب کاربری';
+  const firstName = profile?.fullName?.trim().split(/\s+/)[0] || 'حساب کاربری';
 
   useEffect(() => {
     const closeOnOutside = event => {
