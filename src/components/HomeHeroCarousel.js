@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const defaultSlides = [
   {
@@ -66,12 +66,6 @@ export default function HomeHeroCarousel({ slides: managedSlides = [] }) {
       <span className="market-home-slide-eyebrow">{slide.eyebrow}</span>
       <h1>{slide.title.split('\n').map((line, index) => <span key={index}>{line}</span>)}</h1>
       <p>{slide.description}</p>
-      <form action="/categories" method="get" role="search" className="market-home-search market-home-search-hero">
-        <label className="market-home-visually-hidden" htmlFor="home-hero-search">جستجوی محصول یا دسته‌بندی</label>
-        <FontAwesomeIcon icon={faMagnifyingGlass} />
-        <input type="search" id="home-hero-search" name="q" placeholder="چه محصولی دنبالش هستید؟" maxLength={80} />
-        <button type="submit">جستجو</button>
-      </form>
       <Link className="market-home-slide-cta" href={slide.href}>{slide.cta}<FontAwesomeIcon icon={faArrowLeft}/></Link>
     </div>
     <div className="market-home-carousel-controls">
