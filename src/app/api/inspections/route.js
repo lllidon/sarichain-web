@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { partnerBackend, partnerSessionCookie } from '../../../../lib/partnerBackend';
+import { partnerBackend, partnerSessionCookie } from '../../../lib/partnerBackend';
 
 export const runtime = 'nodejs';
 

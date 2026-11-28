@@ -108,7 +108,8 @@ function ProducerRequestForm({ locations, onSubmitted }) {
   const selectedLocation = eligibleLocations.find(item => item.id === locationId);
   async function submit(event) {
     event.preventDefault(); setBusy(true); setError('');
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await api('requests', { method: 'POST', body: {
         locationId, inspectionType: selectedLocation?.type, acreage: Number(form.get('acreage')),
@@ -117,7 +118,7 @@ function ProducerRequestForm({ locations, onSubmitted }) {
         pesticideNotes: form.get('pesticideNotes'), fertilizerNotes: form.get('fertilizerNotes'), notes: form.get('notes'),
         availability: [{ date, startTime, endTime }],
       } });
-      event.currentTarget.reset();
+      formElement.reset();
       setError('');
       onSubmitted();
     } catch (failure) { setError(failure.message || 'ثبت درخواست نظارت انجام نشد.'); }
@@ -235,7 +236,7 @@ export default function InspectionWorkspace() {
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError('');
-    fetch('/api/inspections/overview', { cache: 'no-store', signal: controller.signal })
+    fetch('/api/inspections', { cache: 'no-store', signal: controller.signal })
       .then(async response => {
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.message || 'دریافت اطلاعات نظارت انجام نشد.');
