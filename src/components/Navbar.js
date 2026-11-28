@@ -10,7 +10,7 @@ import ProductMegaMenu from './Products/ProductMegaMenu';
 import SolutionsMegaMenu from './SolutionsMegaMenu';
 import NavQuickActions from './NavQuickActions';
 
-const Navbar = ({ session, profile = null, wallet = null }) => {
+const Navbar = ({ session, profile = null, wallet = null, productImages = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -58,7 +58,7 @@ const Navbar = ({ session, profile = null, wallet = null }) => {
             <button className="search-btn" onClick={() => setIsSearchOpen(true)}>
               <FontAwesomeIcon icon={faMagnifyingGlass} />
             </button>
-            <NavQuickActions session={session} profile={profile} wallet={wallet} />
+            <NavQuickActions session={session} profile={profile} wallet={wallet} productImages={productImages} />
           </div>
         </div>
       </nav>
