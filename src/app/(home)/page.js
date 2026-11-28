@@ -1,5 +1,7 @@
-import { cache, Suspense } from 'react';
+import { Suspense } from 'react';
 import { readAccountCart } from '../../lib/accountCart';
+import { readAccountWeeklyBasket } from '../../lib/accountWeeklyBasket';
+import { readAccountMenu } from '../../lib/accountMenu';
 import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,6 +20,8 @@ import '../../components/Navbar.css';
 import ProductMegaMenu from '../../components/Products/ProductMegaMenu';
 import SolutionsMegaMenu from '../../components/SolutionsMegaMenu';
 import { CatalogProvider } from '../../components/Products/CatalogProvider';
+import { AccountCartProvider } from '../../components/modals/AccountCartProvider';
+import NavQuickActions from '../../components/NavQuickActions';
 import HomeHeroCarousel from '../../components/HomeHeroCarousel';
 import SafeCategoryImage from '../../components/SafeCategoryImage';
 
@@ -30,87 +34,68 @@ const examples = [
   { name: 'عصارهٔ جلبک', image: '/img/catalog/kelp.webp', detail: 'تغذیهٔ گیاه' },
 ];
 
-const getProfile = cache(async () => {
-  const token = (await cookies()).get(partnerSessionCookie)?.value;
-  if (!token) return null;
-  try {
-    const response = await partnerBackend('/web/profile', { token, signal: AbortSignal.timeout(1600) });
-    if (response.ok) return await response.json();
-  } catch {
-    // The storefront remains accessible while account data is unavailable.
-  }
-  return null;
-});
-
-function AccountLink({ profile }) {
-  return <Link href={profile ? '/partners' : '/login'} prefetch={false} className="market-home-account">
-    <FontAwesomeIcon icon={faUser} /><span>{profile ? 'حساب من' : 'ورود'}</span>
-  </Link>;
-}
-
-async function HomeActions() {
-  const jar = await cookies();
-  const token = jar.get(partnerSessionCookie)?.value;
-  const cart = token ? await readAccountCart(token) : null;
-  const items = (cart?.items ?? parseCart(jar.get(cartCookie)?.value)).reduce((total, item) => total + item.quantity, 0);
-  return <div className="market-home-actions">
-    <Link href="/cart" prefetch={false} aria-label={items ? `سبد خرید، ${number.format(items)} قلم` : 'سبد خرید'}>
-      <FontAwesomeIcon icon={faBasketShopping} />{items > 0 && <span className="market-home-count">{number.format(items)}</span>}
-    </Link>
-    <Suspense fallback={<AccountLink />}><PersonalizedAccount /></Suspense>
-  </div>;
-}
-
-async function PersonalizedAccount() {
-  return <AccountLink profile={await getProfile()} />;
-}
-
-function HomeHeader({ catalogData }) {
-  return <CatalogProvider value={{ ...catalogData, brands: [], unavailable: false }}>
-    <header className="market-home-header">
-      <div className="market-home-shell">
-        <div className="market-home-header-top">
-          <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
-            <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="132" height="44" />
-          </Link>
-          <form action="/categories" method="get" role="search" className="market-home-header-search">
-            <label className="market-home-visually-hidden" htmlFor="home-header-search">جستجوی محصولات و تولیدکنندگان</label>
-            <FontAwesomeIcon icon={faMagnifyingGlass}/>
-            <input id="home-header-search" name="q" type="search" placeholder="جستجوی محصول، دسته‌بندی یا تولیدکننده…" maxLength={80}/>
-            <button type="submit">جستجو</button>
-          </form>
-          <Suspense fallback={<div className="market-home-actions"><AccountLink/></div>}>
-            <HomeActions/>
-          </Suspense>
+function HomeHeader({ catalogData, initialCart, accountCart, accountMenu }) {
+  const profile = accountMenu?.profile ?? null;
+  return <CatalogProvider value={{ ...catalogData, initialCart, brands: [], unavailable: false }}>
+    <AccountCartProvider initial={accountCart}>
+      <header className="market-home-header">
+        <div className="market-home-shell">
+          <div className="market-home-header-top">
+            <Link className="market-home-logo" href="/" aria-label="ساری‌چین، صفحهٔ اول">
+              <img src="/img/sarichain-logo.svg" alt="ساری‌چین" width="132" height="44" />
+            </Link>
+            <form action="/categories" method="get" role="search" className="market-home-header-search">
+              <label className="market-home-visually-hidden" htmlFor="home-header-search">جستجوی محصولات و تولیدکنندگان</label>
+              <FontAwesomeIcon icon={faMagnifyingGlass}/>
+              <input id="home-header-search" name="q" type="search" placeholder="جستجوی محصول، دسته‌بندی یا تولیدکننده…" maxLength={80}/>
+              <button type="submit">جستجو</button>
+            </form>
+            <div className="market-home-actions">
+              <NavQuickActions session={Boolean(profile)} profile={profile} wallet={accountMenu?.wallet} />
+            </div>
+          </div>
+          <nav aria-label="منوی اصلی" className="market-home-nav">
+            <ul className="nav-menu">
+              <ProductMegaMenu />
+              <SolutionsMegaMenu />
+              <li className="nav-item"><Link href="/categories" className="nav-link">بازار محصولات</Link></li>
+              <li className="nav-item"><Link href="/suppliers" className="nav-link">تولیدکنندگان</Link></li>
+              <li className="nav-item"><Link href="/pilot" className="nav-link">راهنما و آموزش</Link></li>
+            </ul>
+          </nav>
         </div>
-        <nav aria-label="منوی اصلی" className="market-home-nav">
-          <ul className="nav-menu">
-            <ProductMegaMenu />
-            <SolutionsMegaMenu />
-            <li className="nav-item"><Link href="/categories" className="nav-link">بازار محصولات</Link></li>
-            <li className="nav-item"><Link href="/suppliers" className="nav-link">تولیدکنندگان</Link></li>
-            <li className="nav-item"><Link href="/pilot" className="nav-link">راهنما و آموزش</Link></li>
-          </ul>
-        </nav>
-      </div>
-    </header>
+      </header>
+    </AccountCartProvider>
   </CatalogProvider>;
 }
 
-function WeeklyBasket() {
+function WeeklyBasket({ basket, catalog = [] }) {
+  const selected = (basket?.items || []).map(item =>
+    catalog.find(product => String(product.id) === String(item.productId))
+  ).filter(Boolean);
+  const fallback = catalog.filter(product => product.image).slice(0, 3);
+  const products = (selected.length ? selected : fallback).slice(0, 3);
+  const remaining = selected.length ? Math.max(0, (basket?.items?.length || selected.length) - 3) : 0;
+
   return <section id="weekly-basket" className="market-home-weekly" aria-labelledby="market-weekly-title">
     <div className="market-home-weekly-icon"><FontAwesomeIcon icon={faBasketShopping} /></div>
-    <div>
+    <div className="market-home-weekly-copy">
       <h2 id="market-weekly-title">سبد خرید هفتگی</h2>
       <p>پیش‌نمایش سبد خانوار برای مرور ترکیب فصلی، مقدار اقلام و زمان تحویل.</p>
+    </div>
+    <div className="market-home-weekly-products" aria-label={products.length ? `${number.format(products.length)} تصویر از محصولات سبد هفتگی` : 'تصاویر محصولات سبد هفتگی'}>
+      {products.map((product, index) => <span className="market-home-weekly-product" key={product.id || index}
+        style={{ zIndex: products.length - index }}>
+        <img src={productImage(product)} alt="" loading="lazy" />
+      </span>)}
+      {remaining > 0 && <span className="market-home-weekly-more">+{number.format(remaining)}</span>}
     </div>
     <Link href="/pilot" prefetch={false} className="market-home-button">پیش‌نمایش سبد <FontAwesomeIcon icon={faArrowLeft} /></Link>
   </section>;
 }
 
-async function AccountSection() {
-  const profile = await getProfile();
-  const firstName = profile?.fullName?.trim().split(/\s+/)[0];
+function AccountSection({ profile }) {
+  const firstName = profile?.fullName?.trim().split(/\\s+/)[0];
   return <aside className="market-home-member" aria-labelledby="market-home-member-title">
     <div className="market-home-member-icon"><FontAwesomeIcon icon={profile ? faBox : faUser} /></div>
     <div>
@@ -291,14 +276,23 @@ async function readHomeSlides() {
 export const metadata = { description: 'بازار چندفروشندگی ساری‌چین برای خرید محصولات و نهاده‌های کشاورزی از تولیدکنندگان.' };
 
 export default async function HomePage() {
-  const [catalogData, slides] = await Promise.all([readCatalog('home'), readHomeSlides()]);
+  const jar = await cookies();
+  const token = jar.get(partnerSessionCookie)?.value;
+  const [catalogData, slides, accountCart, weeklyBasket, accountMenu] = await Promise.all([
+    readCatalog('home'),
+    readHomeSlides(),
+    token ? readAccountCart(token) : null,
+    token ? readAccountWeeklyBasket(token) : null,
+    token ? readAccountMenu(token) : null,
+  ]);
+  const initialCart = parseCart(jar.get(cartCookie)?.value);
   return <div className="market-home">
-    <HomeHeader catalogData={catalogData} />
+    <HomeHeader catalogData={catalogData} initialCart={initialCart} accountCart={accountCart} accountMenu={accountMenu} />
     <main className="market-home-shell">
       <HomeHeroCarousel slides={slides} />
       <div className="market-home-paths">
-        <WeeklyBasket />
-        <Suspense fallback={<div className="market-home-member" aria-busy="true" />}><AccountSection /></Suspense>
+        <WeeklyBasket basket={weeklyBasket} catalog={catalogData.catalog} />
+        <AccountSection profile={accountMenu?.profile} />
       </div>
       <Suspense fallback={<p className="market-home-catalog-loading" role="status">در حال دریافت کاتالوگ…</p>}><HomeCatalog catalogData={catalogData} /></Suspense>
     </main>
