@@ -80,6 +80,14 @@ flowchart TD
 - The backend must physically contain the downloaded files under its `public/uploads/products` and `public/uploads/category` directories and serve them at `/uploads/`. Running the downloader on a developer workstation writes files to that workstation, not to the production server; run it on the server (or transfer the generated directory) for production availability.
 - Production web deployment must have `BACKEND_URL=https://admin.dehaat.ir` so relative upload paths resolve to the backend host.
 
+## Storefront catalog pagination
+
+- `src/components/Products/CategoriesPage.js` owns the public product listing, filters, sorting and client-side pagination (12 products per page).
+- `paginationItems(current, total)` produces the same compact numbered-page window as the admin panel: show all pages when there are at most 15; otherwise show the first/last page, nearby pages and ellipses.
+- The pagination nav includes accessible previous/next controls, numbered buttons with `aria-current="page"`, Persian-formatted page labels and focus/scroll back to the results heading after page changes.
+- `src/components/Products/CategoriesPage.css` styles the green active state, page buttons, ellipses, hover/disabled states and responsive wrapping for mobile.
+- Search, category, brand, unit, price, form, detail and sort filters reset the page to 1. Keep the pagination window synchronized with the derived filtered `results` count.
+
 ## Change-impact guide
 - Homepage sections and composition: `src/app/(home)/page.js` and colocated `home.css`.
 - Global metadata, RTL and root styling: `src/app/layout.js`, `src/App.css`.
