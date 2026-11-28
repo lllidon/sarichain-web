@@ -95,7 +95,7 @@ function WeeklyBasket({ basket, catalog = [] }) {
 }
 
 function AccountSection({ profile }) {
-  const firstName = profile?.fullName?.trim().split(/\\s+/)[0];
+  const firstName = profile?.fullName?.trim().split(/\s+/)[0];
   return <aside className="market-home-member" aria-labelledby="market-home-member-title">
     <div className="market-home-member-icon"><FontAwesomeIcon icon={profile ? faBox : faUser} /></div>
     <div>
