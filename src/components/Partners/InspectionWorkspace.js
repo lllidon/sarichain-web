@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import LocationMap from './LocationMap';
 import './InspectionWorkspace.css';
 
 const specialtyOptions = [
@@ -48,6 +49,9 @@ function InspectorApplication({ current, onSubmitted }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const pickBaseLocation = useCallback(point => {
+    setLatitude(point.latitude); setLongitude(point.longitude);
+  }, []);
   function toggle(value) {
     setSelected(items => items.includes(value)
       ? items.filter(item => item !== value)
@@ -87,6 +91,9 @@ function InspectorApplication({ current, onSubmitted }) {
         <label>شعاع فعالیت (کیلومتر)
           <input required type="number" min="1" max="300" value={radius} onChange={e => setRadius(e.target.value)}/>
         </label>
+      </div>
+      <div className="inspection-map-picker"><strong>انتخاب موقعیت پایگاه فعالیت روی نقشه</strong>
+        <LocationMap point={{ latitude: String(latitude), longitude: String(longitude) }} onPick={pickBaseLocation}/>
       </div>
       <label>معرفی کوتاه و تجربه کاری
         <textarea rows="3" maxLength="1000" value={biography} onChange={e => setBiography(e.target.value)} placeholder="سابقه فعالیت، شناخت محصولات و مهارت‌های خود را بنویسید."/>
