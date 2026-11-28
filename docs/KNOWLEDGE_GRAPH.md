@@ -88,6 +88,17 @@ flowchart TD
 - `src/components/Products/CategoriesPage.css` styles the green active state, page buttons, ellipses, hover/disabled states and responsive wrapping for mobile.
 - Search, category, brand, unit, price, form, detail and sort filters reset the page to 1. Keep the pagination window synchronized with the derived filtered `results` count.
 
+## Header cart preview and account quick access
+
+- `src/components/NavQuickActions.js` is the shared client-side cart/account action UI used by both the storefront navbar and the homepage header.
+- Cart preview opens on hover and keyboard focus. It reads the active guest/account cart through `useCatalogCart`, resolves catalog product names and images with `displayCart`, shows up to five line items, quantities and priced subtotal, and links to the full `/cart` page.
+- Account quick menu opens on click and closes on outside pointer interaction. It shows the signed-in member name, current Karsha balance, and only existing workspace destinations: dashboard, orders, wallet, profile, plus products when `profile.capabilities.sell` is true. Sign-out uses the existing `leaveWorkspace` server action.
+- `src/lib/accountMenu.js` fetches the authenticated member profile from `/web/profile` and wallet summary from `/web/karsha`, then passes only the member name, relevant capabilities, and balance to client navigation.
+- `src/app/(storefront)/layout.js` provides the account summary to `Navbar` and `BottomNavbar`. The mobile bottom navigation opens an account quick-access sheet with the same destinations and Karsha balance.
+- The homepage header in `src/app/(home)/page.js` uses `NavQuickActions` within `CatalogProvider` and `AccountCartProvider`; it loads the current account cart/profile/wallet in parallel with homepage data.
+- Homepage weekly basket card shows up to three product thumbnails from the member's weekly basket, overlapping by roughly 20%; when the basket is empty or unavailable it uses the first three catalog product images as a visual fallback. Additional basket items appear as a `+N` badge.
+- `src/components/HomeHeroCarousel.js` intentionally contains no search form; the primary slide CTA remains. Header-level search is unchanged.
+
 ## Change-impact guide
 - Homepage sections and composition: `src/app/(home)/page.js` and colocated `home.css`.
 - Global metadata, RTL and root styling: `src/app/layout.js`, `src/App.css`.
