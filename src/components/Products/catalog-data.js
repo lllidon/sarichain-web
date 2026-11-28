@@ -12,6 +12,38 @@ function resolveBackendImage(value) {
   return value;
 }
 
+export const readProductImageMap = cache(async (rawIds = []) => {
+  const ids = [...new Set((Array.isArray(rawIds) ? rawIds : [])
+    .filter(id => typeof id === 'string' && /^[a-f0-9]{24}$/i.test(id)))].slice(0, 100);
+  if (!ids.length) return {};
+
+  try {
+    const url = new URL('/web/products/by-ids', process.env.BACKEND_URL || 'http://127.0.0.1:3001');
+    url.searchParams.set('ids', ids.join(','));
+    const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
+    if (!response.ok) return {};
+
+    const result = await response.json();
+    const images = {};
+    for (const product of result.items ?? []) {
+      const parentImage = resolveBackendImage(
+        product.gallery?.[0] || product.thumbnailUrl || product.imageUrl,
+      ) || null;
+      if (parentImage) images[String(product._id)] = parentImage;
+
+      for (const variant of product.variants ?? []) {
+        const image = resolveBackendImage(
+          variant.gallery?.[0] || variant.thumbnailUrl || variant.imageUrl,
+        ) || parentImage;
+        if (image) images[String(variant._id)] = image;
+      }
+    }
+    return images;
+  } catch {
+    return {};
+  }
+});
+
 async function readList(resource, home) {
   const items = [];
   const limit = home && resource === 'products' ? 12 : 100;
