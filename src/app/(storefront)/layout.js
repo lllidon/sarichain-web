@@ -22,7 +22,7 @@ export default async function StorefrontLayout({ children }) {
     token ? readAccountWeeklyBasket(token) : null,
     token ? readAccountMenu(token) : null,
   ]);
-  const session = Boolean(accountMenu?.profile);
+  const session = Boolean(accountMenu?.profile || accountCart);
   const initialCart = parseCart(jar.get(cartCookie)?.value);
   return (
     <AccountCartProvider initial={accountCart}>
