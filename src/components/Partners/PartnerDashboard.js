@@ -8,11 +8,12 @@ import ProductOfferForm from './ProductOfferForm';
 import WorkspaceLocationForm from './WorkspaceLocationForm';
 import TransportBulletin from './TransportBulletin';
 import PartnerOfferExcelActions from './PartnerOfferExcelActions';
+import InspectionWorkspace from './InspectionWorkspace';
 import './PartnerDashboard.css';
 
 const icons = {
   grid: faBorderAll, orders: faClipboardList, fulfillment: faTruckFast, products: faBox, wallet: faWallet,
-  bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen,
+  bulletin: faBullhorn, orchards: faLeaf, advisory: faMessage, profile: faUserPen, inspections: faClipboardCheck,
 };
 const feedback = {
   saved: 'رکورد ثبت شد.', locationSaved: 'موقعیت بارگیری عرضه به‌روزرسانی شد.', locationError: 'به‌روزرسانی موقعیت بارگیری انجام نشد.', partial: 'بخشی از ردیف‌ها به‌روزرسانی شد؛ ردیف‌های نامعتبر را بررسی کنید.', accepted: 'سفارش حمل با موفقیت پذیرفته شد.', removed: 'رکورد حذف شد.',
@@ -444,6 +445,7 @@ export default function PartnerDashboard({ profile, section, result, data, dataE
           </header>
           {message && <p className="partner-dash-feedback" role={result === 'error' || result === 'invalid' ? 'alert' : 'status'}>{message}</p>}
           {section === 'overview' && <DashboardOverview profile={profile} overviewData={overviewData} />}
+          {section === 'inspections' && <InspectionWorkspace />}
           {section === 'profile' && children}
           {section === 'wallet' && <KarshaWallet wallet={data} />}
           {section === 'fulfillment' && <SellerOrders data={data} selectedStatus={selectedFulfillmentStatus} />}

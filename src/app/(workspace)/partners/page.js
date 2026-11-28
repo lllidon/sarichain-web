@@ -58,7 +58,7 @@ export default async function PartnersPage({ searchParams }) {
     : [];
   const locations = canOffer ? partnerBackend('/web/workspace/orchards/options', { token })
     .then(response => response.ok ? response.json() : null).catch(() => null) : null;
-  const isList = section !== 'overview' && section !== 'profile';
+  const isList = section !== 'overview' && section !== 'profile' && section !== 'inspections';
   if (isList) {
     try {
       const path = section === 'orders' ? '/web/orders' : section === 'bulletin' ? '/web/transport-orders' : section === 'wallet' ? '/web/karsha' : section === 'fulfillment' ? '/web/workspace/seller-orders' : '/web/workspace/' + section;
