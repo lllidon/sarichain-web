@@ -1272,3 +1272,114 @@
     border-radius: 16px;
   }
 }
+
+
+/* Desktop: weekly basket and delivery visual sit side by side. */
+.market-home-paths {
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 16px;
+}
+.market-home-weekly {
+  min-height: 320px;
+  aspect-ratio: auto;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  column-gap: clamp(12px, 2vw, 28px);
+}
+.market-home-weekly-product {
+  width: clamp(64px, 6vw, 104px);
+  height: clamp(96px, 10.5vw, 160px);
+  border-width: 4px;
+}
+.market-home-weekly-product + .market-home-weekly-product {
+  margin-left: clamp(-48px, -3vw, -26px);
+}
+.market-home-delivery-card {
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+  max-height: 320px;
+  aspect-ratio: 16 / 9;
+}
+@media (max-width: 920px) and (min-width: 841px) {
+  .market-home-weekly {
+    min-height: 270px;
+    padding: 18px 20px;
+    column-gap: 12px;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  }
+  .market-home-weekly-product {
+    width: clamp(50px, 5.7vw, 70px);
+    height: clamp(78px, 10vw, 116px);
+    border-width: 3px;
+  }
+  .market-home-weekly-product + .market-home-weekly-product {
+    margin-left: clamp(-28px, -3vw, -23px);
+  }
+  .market-home-weekly-visual { gap: 7px; }
+  .market-home-weekly-extra {
+    min-height: 32px;
+    padding: 7px 9px;
+    font-size: .68rem;
+  }
+  .market-home-weekly-copy { gap: 14px; }
+  .market-home-weekly-copy h2 { font-size: clamp(1rem, 1.8vw, 1.25rem); }
+  .market-home-weekly-icon { width: 50px; height: 50px; font-size: 22px; }
+  .market-home .market-home-weekly a.market-home-button {
+    min-height: 48px;
+    padding: 9px 30px;
+    font-size: .8rem;
+  }
+  .market-home .market-home-weekly a.market-home-button svg { left: 13px; }
+  .market-home-delivery-card { min-height: 270px; max-height: 320px; }
+}
+@media (max-width: 840px) {
+  .market-home-paths {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .market-home-weekly {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 290px;
+    aspect-ratio: auto;
+    padding: 22px 24px;
+  }
+  .market-home-weekly-product {
+    width: clamp(62px, 8vw, 88px);
+    height: clamp(92px, 11vw, 132px);
+  }
+  .market-home-weekly-product + .market-home-weekly-product {
+    margin-left: clamp(-38px, -3.5vw, -28px);
+  }
+  .market-home-delivery-card {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 16 / 7;
+  }
+}
+@media (max-width: 640px) {
+  .market-home-paths { grid-template-columns: minmax(0, 1fr); }
+  .market-home-weekly {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas: "copy" "visual";
+    min-height: 0;
+    aspect-ratio: auto;
+    padding: 22px 18px;
+    row-gap: 17px;
+    border-radius: 22px;
+  }
+  .market-home-weekly-product {
+    width: clamp(62px, 16vw, 94px);
+    height: clamp(88px, 23vw, 126px);
+    border-width: 4px;
+  }
+  .market-home-weekly-product + .market-home-weekly-product { margin-left: -34px; }
+  .market-home-delivery-card {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 16 / 9;
+  }
+}
