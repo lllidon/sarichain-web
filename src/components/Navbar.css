@@ -1143,3 +1143,56 @@
   .market-home-actions .nav-cart-preview,
   .market-home-actions .nav-account-menu { inset-inline: 10px; width: auto; }
 }
+
+
+/* Keep quick panels above page content and inside the viewport in RTL layouts. */
+.navbar { z-index: 1450; }
+.nav-popover-anchor { z-index: 1451; }
+.nav-cart-preview,
+.nav-account-menu {
+  z-index: 1452;
+  inset-inline-start: auto;
+  inset-inline-end: auto;
+  left: 0;
+  right: auto;
+  inset-block-start: calc(100% + 5px);
+}
+.nav-cart-anchor::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 7px;
+}
+.nav-cart-preview-image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #819783;
+  background: linear-gradient(145deg, #f3f7ef, #e8efe4);
+  font-size: 20px;
+}
+.nav-cart-preview-image-placeholder svg { opacity: .75; }
+
+@media (max-width: 992px) {
+  .market-home-actions .nav-cart-preview,
+  .market-home-actions .nav-account-menu {
+    position: fixed;
+    top: 82px;
+    left: 12px;
+    right: auto;
+    inset-inline: auto;
+    width: min(440px, calc(100vw - 24px));
+    max-height: calc(100dvh - 98px);
+  }
+}
+@media (max-width: 540px) {
+  .market-home-actions .nav-cart-preview,
+  .market-home-actions .nav-account-menu {
+    top: 76px;
+    left: 10px;
+    width: calc(100vw - 20px);
+  }
+}
