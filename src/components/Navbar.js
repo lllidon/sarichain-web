@@ -8,9 +8,9 @@ import './Navbar.css';
 import SearchModal from './modals/SearchModal';
 import ProductMegaMenu from './Products/ProductMegaMenu';
 import SolutionsMegaMenu from './SolutionsMegaMenu';
-import { useCatalogCart } from './modals/cartStore';
+import NavQuickActions from './NavQuickActions';
 
-const Navbar = ({ session }) => {
+const Navbar = ({ session, profile = null, wallet = null }) => {
   const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -59,14 +59,7 @@ const Navbar = ({ session }) => {
             <button className="search-btn" onClick={() => setIsSearchOpen(true)}>
               <FontAwesomeIcon icon={faMagnifyingGlass} />
             </button>
-            <Link className="cart-btn" href="/cart" aria-label={cartCount ? `سبد خرید، ${cartCount.toLocaleString('fa-IR')} کالا` : 'سبد خرید'}>
-              <FontAwesomeIcon icon={faBasketShopping} />
-              {cartCount > 0 && <span className="cart-badge">{cartCount.toLocaleString('fa-IR')}</span>}
-            </Link>
-            
-            <Link href={session ? '/partners' : '/login'} className="contact-btn login-link">
-              {session ? 'حساب کاربری' : 'ورود به حساب'}
-            </Link>
+            <NavQuickActions session={session} profile={profile} wallet={wallet} />
           </div>
         </div>
       </nav>
