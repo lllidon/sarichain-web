@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowLeft, faBasketShopping, faBorderAll, faBoxOpen,
-  faClipboardList, faRightFromBracket, faUser, faUserPen, faWallet,
+  faClipboardList, faRightFromBracket, faTruckFast, faUser, faUserPen, faWallet,
 } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './Products/CatalogProvider';
 import { productHref, productImage } from './Products/catalog';
@@ -131,7 +131,9 @@ export default function NavQuickActions({ session = false, profile = null, walle
         <nav className="nav-account-menu-links" aria-label="دسترسی سریع">
           <AccountLink href="/partners" icon={faBorderAll} onClick={closeMenus}>داشبورد من</AccountLink>
           <AccountLink href="/partners?section=orders" icon={faClipboardList} onClick={closeMenus}>سفارش‌های من</AccountLink>
+          <AccountLink href="/weekly-basket" icon={faBasketShopping} onClick={closeMenus}>سبد خرید هفتگی</AccountLink>
           {profile?.capabilities?.sell && <AccountLink href="/partners?section=products" icon={faBoxOpen} onClick={closeMenus}>محصولات من</AccountLink>}
+          {profile?.capabilities?.drive && <AccountLink href="/partners?section=bulletin" icon={faTruckFast} onClick={closeMenus}>بولتن حمل‌ونقل</AccountLink>}
           <AccountLink href="/partners?section=profile" icon={faUserPen} onClick={closeMenus}>پروفایل و دسترسی‌ها</AccountLink>
         </nav>
         <form action={leaveWorkspace} className="nav-account-logout">
