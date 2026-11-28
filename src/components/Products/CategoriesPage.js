@@ -15,9 +15,9 @@ const pageSize = 12;
 const number = new Intl.NumberFormat('fa-IR');
 
 function paginationItems(current, total) {
-  if (total <= 15) return Array.from({ length: total }, (_, index) => index + 1);
-  if (current <= 5) return [...Array.from({ length: 7 }, (_, index) => index + 1), 'ellipsis-end', total];
-  if (current >= total - 4) return [1, 'ellipsis-start', ...Array.from({ length: 7 }, (_, index) => total - 6 + index)];
+  if (total <= 5) return Array.from({ length: total }, (_, index) => index + 1);
+  if (current <= 3) return [1, 2, 3, 4, 'ellipsis-end', total];
+  if (current >= total - 2) return [1, 'ellipsis-start', total - 3, total - 2, total - 1, total];
   return [1, 'ellipsis-start', current - 1, current, current + 1, 'ellipsis-end', total];
 }
 
