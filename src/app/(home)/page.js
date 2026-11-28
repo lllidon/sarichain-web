@@ -51,7 +51,7 @@ function HomeHeader({ catalogData, initialCart, accountCart, accountMenu }) {
               <button type="submit">جستجو</button>
             </form>
             <div className="market-home-actions">
-              <NavQuickActions session={Boolean(profile)} profile={profile} wallet={accountMenu?.wallet} />
+              <NavQuickActions session={Boolean(profile || accountCart)} profile={profile} wallet={accountMenu?.wallet} />
             </div>
           </div>
           <nav aria-label="منوی اصلی" className="market-home-nav">
