@@ -72,6 +72,14 @@ flowchart TD
 - Related backend and admin-panel behavior is documented in their respective `docs/KNOWLEDGE_GRAPH.md` files. Contract chain: producer editor → Next.js proxy → backend request/review → member's `allowedProductCategoryIds` → scoped offer form.
 - Relevant changes: website PR #6 (category-change UI), PR #8 (nested proxy route), and the producer catalog visibility change on `main`. These changes were merged; deploy the web app to make them live.
 
+## Backend-hosted catalog images
+
+- `src/components/Products/catalog-data.js` reads product and category records from the backend catalog API. Database image fields may contain relative paths such as `/uploads/products/SC-1001.webp` and `/uploads/category/demo-fresh-produce.webp`.
+- The `resolveBackendImage` helper resolves only `/uploads/` paths against `process.env.BACKEND_URL`, preserving existing absolute URLs, data/blob URLs, and frontend-local assets such as `/img/catalog/field.webp`.
+- Product image resolution covers every `gallery` item, the selected product image, and full-size image. Category image resolution covers `thumbnailUrl` and `imageUrl`.
+- The backend must physically contain the downloaded files under its `public/uploads/products` and `public/uploads/category` directories and serve them at `/uploads/`. Running the downloader on a developer workstation writes files to that workstation, not to the production server; run it on the server (or transfer the generated directory) for production availability.
+- Production web deployment must have `BACKEND_URL=https://admin.dehaat.ir` so relative upload paths resolve to the backend host.
+
 ## Change-impact guide
 - Homepage sections and composition: `src/app/(home)/page.js` and colocated `home.css`.
 - Global metadata, RTL and root styling: `src/app/layout.js`, `src/App.css`.
