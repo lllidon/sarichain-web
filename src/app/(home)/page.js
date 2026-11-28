@@ -76,7 +76,7 @@ function WeeklyBasket({ basket, catalog = [], productImages = {} }) {
     [String(product.id), product],
     ...(product.variants ?? []).map(variant => [String(variant.id), variant]),
   ]));
-  const products = basketItems.slice(0, 3).map(item => {
+  const products = basketItems.slice(0, 4).map(item => {
     const id = String(item.productId);
     const product = catalogById.get(id);
     const catalogImage = product?.image && !product.image.endsWith('/img/catalog/field.webp')
