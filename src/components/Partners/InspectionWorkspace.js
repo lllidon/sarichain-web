@@ -263,6 +263,7 @@ export default function InspectionWorkspace() {
   const profile = data?.inspectorProfile;
   const assignments = data?.assignments || [];
   const requests = data?.requests || [];
+  const nearbyLocations = data?.nearbyLocations || [];
   const pendingAssignments = useMemo(() => assignments.filter(item => ['offered', 'accepted', 'report_submitted'].includes(item.status)), [assignments]);
   return <div className="inspection-workspace">
     <div className="inspection-intro">
@@ -296,6 +297,14 @@ export default function InspectionWorkspace() {
             <span className="inspection-status approved">ناظر تأییدشده</span><h2>آماده دریافت مأموریت هستید</h2>
             <p>حوزه‌های شما: {(profile.specialties || []).map(item => specialtyOptions.find(option => option[0] === item)?.[1] || item).join('، ')}</p>
             <small>شعاع فعالیت: {number.format(profile.serviceRadiusKm)} کیلومتر</small>
+          </section>}
+          {profile?.status === 'approved' && <section className="inspection-card">
+            <header><div><span className="inspection-eyebrow">موقعیت‌های ثبت‌شده</span><h2>مراکز تولید نزدیک شما</h2><p>با ثبت هر باغ یا زمین جدید، موقعیت آن در این فهرست نمایش داده می‌شود. پس از تعیین زمان بازدید توسط تولیدکننده، مأموریت تخصیص می‌یابد.</p></div></header>
+            {!nearbyLocations.length ? <div className="inspection-empty">در محدوده فعالیت شما موقعیت تولیدی دیگری ثبت نشده است.</div> :
+              <div className="inspection-request-list">{nearbyLocations.map(item => <article key={item.id}>
+                <div><strong>{item.title}</strong><small>{[item.city,item.province].filter(Boolean).join('، ')} · {number.format(item.distanceKm)} کیلومتر فاصله</small></div>
+                <a className="inspection-map-link" href={'https://www.openstreetmap.org/?mlat='+item.latitude+'&mlon='+item.longitude+'#map=15/'+item.latitude+'/'+item.longitude} target="_blank" rel="noopener noreferrer">مشاهده موقعیت ←</a>
+              </article>)}</div>}
           </section>}
           <section className="inspection-card">
             <header><div><span className="inspection-eyebrow">فعالیت ناظر</span><h2>مأموریت‌های من</h2></div></header>
