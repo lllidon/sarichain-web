@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowLeft, faBasketShopping, faBorderAll, faBoxOpen,
-  faClipboardList, faRightFromBracket, faTruckFast, faUser, faUserPen, faWallet,
+  faClipboardList, faImage, faRightFromBracket, faTruckFast, faUser, faUserPen, faWallet,
 } from '@fortawesome/free-solid-svg-icons';
 import { useCatalog } from './Products/CatalogProvider';
 import { productHref, productImage } from './Products/catalog';
@@ -23,7 +23,7 @@ function AccountLink({ href, icon, children, onClick, className = '' }) {
   </Link>;
 }
 
-export default function NavQuickActions({ session = false, profile = null, wallet = null }) {
+export default function NavQuickActions({ session = false, profile = null, wallet = null, productImages = {} }) {
   const cart = useCatalogCart();
   const account = useAccountCart();
   const { catalog = [] } = useCatalog();
@@ -82,12 +82,16 @@ export default function NavQuickActions({ session = false, profile = null, walle
             {lines.slice(0, 5).map(item => {
               const product = item.product;
               const name = product?.name || item.name || 'محصول';
-              const image = product ? productImage(product) : item.image || '/img/catalog/field.webp';
+              const catalogImage = product?.image && !product.image.endsWith('/img/catalog/field.webp')
+                ? productImage(product) : null;
+              const image = productImages?.[String(item.productId)] || item.image || catalogImage;
               const href = product ? productHref(product) : '/categories';
               const lineTotal = item.pack?.price ? formatPrice(scalePrice(item.pack.price, item.quantity)) : 'قیمت اعلام نشده';
               return <li key={item.id}>
                 <Link href={href} className="nav-cart-preview-image" onClick={closeMenus}>
-                  <img src={image} alt="" loading="lazy" />
+                  {image
+                    ? <img src={image} alt="" loading="lazy" />
+                    : <span className="nav-cart-preview-image-placeholder" aria-label="تصویر محصول ثبت نشده"><FontAwesomeIcon icon={faImage} /></span>}
                 </Link>
                 <div className="nav-cart-preview-copy">
                   <Link href={href} className="nav-cart-preview-name" onClick={closeMenus}>{name}</Link>
