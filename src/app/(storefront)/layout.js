@@ -10,7 +10,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import BottomNavbar from '../../components/modules/BottomNavbar';
 
-import { readCatalog } from '../../components/Products/catalog-data';
+import { readCatalog, readProductImageMap } from '../../components/Products/catalog-data';
 import { CatalogProvider } from '../../components/Products/CatalogProvider';
 
 export default async function StorefrontLayout({ children }) {
@@ -23,12 +23,13 @@ export default async function StorefrontLayout({ children }) {
     token ? readAccountMenu(token) : null,
   ]);
   const session = Boolean(accountMenu?.profile || accountCart);
+  const productImages = await readProductImageMap((accountCart?.items ?? []).map(item => item.productId));
   const initialCart = parseCart(jar.get(cartCookie)?.value);
   return (
     <AccountCartProvider initial={accountCart}>
       <AccountWeeklyBasketProvider initial={weeklyBasket}>
       <CatalogProvider value={{ ...catalog, initialCart }}>
-        <Navbar session={session} profile={accountMenu?.profile} wallet={accountMenu?.wallet} />
+        <Navbar session={session} profile={accountMenu?.profile} wallet={accountMenu?.wallet} productImages={productImages} />
         <main>{children}</main>
         <Footer />
         <BottomNavbar session={session} profile={accountMenu?.profile} wallet={accountMenu?.wallet} />
