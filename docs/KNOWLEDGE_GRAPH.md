@@ -96,7 +96,7 @@ flowchart TD
 - `src/lib/accountMenu.js` fetches the authenticated member profile from `/web/profile` and wallet summary from `/web/karsha`, then passes only the member name, relevant capabilities, and balance to client navigation.
 - `src/app/(storefront)/layout.js` provides the account summary to `Navbar` and `BottomNavbar`. The mobile bottom navigation opens an account quick-access sheet with the same destinations and Karsha balance.
 - The homepage header in `src/app/(home)/page.js` uses `NavQuickActions` within `CatalogProvider` and `AccountCartProvider`; it loads the current account cart/profile/wallet in parallel with homepage data.
-- Homepage weekly basket card shows up to three product thumbnails from the member's weekly basket, overlapping by roughly 20%; when the basket is empty or unavailable it uses the first three catalog product images as a visual fallback. Additional basket items appear as a `+N` badge.
+- Homepage weekly basket card shows up to three product thumbnails from the member's weekly basket, overlapping by roughly 20%; when the basket is empty or unavailable it uses the first three catalog product images, then the built-in homepage sample images if the live catalog is empty. Additional basket items appear as a `+N` badge, and the preview CTA opens `/weekly-basket`.
 - `src/components/HomeHeroCarousel.js` intentionally contains no search form; the primary slide CTA remains. Header-level search is unchanged.
 
 ## Change-impact guide
