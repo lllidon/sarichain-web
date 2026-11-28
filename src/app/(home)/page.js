@@ -73,7 +73,8 @@ function WeeklyBasket({ basket, catalog = [] }) {
   const selected = (basket?.items || []).map(item =>
     catalog.find(product => String(product.id) === String(item.productId))
   ).filter(Boolean);
-  const fallback = catalog.filter(product => product.image).slice(0, 3);
+  const catalogFallback = catalog.filter(product => product.image).slice(0, 3);
+  const fallback = catalogFallback.length ? catalogFallback : examples.slice(0, 3);
   const products = (selected.length ? selected : fallback).slice(0, 3);
   const remaining = selected.length ? Math.max(0, (basket?.items?.length || selected.length) - 3) : 0;
 
@@ -90,7 +91,7 @@ function WeeklyBasket({ basket, catalog = [] }) {
       </span>)}
       {remaining > 0 && <span className="market-home-weekly-more">+{number.format(remaining)}</span>}
     </div>
-    <Link href="/pilot" prefetch={false} className="market-home-button">پیش‌نمایش سبد <FontAwesomeIcon icon={faArrowLeft} /></Link>
+    <Link href="/weekly-basket" prefetch={false} className="market-home-button">پیش‌نمایش سبد <FontAwesomeIcon icon={faArrowLeft} /></Link>
   </section>;
 }
 
