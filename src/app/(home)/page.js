@@ -76,7 +76,7 @@ function WeeklyBasket({ basket, catalog = [], productImages = {} }) {
     [String(product.id), product],
     ...(product.variants ?? []).map(variant => [String(variant.id), variant]),
   ]));
-  const products = basketItems.slice(0, 3).map(item => {
+  const products = basketItems.slice(0, 4).map(item => {
     const id = String(item.productId);
     const product = catalogById.get(id);
     const catalogImage = product?.image && !product.image.endsWith('/img/catalog/field.webp')
@@ -85,15 +85,9 @@ function WeeklyBasket({ basket, catalog = [], productImages = {} }) {
   });
   const remaining = Math.max(0, total - products.length);
 
-  return <section id="weekly-basket" className="market-home-weekly" aria-labelledby="market-weekly-title">
-    <div className="market-home-weekly-copy">
-      <h2 id="market-weekly-title">
-        <FontAwesomeIcon icon={faBasketShopping} />
-        <span>سبد خرید هفتگی</span>
-      </h2>
-    </div>
+  return <section id="weekly-basket" className="market-home-weekly" dir="ltr" aria-labelledby="market-weekly-title">
     <div className="market-home-weekly-visual" aria-label={total > 0
-      ? `${number.format(total)} قلم در سبد خرید هفتگی`
+      ? number.format(total) + ' قلم در سبد خرید هفتگی'
       : 'سبد خرید هفتگی خالی است'}>
       {products.length > 0 ? <>
         <div className="market-home-weekly-products">
@@ -105,27 +99,32 @@ function WeeklyBasket({ basket, catalog = [], productImages = {} }) {
           </span>)}
         </div>
         <span className="market-home-weekly-extra" dir="rtl">
-          {remaining > 0 ? `${number.format(remaining)} قلم دیگر` : `${number.format(total)} قلم`}
+          {remaining > 0 ? number.format(remaining) + ' قلم دیگر' : number.format(total) + ' قلم'}
         </span>
-      </> : <div className="market-home-weekly-empty">
+      </> : <div className="market-home-weekly-empty" dir="rtl">
         <FontAwesomeIcon icon={faBasketShopping} />
         <span>سبد خالی است</span>
       </div>}
     </div>
-    <Link href="/weekly-basket" prefetch={false} className="market-home-button">
-      <span>مشاهده و مدیریت سبد</span>
-      <FontAwesomeIcon icon={faArrowLeft} />
-    </Link>
+    <div className="market-home-weekly-copy" dir="rtl">
+      <h2 id="market-weekly-title">
+        <span className="market-home-weekly-icon" aria-hidden="true"><FontAwesomeIcon icon={faBasketShopping} /></span>
+        <span>سبد خرید هفتگی</span>
+      </h2>
+      <Link href="/weekly-basket" prefetch={false} className="market-home-button">
+        <span>مشاهده و مدیریت سبد</span>
+        <FontAwesomeIcon icon={faArrowLeft} />
+      </Link>
+    </div>
   </section>;
 }
-
 function DeliveryWelcomeCard() {
   return <div className="market-home-delivery-card">
     <Image
       src="/img/home/delivery-welcome.webp"
       alt="پیک دهات در حال تحویل سبد محصولات تازه به پدر و دخترش"
       fill
-      sizes="(max-width: 640px) 100vw, (max-width: 920px) 45vw, 42vw"
+      sizes="(max-width: 640px) calc(100vw - 28px), (max-width: 920px) calc(100vw - 40px), 1260px"
       className="market-home-delivery-image"
     />
   </div>;
