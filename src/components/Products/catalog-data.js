@@ -5,7 +5,7 @@ const empty = { catalog: [], categories: {}, brands: [], unavailable: true };
 
 function resolveBackendImage(value) {
   if (typeof value !== 'string' || !value) return value;
-  if (/^https?:\\/\\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
+  if (/^https?:\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
   if (value.startsWith('/uploads/')) {
     return new URL(value, process.env.BACKEND_URL || 'http://127.0.0.1:3001').toString();
   }
