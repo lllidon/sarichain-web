@@ -322,3 +322,26 @@ button.bottom-nav-item {
   }
 }
 a.bottom-nav-item { text-decoration: none; }
+
+
+/* Mobile account quick-access sheet */
+.mobile-account-heading { display: grid; gap: 4px; }
+.mobile-account-heading strong { font-size: 16px; }
+.mobile-account-heading small { color: #e1efdf; font-size: 12px; }
+.mobile-account-links { display: grid; gap: 8px; }
+.mobile-account-links a {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 48px; padding: 10px 13px;
+  border: 1px solid #e5ece3; border-radius: 11px;
+  background: #f8faf6; color: #294b35; font-size: 14px; font-weight: 700;
+  text-decoration: none;
+}
+.mobile-account-links a svg { width: 18px; color: #63836a; }
+.mobile-account-links a:active { background: #eaf3e6; }
+.mobile-account-logout { margin-top: 13px; padding-top: 12px; border-top: 1px solid #edf0eb; }
+.mobile-account-logout button {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-height: 44px; padding: 9px 13px;
+  border: 0; border-radius: 10px; background: #fbf0ed;
+  color: #9a4a3e; font: inherit; font-size: 13px; font-weight: 750; cursor: pointer;
+}
