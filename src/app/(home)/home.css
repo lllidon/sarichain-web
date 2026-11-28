@@ -610,3 +610,155 @@
   .market-home-weekly-product,
   .market-home-weekly-more { width: 52px; height: 52px; border-radius: 13px; }
 }
+
+
+/* Layer the homepage header above the hero and all following content. */
+.market-home-header {
+  position: relative;
+  z-index: 1450;
+  isolation: isolate;
+  overflow: visible;
+}
+.market-home-header-top,
+.market-home-actions {
+  position: relative;
+  overflow: visible;
+}
+.market-home-header-top { z-index: 1; }
+.market-home-actions { z-index: 2; }
+
+/* Weekly basket: real product photos, 60% overlap and a clear +N badge. */
+.market-home-weekly {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 8px;
+  min-height: 142px;
+  padding: 19px 21px;
+  border: 1px solid rgba(234, 244, 224, .12);
+  border-radius: 18px;
+  background: linear-gradient(125deg, #123b29 0%, #1b5037 58%, #285b3c 100%);
+  box-shadow: 0 12px 28px rgba(21, 57, 37, .13);
+}
+.market-home-weekly-copy {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 7px;
+  min-width: 0;
+}
+.market-home-weekly-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+.market-home-weekly-heading h2 { margin: 0; }
+.market-home-weekly-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 3px 9px;
+  border: 1px solid rgba(231, 242, 213, .2);
+  border-radius: 999px;
+  background: rgba(232, 242, 218, .12);
+  color: #e9f3d7;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.market-home-weekly-copy p { max-width: 36ch; line-height: 1.9; }
+.market-home-weekly-products {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  direction: ltr;
+  min-width: 0;
+  min-height: 82px;
+  padding: 7px 0 7px 3px;
+}
+.market-home-weekly-product,
+.market-home-weekly-more {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 70px;
+  height: 70px;
+  overflow: hidden;
+  border: 3px solid #f6f8ef;
+  border-radius: 17px;
+  background: #e9f0e2;
+  box-shadow: 0 5px 15px rgba(4, 24, 14, .28);
+}
+.market-home-weekly-product + .market-home-weekly-product,
+.market-home-weekly-more { margin-inline-start: -42px; }
+.market-home-weekly-product img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.market-home-weekly-image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #789079;
+  background: linear-gradient(145deg, #f4f7ef, #e5eddf);
+  font-size: 20px;
+}
+.market-home-weekly-more {
+  width: 54px;
+  height: 54px;
+  border: 3px solid #edf4df;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #eff6d9, #dcebbd);
+  color: #214d35;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: -.03em;
+}
+.market-home-weekly-empty {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  border: 1px dashed rgba(236, 245, 224, .3);
+  border-radius: 12px;
+  color: #dcebd7;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.market-home-weekly-empty svg { font-size: 17px; opacity: .85; }
+.market-home-weekly .market-home-button {
+  margin-top: 2px;
+  color: #eff5df;
+  font-weight: 900;
+}
+.market-home-weekly .market-home-button:hover { color: #fff; }
+
+@media (max-width: 640px) {
+  .market-home-weekly {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    padding: 16px;
+    column-gap: 12px;
+    row-gap: 8px;
+  }
+  .market-home-weekly-products {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    min-height: 74px;
+    margin-top: 0;
+  }
+  .market-home-weekly-product { width: 62px; height: 62px; border-radius: 15px; }
+  .market-home-weekly-product + .market-home-weekly-product,
+  .market-home-weekly-more { margin-inline-start: -37px; }
+  .market-home-weekly-more { width: 49px; height: 49px; }
+  .market-home-weekly-empty { white-space: normal; }
+}
