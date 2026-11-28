@@ -1,0 +1,54 @@
+.inspection-workspace{display:grid;gap:20px;color:var(--foreground,#20352a)}
+.inspection-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px;border:1px solid var(--border,#e4ebe5);border-radius:20px;background:linear-gradient(125deg,rgba(42,126,78,.10),rgba(42,126,78,.025))}
+.inspection-intro h2,.inspection-card h2{margin:5px 0 8px;font-size:1.2rem;color:var(--foreground,#20352a)}
+.inspection-intro p,.inspection-card header p{margin:0;color:var(--muted,#718078);line-height:1.9;font-size:.9rem}
+.inspection-eyebrow{font-size:.76rem;font-weight:800;color:#39845b}
+.inspection-refresh,.inspection-secondary{border:1px solid var(--border,#dce5dd);background:var(--surface,#fff);color:var(--foreground,#20352a);border-radius:11px;padding:10px 15px;font-weight:700;cursor:pointer;white-space:nowrap}
+.inspection-overview-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.inspection-overview-stats>div{display:grid;gap:4px;padding:17px;border:1px solid var(--border,#e4ebe5);border-radius:15px;background:var(--surface,#fff)}
+.inspection-overview-stats strong{font-size:1.35rem;color:#277449}.inspection-overview-stats span{font-size:.8rem;color:var(--muted,#718078)}
+.inspection-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:18px;align-items:start}
+.inspection-main-column,.inspection-side-column{display:grid;gap:18px}
+.inspection-card{min-width:0;padding:20px;border:1px solid var(--border,#e4ebe5);border-radius:18px;background:var(--surface,#fff);box-shadow:0 5px 22px rgba(20,60,35,.035)}
+.inspection-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:17px}
+.inspection-card>header h2{font-size:1.08rem}
+.inspection-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:rgba(48,132,82,.12);color:#328252;font-size:1.5rem}
+.inspection-form{display:grid;gap:14px}
+.inspection-form label,.inspection-inline-label{display:grid;gap:7px;color:var(--foreground,#35473b);font-size:.84rem;font-weight:700}
+.inspection-form input,.inspection-form select,.inspection-form textarea,.inspection-inline-label select,.inspection-report-form input,.inspection-report-form select,.inspection-report-form textarea{width:100%;min-width:0;border:1px solid var(--border,#dfe7e0);border-radius:10px;background:var(--surface,#fff);color:var(--foreground,#20352a);padding:10px 11px;font:inherit;font-size:.88rem}
+.inspection-form textarea,.inspection-report-form textarea{resize:vertical;line-height:1.8}
+.inspection-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.inspection-form fieldset{border:1px solid var(--border,#e3eae4);border-radius:12px;padding:13px}
+.inspection-form legend{padding:0 6px;font-weight:800;font-size:.86rem}
+.inspection-specialties{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.inspection-specialties label{display:flex;align-items:center;gap:8px;font-weight:500}
+.inspection-specialties input{width:auto;accent-color:#348657}
+.inspection-time-window{display:grid;gap:10px;padding:13px;border-radius:12px;background:rgba(43,126,78,.055)}
+.inspection-primary{border:0;border-radius:11px;background:#287849;color:#fff;padding:11px 16px;font-weight:800;cursor:pointer}
+.inspection-primary:disabled,.inspection-secondary:disabled{opacity:.55;cursor:not-allowed}
+.inspection-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.inspection-status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;font-size:.73rem;font-weight:800;background:#edf1ee;color:#56635a;white-space:nowrap}
+.inspection-status.approved,.inspection-status.completed{background:#e7f5eb;color:#267344}
+.inspection-status.pending,.inspection-status.offered,.inspection-status.pending_review{background:#fff4df;color:#95651a}
+.inspection-status.rejected,.inspection-status.revision_required{background:#fbeaea;color:#a13d3d}
+.inspection-status.scheduled,.inspection-status.accepted{background:#e9f1fb;color:#37638e}
+.inspection-alert{margin:0;padding:10px 12px;border-radius:10px;font-size:.84rem;line-height:1.7}
+.inspection-alert.error{background:#fff0ee;color:#a33c31}.inspection-alert.success{background:#eaf6ed;color:#287446}
+.inspection-status.pending{margin-bottom:12px}
+.inspection-empty{padding:18px;border:1px dashed var(--border,#dce5dd);border-radius:12px;color:var(--muted,#718078);font-size:.88rem;line-height:1.8}
+.inspection-request-list,.inspection-assignment-list{display:grid;gap:10px}
+.inspection-request-list>article,.inspection-assignment{display:grid;gap:10px;padding:13px;border:1px solid var(--border,#e5ebe6);border-radius:13px}
+.inspection-request-list>article>div:first-child,.inspection-assignment>header>div{display:grid;gap:4px}
+.inspection-request-list small,.inspection-assignment small{color:var(--muted,#718078);font-size:.78rem}
+.inspection-request-meta,.inspection-facts{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.82rem}
+.inspection-assignment>header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.inspection-report-form{display:grid;gap:11px;padding-top:13px;border-top:1px solid var(--border,#e5ebe6)}
+.inspection-report-form h3{margin:0;font-size:.95rem}
+.inspection-approved{background:linear-gradient(145deg,rgba(45,135,80,.10),var(--surface,#fff))}
+.inspection-approved p{line-height:1.8;color:var(--muted,#718078);font-size:.85rem}
+@media(max-width:900px){.inspection-layout{grid-template-columns:1fr}}
+@media(max-width:560px){.inspection-overview-stats{grid-template-columns:1fr 1fr}.inspection-form-grid,.inspection-specialties{grid-template-columns:1fr}.inspection-intro{padding:17px;flex-direction:column}.inspection-card{padding:15px}.inspection-assignment>header{flex-direction:column}}
+
+.inspection-assignment-contact{margin:0;color:var(--muted,#718078);font-size:.82rem;line-height:1.8}
+.inspection-map-link{color:#287849;font-size:.83rem;font-weight:800;text-decoration:none}
+.inspection-map-link:hover{text-decoration:underline}
