@@ -23,8 +23,11 @@ export default async function StorefrontLayout({ children }) {
     token ? readAccountMenu(token) : null,
   ]);
   const session = Boolean(accountMenu?.profile || accountCart);
-  const productImages = await readProductImageMap((accountCart?.items ?? []).map(item => item.productId));
   const initialCart = parseCart(jar.get(cartCookie)?.value);
+  const productImages = await readProductImageMap([
+    ...(accountCart?.items ?? []).map(item => item.productId),
+    ...initialCart.map(item => item.productId),
+  ]);
   return (
     <AccountCartProvider initial={accountCart}>
       <AccountWeeklyBasketProvider initial={weeklyBasket}>
