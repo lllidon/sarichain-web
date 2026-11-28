@@ -762,3 +762,214 @@
   .market-home-weekly-more { width: 49px; height: 49px; }
   .market-home-weekly-empty { white-space: normal; }
 }
+
+/* Homepage feature pair: delivery illustration on the left, weekly basket on the right. */
+.market-home-paths {
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 16px;
+}
+.market-home-delivery-card {
+  position: relative;
+  min-width: 0;
+  min-height: 250px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid #e0e7dd;
+  border-radius: 20px;
+  background: #f4f6ef;
+  box-shadow: 0 10px 28px rgba(24, 57, 38, .08);
+  isolation: isolate;
+}
+.market-home-delivery-image {
+  display: block;
+  object-fit: cover;
+  object-position: center 48%;
+}
+.market-home-weekly {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  grid-template-areas: "copy visual" "cta visual";
+  align-items: center;
+  align-content: stretch;
+  min-width: 0;
+  min-height: 250px;
+  padding: 24px 26px;
+  column-gap: 16px;
+  row-gap: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(233, 244, 222, .12);
+  border-radius: 20px;
+  background: linear-gradient(125deg, #123b29 0%, #1b5037 58%, #285b3c 100%);
+  box-shadow: 0 12px 28px rgba(21, 57, 37, .13);
+}
+.market-home-weekly-copy {
+  grid-area: copy;
+  align-self: start;
+  min-width: 0;
+}
+.market-home-weekly-copy h2 {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0;
+  color: #f7f8ed;
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  font-weight: 900;
+  line-height: 1.55;
+}
+.market-home-weekly-copy h2 svg {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 11px;
+  border-radius: 13px;
+  background: rgba(224, 240, 205, .13);
+  color: #e6f1d4;
+  font-size: 18px;
+}
+.market-home-weekly-visual {
+  grid-area: visual;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  min-width: 0;
+  direction: ltr;
+  gap: 12px;
+}
+.market-home-weekly-products {
+  display: flex;
+  flex: none;
+  align-items: center;
+  min-width: 0;
+  min-height: 92px;
+  padding: 7px 0;
+  direction: ltr;
+  overflow: visible;
+}
+.market-home-weekly-product {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 76px;
+  height: 76px;
+  overflow: hidden;
+  border: 3px solid #f6f8ef;
+  border-radius: 17px;
+  background: #e9f0e2;
+  box-shadow: 0 5px 15px rgba(4, 24, 14, .28);
+}
+.market-home-weekly-product + .market-home-weekly-product {
+  margin-left: -46px;
+}
+.market-home-weekly-product img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.market-home-weekly-image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #789079;
+  background: linear-gradient(145deg, #f4f7ef, #e5eddf);
+  font-size: 20px;
+}
+.market-home-weekly-extra {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid rgba(232, 244, 218, .22);
+  border-radius: 999px;
+  background: rgba(232, 244, 218, .12);
+  color: #eff6dc;
+  font-size: .78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.market-home-weekly-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px dashed rgba(236, 245, 224, .3);
+  border-radius: 13px;
+  color: #dcebd7;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+.market-home-weekly-empty svg { font-size: 18px; opacity: .85; }
+.market-home .market-home-weekly a.market-home-button {
+  grid-area: cta;
+  grid-column: auto;
+  align-self: end;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 0;
+  color: #eaf3d8;
+  font-size: .9rem;
+  font-weight: 900;
+  white-space: normal;
+}
+.market-home .market-home-weekly a.market-home-button:hover {
+  color: #fff;
+  text-decoration: none;
+}
+@media (max-width: 920px) {
+  .market-home-paths { gap: 12px; }
+  .market-home-weekly { padding: 20px; column-gap: 10px; }
+  .market-home-weekly-product { width: 66px; height: 66px; border-radius: 15px; }
+  .market-home-weekly-product + .market-home-weekly-product { margin-left: -40px; }
+  .market-home-weekly-extra { padding-inline: 9px; font-size: .72rem; }
+}
+@media (max-width: 640px) {
+  .market-home-paths {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .market-home-delivery-card {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+  }
+  .market-home-weekly {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    grid-template-areas: "copy" "visual" "cta";
+    min-height: 0;
+    padding: 18px;
+    row-gap: 12px;
+    border-radius: 16px;
+  }
+  .market-home-weekly-copy h2 { font-size: 1.15rem; }
+  .market-home-weekly-copy h2 svg { width: 38px; height: 38px; padding: 10px; }
+  .market-home-weekly-visual {
+    align-self: center;
+    min-height: 78px;
+    gap: 11px;
+    flex-wrap: wrap;
+  }
+  .market-home-weekly-products { min-height: 74px; }
+  .market-home-weekly-product { width: 60px; height: 60px; border-radius: 14px; }
+  .market-home-weekly-product + .market-home-weekly-product { margin-left: -36px; }
+  .market-home-weekly-extra { min-height: 30px; font-size: .73rem; }
+  .market-home .market-home-weekly a.market-home-button {
+    justify-self: start;
+    padding-block: 5px 0;
+    font-size: .84rem;
+  }
+}

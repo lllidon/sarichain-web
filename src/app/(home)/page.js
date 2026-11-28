@@ -86,53 +86,49 @@ function WeeklyBasket({ basket, catalog = [], productImages = {} }) {
   const remaining = Math.max(0, total - products.length);
 
   return <section id="weekly-basket" className="market-home-weekly" aria-labelledby="market-weekly-title">
-    <div className="market-home-weekly-icon"><FontAwesomeIcon icon={faBasketShopping} /></div>
     <div className="market-home-weekly-copy">
-      <div className="market-home-weekly-heading">
-        <h2 id="market-weekly-title">سبد خرید هفتگی</h2>
-        {total > 0 && <span className="market-home-weekly-count">{number.format(total)} قلم</span>}
-      </div>
-      <p>{total > 0
-        ? 'پیش‌نمایش محصولات انتخاب‌شده شما برای خرید هفتگی.'
-        : 'هنوز محصولی به سبد هفتگی اضافه نشده است.'}</p>
-      <Link href="/weekly-basket" prefetch={false} className="market-home-button">
-        {total > 0 ? 'مشاهده و مدیریت سبد' : 'ساخت سبد هفتگی'}
-        <FontAwesomeIcon icon={faArrowLeft} />
-      </Link>
+      <h2 id="market-weekly-title">
+        <FontAwesomeIcon icon={faBasketShopping} />
+        <span>سبد خرید هفتگی</span>
+      </h2>
     </div>
-    <div className="market-home-weekly-products" aria-label={total > 0
+    <div className="market-home-weekly-visual" aria-label={total > 0
       ? `${number.format(total)} قلم در سبد خرید هفتگی`
       : 'سبد خرید هفتگی خالی است'}>
-      {products.map((product, index) => <span className="market-home-weekly-product" key={product.id}
-        style={{ zIndex: index + 1 }}>
-        {product.image
-          ? <img src={product.image} alt="" loading="lazy" />
-          : <span className="market-home-weekly-image-placeholder"><FontAwesomeIcon icon={faImage} /></span>}
-      </span>)}
-      {remaining > 0 && <span className="market-home-weekly-more" style={{ zIndex: 5 }}>+{number.format(remaining)}</span>}
-      {total === 0 && <div className="market-home-weekly-empty">
+      {products.length > 0 ? <>
+        <div className="market-home-weekly-products">
+          {products.map((product, index) => <span className="market-home-weekly-product" key={product.id}
+            style={{ zIndex: index + 1 }}>
+            {product.image
+              ? <img src={product.image} alt="" loading="lazy" />
+              : <span className="market-home-weekly-image-placeholder"><FontAwesomeIcon icon={faImage} /></span>}
+          </span>)}
+        </div>
+        <span className="market-home-weekly-extra" dir="rtl">
+          {remaining > 0 ? `${number.format(remaining)} قلم دیگر` : `${number.format(total)} قلم`}
+        </span>
+      </> : <div className="market-home-weekly-empty">
         <FontAwesomeIcon icon={faBasketShopping} />
-        <span>سبد خالی</span>
+        <span>سبد خالی است</span>
       </div>}
     </div>
+    <Link href="/weekly-basket" prefetch={false} className="market-home-button">
+      <span>مشاهده و مدیریت سبد</span>
+      <FontAwesomeIcon icon={faArrowLeft} />
+    </Link>
   </section>;
 }
 
-function AccountSection({ profile }) {
-  const firstName = profile?.fullName?.trim().split(/\s+/)[0];
-  return <aside className="market-home-member" aria-labelledby="market-home-member-title">
-    <div className="market-home-member-icon"><FontAwesomeIcon icon={profile ? faBox : faUser} /></div>
-    <div>
-      <h2 id="market-home-member-title">{profile ? firstName ? `${firstName}، خوش آمدید` : 'حساب خرید شما' : 'خرید و سفارش‌های شما'}</h2>
-      <p>{profile ? 'سفارش‌های جاری را پیگیری کنید یا خریدتان را ادامه دهید.' : 'محصولات را مرور کنید. برای ثبت و پیگیری سفارش وارد حساب شوید.'}</p>
-    </div>
-    <Link href={profile ? '/partners?section=orders' : '/login'} prefetch={false} className="market-home-text-link">
-      {profile ? 'سفارش‌های من' : 'ورود به حساب'} <FontAwesomeIcon icon={faArrowLeft} />
-    </Link>
-    {profile && <Link href="/cart" prefetch={false} className="market-home-text-link">
-      ادامهٔ خرید <FontAwesomeIcon icon={faArrowLeft} />
-    </Link>}
-  </aside>;
+function DeliveryWelcomeCard() {
+  return <div className="market-home-delivery-card">
+    <Image
+      src="/img/home/delivery-welcome.webp"
+      alt="پیک دهات در حال تحویل سبد محصولات تازه به پدر و دخترش"
+      fill
+      sizes="(max-width: 640px) 100vw, (max-width: 920px) 45vw, 42vw"
+      className="market-home-delivery-image"
+    />
+  </div>;
 }
 
 function CategoryList({ categories }) {
@@ -321,7 +317,7 @@ export default async function HomePage() {
       <HomeHeroCarousel slides={slides} />
       <div className="market-home-paths">
         <WeeklyBasket basket={weeklyBasket} catalog={catalogData.catalog} productImages={productImages} />
-        <AccountSection profile={accountMenu?.profile} />
+        <DeliveryWelcomeCard />
       </div>
       <Suspense fallback={<p className="market-home-catalog-loading" role="status">در حال دریافت کاتالوگ…</p>}><HomeCatalog catalogData={catalogData} /></Suspense>
     </main>
