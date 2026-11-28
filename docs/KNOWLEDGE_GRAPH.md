@@ -83,7 +83,7 @@ flowchart TD
 ## Storefront catalog pagination
 
 - `src/components/Products/CategoriesPage.js` owns the public product listing, filters, sorting and client-side pagination (12 products per page).
-- `paginationItems(current, total)` produces the same compact numbered-page window as the admin panel: show all pages when there are at most 15; otherwise show the first/last page, nearby pages and ellipses.
+- `paginationItems(current, total)` produces the same compact numbered-page window as the admin panel: show all pages when there are at most 5; otherwise show at most 5 numeric page buttons (including first/last), nearby pages and ellipses.
 - The pagination nav includes accessible previous/next controls, numbered buttons with `aria-current="page"`, Persian-formatted page labels and focus/scroll back to the results heading after page changes.
 - `src/components/Products/CategoriesPage.css` styles the green active state, page buttons, ellipses, hover/disabled states and responsive wrapping for mobile.
 - Search, category, brand, unit, price, form, detail and sort filters reset the page to 1. Keep the pagination window synchronized with the derived filtered `results` count.
