@@ -11,14 +11,21 @@ import {
   faUser, 
   faSignInAlt,
   faThLarge,
-  faTimes
+  faTimes,
+  faWallet,
+  faClipboardList,
+  faBox,
+  faSignOutAlt
 } from '@fortawesome/free-solid-svg-icons';
 import SearchModal from '../modals/SearchModal';
 import { useCatalog } from '../Products/CatalogProvider';
 import { useCatalogCart } from '../modals/cartStore';
 import './BottomNavbar.css';
+import { leaveWorkspace } from '../../app/(workspace)/partners/actions';
 
-const BottomNavbar = ({ session }) => {
+const number = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 6 });
+
+const BottomNavbar = ({ session, profile = null, wallet = null }) => {
   const { categories } = useCatalog();
   const cartCount = useCatalogCart().reduce((count, item) => count + item.quantity, 0);
   const router = useRouter();
@@ -26,6 +33,7 @@ const BottomNavbar = ({ session }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   useEffect(() => {
     // تعیین تب فعال بر اساس مسیر فعلی
@@ -102,16 +110,49 @@ const BottomNavbar = ({ session }) => {
           </div>
 
           {/* پروفایل من/ورود */}
-          <Link href={session ? '/partners' : '/login'} className="bottom-nav-item">
-            <span className="nav-icon"><FontAwesomeIcon icon={session ? faUser : faSignInAlt} /></span>
-            <span className="nav-label">{session ? 'حساب کاربری' : 'ورود'}</span>
-          </Link>
+          {session ? <button type="button" aria-expanded={showAccountModal}
+            className="bottom-nav-item" onClick={() => setShowAccountModal(true)}>
+            <span className="nav-icon"><FontAwesomeIcon icon={faUser} /></span>
+            <span className="nav-label">حساب کاربری</span>
+          </button> : <Link href="/login" className="bottom-nav-item">
+            <span className="nav-icon"><FontAwesomeIcon icon={faSignInAlt} /></span>
+            <span className="nav-label">ورود</span>
+          </Link>}
         </div>
       </div>
 
       {/* مودال جستجو */}
       <SearchModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
 
+
+      {/* منوی سریع حساب کاربری */}
+      {showAccountModal && (
+        <div className="mobile-modal-overlay" onClick={() => setShowAccountModal(false)}>
+          <div className="mobile-modal mobile-account-modal" onClick={event => event.stopPropagation()}>
+            <div className="mobile-modal-header">
+              <div className="mobile-account-heading">
+                <strong>{profile?.fullName || 'حساب ساری‌چین'}</strong>
+                <small>موجودی: {number.format(wallet?.balance ?? profile?.karshaBalance ?? 0)} کارسا</small>
+              </div>
+              <button type="button" aria-label="بستن منوی حساب" onClick={() => setShowAccountModal(false)}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="mobile-modal-body">
+              <nav className="mobile-account-links" aria-label="دسترسی سریع حساب">
+                <Link href="/partners" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faHome} /> داشبورد من</Link>
+                <Link href="/partners?section=orders" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faClipboardList} /> سفارش‌های من</Link>
+                <Link href="/partners?section=wallet" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faWallet} /> کیف پول کارسا</Link>
+                {profile?.capabilities?.sell && <Link href="/partners?section=products" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faBox} /> محصولات من</Link>}
+                <Link href="/partners?section=profile" onClick={() => setShowAccountModal(false)}><FontAwesomeIcon icon={faUser} /> پروفایل و دسترسی‌ها</Link>
+              </nav>
+              <form action={leaveWorkspace} className="mobile-account-logout">
+                <button type="submit"><FontAwesomeIcon icon={faSignOutAlt} /> خروج از حساب</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* مودال دسته‌بندی */}
       {showCategoriesModal && (
