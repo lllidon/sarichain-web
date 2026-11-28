@@ -310,9 +310,9 @@ export default async function HomePage() {
     token ? readAccountMenu(token) : null,
   ]);
   const initialCart = parseCart(jar.get(cartCookie)?.value);
+  const activeCartItems = accountCart ? accountCart.items ?? [] : initialCart;
   const productImages = await readProductImageMap([
-    ...(accountCart?.items ?? []).map(item => item.productId),
-    ...initialCart.map(item => item.productId),
+    ...activeCartItems.map(item => item.productId),
     ...(weeklyBasket?.items ?? []).map(item => item.productId),
   ]);
   return <div className="market-home">
