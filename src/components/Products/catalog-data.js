@@ -3,6 +3,15 @@ import { defaultOffer, withOffer } from './catalog';
 
 const empty = { catalog: [], categories: {}, brands: [], unavailable: true };
 
+function resolveBackendImage(value) {
+  if (typeof value !== 'string' || !value) return value;
+  if (/^https?:\\/\\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
+  if (value.startsWith('/uploads/')) {
+    return new URL(value, process.env.BACKEND_URL || 'http://127.0.0.1:3001').toString();
+  }
+  return value;
+}
+
 async function readList(resource, home) {
   const items = [];
   const limit = home && resource === 'products' ? 12 : 100;
@@ -21,12 +30,12 @@ export const readCatalog = cache(async (mode) => {
   try {
     const [products, categoryRows, brands] = await Promise.all(['products', 'categories', 'brands'].map(resource => readList(resource, mode === 'home')));
     const categories = Object.fromEntries(categoryRows.map(row => [row._id, {
-      name: row.name, description: String(row.shortDescription || row.description || '').trim().slice(0, 320), parentId: row.parentId, level: row.level, image: row.thumbnailUrl || row.imageUrl || '/img/catalog/field.webp', filter: 'کاربرد',
+      name: row.name, description: String(row.shortDescription || row.description || '').trim().slice(0, 320), parentId: row.parentId, level: row.level, image: resolveBackendImage(row.thumbnailUrl || row.imageUrl) || '/img/catalog/field.webp', filter: 'کاربرد',
     }]));
     const brandNames = new Map(brands.map(brand => [brand._id, brand.name]));
     function mapProduct(product, parent) {
       const [form, detail] = (product.shortDescription || '').split(' · ');
-      const gallery = product.gallery || [];
+      const gallery = (product.gallery || []).map(resolveBackendImage);
       const item = {
         id: product._id, code: product.sku, name: product.name, category: categories[product.categoryId] ? product.categoryId : (parent?.category || 'uncategorized'),
         offers: product.offers ?? [],
@@ -41,8 +50,8 @@ export const readCatalog = cache(async (mode) => {
         unit: product.saleUnit || parent?.unit || product.description?.match(/هر (لیتر|کیلوگرم)/)?.[1] || 'واحد',
         saleUnits: product.saleUnits?.length ? product.saleUnits : parent?.saleUnits || [],
         brandId: product.brandId, brand: brandNames.get(product.brandId) || '',
-        image: gallery[0] || product.thumbnailUrl || product.imageUrl || parent?.image || '/img/catalog/field.webp',
-        fullImage: gallery[0] || product.imageUrl || parent?.fullImage || '',
+        image: gallery[0] || resolveBackendImage(product.thumbnailUrl) || resolveBackendImage(product.imageUrl) || parent?.image || '/img/catalog/field.webp',
+        fullImage: gallery[0] || resolveBackendImage(product.imageUrl) || parent?.fullImage || '',
         gallery,
       };
       return withOffer(item, defaultOffer(item));
